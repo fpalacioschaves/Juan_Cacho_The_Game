@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="chapter-id" content="cap08"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Juan Cacho — Capítulo 8 (Sótano del Café Central)</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
+    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
+  button.secondary{background:var(--accent-2)}
+  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
+  .brand{display:flex;gap:.75rem;align-items:center}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
+  .toolbar{display:flex;gap:.5rem;align-items:center}
+  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+  .content{padding:1.2rem;display:grid;gap:1rem}
+  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scene.active{display:grid}
+  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
+  .scene-head h2{margin:0;font-size:1.1rem}
+  .scene-body{display:grid;gap:1rem;padding:1rem}
+  .grid{display:grid;gap:1rem}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+  .subtitle{color:var(--muted);font-size:.9rem;margin:.15rem 0 .4rem}
+  .list{display:grid;gap:.5rem}
+  .item{display:flex;align-items:center;justify-content:space-between;background:#222735;border:1px solid #2a3040;padding:.6rem .75rem;border-radius:10px}
+  .dialog{display:grid;gap:.5rem}
+  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
+  .choices{display:grid;gap:.5rem}
+  .choices button{justify-self:start}
+  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
+  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
+  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
+  .hint{color:var(--muted);font-size:.85rem}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.active{display:flex}
+  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+  .drop{min-height:58px;border:1px dashed #324057;border-radius:10px;background:#151a22;padding:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .drop.highlight{outline:2px solid #2f6da1}
+  /* select keypad */
+  .keyN{display:flex;gap:.4rem;align-items:center}
+  .keyN select{background:#0f151f;border:1px solid #2a3244;border-radius:8px;color:#dbe6f4;padding:.4rem .5rem}
+  /* toggles */
+  .toggles{display:flex;gap:.6rem}
+  .tg{background:#151b25;border:1px solid #2a3244;border-radius:10px;padding:.35rem .6rem}
+  .tg input{accent-color:#7fd1ae;transform:scale(1.1)}
+  @media (max-width:880px){
+    .cols-2,.cols-3{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 8</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Objetivo: abre el sótano, devuelve la luz y consigue el próximo destino.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel" title="Idioma">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- ESCALERA / REJA -->
+    <section class="scene active" data-scene="escalera">
+      <div class="scene-head">
+        <h2>Escalera — Reja del sótano</h2>
+        <span class="hint" id="escHint">Arrastra la llave del sótano al candado.</span>
+      </div>
+      <div class="scene-body grid cols-3">
+        <div class="card">
+          <h3>Reja con candado</h3>
+          <div id="dropCandado" class="drop">
+            <span id="rejaText">Oxidada y cerrada con cadena.</span>
+            <span>🔒</span>
+          </div>
+          <p class="hint" id="rejaHint">Necesitas la “Llave del sótano”.</p>
+          <div class="choices" style="margin-top:.5rem">
+            <button onclick="nav.toCuarto()">Bajar</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Pared</h3>
+          <div class="dialog" id="escaleraDialog">
+            <div class="line">Tiza desvaída: “B2”. <em>Alguien no es discreto.</em></div>
+          </div>
+          <div class="choices">
+            <button class="ghost" onclick="actions.note('Marca en pared: B2')">Apuntar “B2”</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Ambiente</h3>
+          <div class="dialog">
+            <div class="line">Huele a humedad y café frío.</div>
+            <div class="line">Pasos lejanos… o recuerdos.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUARTO DE CALDERAS / CUADRO -->
+    <section class="scene" data-scene="cuarto">
+      <div class="scene-head">
+        <h2>Cuarto de calderas — Cuadro eléctrico</h2>
+        <span class="hint" id="cuadroHint">Configura los interruptores: luz estable = acceso al almacén.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Cuadro eléctrico</h3>
+          <div class="toggles">
+            <label class="tg">A<br><input type="checkbox" id="swA" /></label>
+            <label class="tg">B<br><input type="checkbox" id="swB" /></label>
+            <label class="tg">C<br><input type="checkbox" id="swC" /></label>
+          </div>
+          <div class="choices" style="margin-top:.6rem">
+            <button class="secondary" onclick="fuse.check()">Comprobar</button>
+            <button class="ghost" onclick="actions.note('Patrón luz: U-D-U')">Anotar patrón</button>
+          </div>
+          <p class="hint" id="fuseMsg">Pista: <b>U-D-U</b> (A arriba, B abajo, C arriba).</p>
+        </div>
+        <div class="card">
+          <h3>Puertas</h3>
+          <div class="dialog" id="doorsDialog">
+            <div class="line" id="doorLight">Todo a oscuras. El almacén no responde.</div>
+          </div>
+          <div class="choices">
+            <button onclick="nav.go('escalera')">Volver a reja</button>
+            <button class="ghost" onclick="nav.toAlmacen()">Ir al almacén</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALMACÉN -->
+    <section class="scene" data-scene="almacen">
+      <div class="scene-head">
+        <h2>Almacén — Caja metálica</h2>
+        <span class="hint" id="almHint">Con luz estable aparece una caja con candado.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Caja (3 dígitos)</h3>
+          <div class="keyN">
+            <select id="n1"></select>
+            <select id="n2"></select>
+            <select id="n3"></select>
+            <button class="secondary" onclick="box.try()">Abrir</button>
+          </div>
+          <p class="hint" id="boxHint">Pista: “Mesa 13” + “B2” → <b>1 3 2</b>.</p>
+        </div>
+        <div class="card">
+          <h3>Estanterías</h3>
+          <div class="dialog" id="almDialog">
+            <div class="line">Botellas, cajas de café, servilletas… y un hueco a ras del suelo.</div>
+            <div class="line">Ahora con luz se ve la caja claramente.</div>
+          </div>
+          <div class="choices">
+            <button onclick="nav.go('cuarto')">Volver al cuadro</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Salida del sótano</h2>
+        <span class="hint">Tienes el siguiente punto de la ruta.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog" id="finDialog">
+            <div class="line">Dentro de la caja: <b>Carpeta “R”</b> (fotos y pagos) y un <b>croquis del Puerto</b>: “Nave 7”.</div>
+            <div class="line">Hora de respirar aire salado.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 8. Progreso guardado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory" aria-label="Inventario"></div>
+    <div class="hint" id="hintFooter">Llave → Reja | Cuadro U-D-U → luz | Almacén 132 → Carpeta “R” + Mapa Puerto (Nave 7).</div>
+  </footer>
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" onclick="ui.toggleMapa(false)">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span class="name">Escalera</span><button class="secondary" onclick="ui.toggleMapa(false); nav.go('escalera')">Ir</button></div>
+      <div class="loc"><span class="name">Cuarto de calderas</span><button id="btnMapCuarto" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Almacén</span><button id="btnMapAlmacen" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Salida (fin)</span><button id="btnMapFin" class="secondary">Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" onclick="ui.togglePistas(false)">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
+      <button onclick="ui.addPista()">Añadir</button>
+      <button class="ghost" onclick="ui.clearPistas()">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" onclick="ui.toggleSlots(false)">Cerrar</button>
+    </div>
+    <div class="list" id="slotsList"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n ==== */
+const i18n = {
+  lang:'es',
+  dict:{
+    es:{
+      needKey:'Necesitas la llave del sótano.',
+      lockOpen:'La cadena cae al suelo. Reja abierta.',
+      lightOk:'Luz establecida. El almacén se ilumina.',
+      lightBad:'Los magnetos saltan. Prueba otro patrón.',
+      boxOk:'Clic. Abierta.',
+      boxBad:'No abre con ese código.',
+      gotDossier:'Obtienes la Carpeta “R”.',
+      gotMap:'Obtienes el croquis del Puerto (Nave 7).',
+      saved:'Progreso guardado.',
+      loaded:'Progreso cargado.',
+      slotEmpty:'(vacío)'
+    },
+    en:{
+      needKey:'You need the basement key.',
+      lockOpen:'Chain drops. Gate open.',
+      lightOk:'Stable power. Storage lit.',
+      lightBad:'Breakers trip. Try another pattern.',
+      boxOk:'Click. Open.',
+      boxBad:'That code does not work.',
+      gotDossier:'You obtain Dossier “R”.',
+      gotMap:'You obtain the Port sketch (Warehouse 7).',
+      saved:'Game saved.',
+      loaded:'Game loaded.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+function t(k){ return (i18n.dict[i18n.lang]||{})[k]||k; }
+
+/* ==== Nombres de escena ==== */
+const sceneNames = { escalera:'Escalera', cuarto:'Cuarto', almacen:'Almacén', fin:'(Fin)' };
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(freq=440,dur=.08,type='triangle',vol=.02){
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      if (!this.ctx || this.ctx.state !== 'running') return;
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+dur);
+    }catch(_){}
+  },
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)},
+  err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  gateOpen:false,
+  powerOn:false,
+  boxOpen:false,
+  haveDossierR:false,
+  haveMapPuerto:false
+};
+const pistas = [];
+const inventory = []; // {id,name,tag,icon}
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap8_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('saved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap8_auto'); if(!raw) return;
+    try{
+      const d=JSON.parse(raw)||{};
+      Object.assign(flags,d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+      nav.go(nav.current||'escalera'); basement.bindDrops(); fuse.syncUI(); box.populate();
+      if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+      ui.note(t('loaded'));
+      basement.refreshTexts(); fuse.refreshDoors();
+    }catch(_){}
+  },
+  saveToSlot(n){
+    localStorage.setItem('cacho_cap8_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang}));
+    ui.renderSlots(); ui.note(t('saved')); if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+  },
+  loadFromSlot(n){
+    const raw=localStorage.getItem('cacho_cap8_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    Object.assign(flags,d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es';
+    ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+    nav.go(nav.current||'escalera'); basement.bindDrops(); fuse.syncUI(); box.populate();
+    if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+    basement.refreshTexts(); fuse.refreshDoors();
+    ui.note(t('loaded'));
+  },
+  reset(){ localStorage.removeItem('cacho_cap8_auto'); location.reload(); }
+};
+
+/* ==== UI ==== */
+const ui = {
+  say(id,txt){ const el=document.getElementById(id); if(el) el.innerHTML=txt; },
+  note(msg){ this.say('statusHint', msg); },
+  setScene(name){ this.say('statusScene', 'Escena: '+name); },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id; slot.draggable=true;
+      slot.title = it.name;
+      slot.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', it.id); });
+      slot.innerHTML=`<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); sfx.pick(); persist.save(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); if(show) this.ensureMapButtons(); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); this.renderPistas(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  ensureMapButtons(){
+    const b1=document.getElementById('btnMapCuarto'); if(b1){ b1.onclick=()=>{ ui.toggleMapa(false); nav.toCuarto(); }; }
+    const b2=document.getElementById('btnMapAlmacen'); if(b2){ b2.onclick=()=>{ ui.toggleMapa(false); nav.toAlmacen(); }; }
+    const b3=document.getElementById('btnMapFin'); if(b3){ b3.onclick=()=>{ ui.toggleMapa(false); nav.finish(); }; }
+  },
+  renderPistas(){ const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">Sin notas por ahora.</div>`;
+    pistas.slice(-18).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item'; row.innerHTML=`<span>${p}</span><button class="ghost" onclick="ui.delPista(${i})">Borrar</button>`; box.appendChild(row); });
+  },
+  addPista(){ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; this.renderPistas(); persist.save(); sfx.click(); },
+  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
+  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap8_slot_'+n); const meta= raw? 'OK' : t('slotEmpty');
+      const row=document.createElement('div'); row.className='item';
+      row.innerHTML = `<span><b>Slot ${n}</b> — ${meta}</span>
+        <span><button class="secondary" onclick="persist.saveToSlot(${n})">Guardar</button>
+              <button class="ghost" onclick="persist.loadFromSlot(${n})">Cargar</button></span>`;
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    document.getElementById('escHint').textContent = (i18n.lang==='es'?'Arrastra la llave del sótano al candado.':'Drag the basement key onto the lock.');
+    document.getElementById('cuadroHint').textContent = (i18n.lang==='es'?'Configura los interruptores: luz estable = acceso al almacén.':'Set breakers: stable light = storage access.');
+    document.getElementById('almHint').textContent = (i18n.lang==='es'?'Con luz estable aparece una caja con candado.':'With stable light a locked box appears.');
+    document.getElementById('boxHint').innerHTML = (i18n.lang==='es'?'Pista: “Mesa 13” + “B2” → <b>1 3 2</b>.':'Hint: “Table 13” + “B2” → <b>1 3 2</b>.');
+    fuse.refreshDoors();
+    basement.refreshTexts();
+  }
+};
+
+/* ==== Navegación ==== */
+const nav = {
+  current:'escalera',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='escalera') basement.bindDrops();
+    if(scene==='almacen') box.populate();
+  },
+  toCuarto(){
+    if(!flags.gateOpen){ ui.note(t('needKey')); sfx.err(); return; }
+    nav.go('cuarto');
+  },
+  toAlmacen(){
+    if(!flags.powerOn){ ui.note(i18n.lang==='es'?'A oscuras no ves la caja.':'Too dark to see the box.'); sfx.err(); return; }
+    nav.go('almacen');
+  },
+  finish(){
+    if(!(flags.haveDossierR && flags.haveMapPuerto)){ ui.note(i18n.lang==='es'?'Aún falta algo en el almacén.':'Still missing something in storage.'); sfx.err(); return; }
+    nav.go('fin'); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Acciones ==== */
+const actions = {
+  note(txt){ if(!pistas.includes(txt)){ pistas.push(txt); ui.renderPistas(); persist.save(); sfx.click(); } }
+};
+
+/* ==== Escalera / Reja: drop key ==== */
+const basement = {
+  bindDrops(){
+    const dz=document.getElementById('dropCandado'); if(!dz) return;
+    dz.ondragover = e=>{ e.preventDefault(); dz.classList.add('highlight'); };
+    dz.ondragleave = ()=> dz.classList.remove('highlight');
+    dz.ondrop = e=>{
+      e.preventDefault(); dz.classList.remove('highlight');
+      const id=e.dataTransfer.getData('text/plain');
+      if(id==='llaveSotano'){
+        if(flags.gateOpen) return;
+        flags.gateOpen=true;
+        ui.say('rejaText', i18n.lang==='es'?'Cadena en el suelo.':'Chain on the floor.');
+        ui.note(t('lockOpen')); sfx.ok(); persist.save();
+      } else {
+        ui.note(t('needKey')); sfx.err();
+      }
+    };
+  },
+  refreshTexts(){
+    document.getElementById('rejaHint').textContent = flags.gateOpen ? (i18n.lang==='es'?'Reja abierta.':'Gate open.') : (i18n.lang==='es'?'Necesitas la “Llave del sótano”.':'You need the “Basement key”.');
+  }
+};
+
+/* ==== Cuadro eléctrico ==== */
+const fuse = {
+  check(){
+    const A=document.getElementById('swA').checked;
+    const B=document.getElementById('swB').checked;
+    const C=document.getElementById('swC').checked;
+    if(A && !B && C){
+      if(!flags.powerOn){
+        flags.powerOn=true;
+        ui.note(t('lightOk')); sfx.ok(); persist.save();
+      } else { sfx.click(); }
+      this.refreshDoors();
+    }else{
+      flags.powerOn=false;
+      ui.note(t('lightBad')); sfx.err(); this.refreshDoors();
+    }
+  },
+  refreshDoors(){
+    const dl=document.getElementById('doorLight');
+    if(!dl) return;
+    dl.textContent = flags.powerOn ? (i18n.lang==='es'?'Luz estable. El almacén responde.':'Stable light. Storage responds.') : (i18n.lang==='es'?'Todo a oscuras. El almacén no responde.':'All dark. Storage not responding.');
+  },
+  syncUI(){
+    document.getElementById('swA').checked = flags.powerOn; // if powerOn, set to pattern for clarity
+    document.getElementById('swB').checked = !flags.powerOn? false : false;
+    document.getElementById('swC').checked = flags.powerOn;
+  }
+};
+
+/* ==== Caja de 3 dígitos ==== */
+const box = {
+  code:['1','3','2'],
+  populate(){
+    const fill=(id)=>{ const s=document.getElementById(id); if(!s) return; s.innerHTML=''; for(let i=0;i<=9;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=String(i); s.appendChild(o);} };
+    fill('n1'); fill('n2'); fill('n3');
+    if(flags.boxOpen){ document.getElementById('n1').value='1'; document.getElementById('n2').value='3'; document.getElementById('n3').value='2'; }
+  },
+  try(){
+    const a=document.getElementById('n1').value;
+    const b=document.getElementById('n2').value;
+    const c=document.getElementById('n3').value;
+    if(a===this.code[0] && b===this.code[1] && c===this.code[2]){
+      if(!flags.boxOpen){ flags.boxOpen=true; sfx.ok(); ui.note(t('boxOk')); }
+      if(!flags.haveDossierR){
+        flags.haveDossierR=true;
+        ui.addItem({id:'carpetaR',name:'Carpeta “R”',tag:'R',icon:'📁'});
+        ui.note(t('gotDossier')); sfx.ok();
+      }
+      if(!flags.haveMapPuerto){
+        flags.haveMapPuerto=true;
+        ui.addItem({id:'mapaPuerto',name:'Croquis Puerto - Nave 7',tag:'N7',icon:'🗺️'});
+        if(!pistas.find(p=>p.toLowerCase().includes('nave 7'))) pistas.push('Puerto — Nave 7');
+        ui.renderPistas();
+        ui.note(t('gotMap')); sfx.ok();
+      }
+      persist.save();
+      nav.finish();
+    } else { ui.note(t('boxBad')); sfx.err(); }
+  }
+};
+
+/* ==== Importar inventario de Cap.7 (tarjeta, llave) si no hay guardado del 8 ==== */
+function importFromCap7(){
+  try{
+    const raw=localStorage.getItem('cacho_cap7_auto'); if(!raw) return;
+    const d=JSON.parse(raw)||{}; const inv=(d.inventory||[]);
+    ['cardCafe','llaveSotano','servilleta','ticket13'].forEach(id=>{
+      const it = inv.find(x=>x.id===id);
+      if(it && !inventory.find(y=>y.id===id)){ ui.addItem(it); }
+    });
+  }catch(_){}
+}
+
+/* ==== Header bindings ==== */
+document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+document.getElementById('langSel').addEventListener('change', (e)=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+/* ==== Audio unlock ==== */
+window.addEventListener('pointerdown', async () => {
+  try{
+    sfx.ctx = sfx.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (sfx.ctx.state === 'suspended') await sfx.ctx.resume();
+  }catch(e){}
+}, { once:true });
+
+/* ==== Init ==== */
+ui.setScene('Escalera');
+ui.refreshInventory();
+ui.applyLang();
+ui.ensureMapButtons();
+basement.bindDrops();
+fuse.syncUI();
+box.populate();
+
+// Si NO hay guardado previo del cap.8, importamos del cap.7
+if(!localStorage.getItem('cacho_cap8_auto')) importFromCap7();
+
+// Y por último, si existe guardado del 8, cargarlo
+persist.load();
+
+/* Export globals */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions;
+window.basement=basement; window.fuse=fuse; window.box=box; window.persist=persist;
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="chapter-id" content="cap05"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<title>Juan Cacho — Capítulo 5 (Capuchinos 7)</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
+    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
+  button.secondary{background:var(--accent-2)}
+  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
+  .brand{display:flex;gap:.75rem;align-items:center}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
+  .toolbar{display:flex;gap:.5rem;align-items:center}
+  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+  .content{padding:1.2rem;display:grid;gap:1rem}
+  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scene.active{display:grid}
+  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
+  .scene-head h2{margin:0;font-size:1.1rem}
+  .scene-body{display:grid;gap:1rem;padding:1rem}
+  .grid{display:grid;gap:1rem}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+  .subtitle{color:var(--muted);font-size:.9rem;margin:.15rem 0 .4rem}
+  .list{display:grid;gap:.5rem}
+  .item{display:flex;align-items:center;justify-content:space-between;background:#222735;border:1px solid #2a3040;padding:.6rem .75rem;border-radius:10px}
+  .dialog{display:grid;gap:.5rem}
+  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
+  .choices{display:grid;gap:.5rem}
+  .choices button{justify-self:start}
+  .hint{color:var(--muted);font-size:.85rem}
+  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
+  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
+  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
+  .badgebar{display:flex;flex-wrap:wrap;gap:.4rem}
+  .badge{font-size:.78rem;background:#1a2230;border:1px solid #2b3850;color:#cfeadf;border-radius:999px;padding:.15rem .5rem}
+  /* Drop zones */
+  .drop{min-height:60px;border:1px dashed #324057;border-radius:10px;background:#151a22;padding:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .drop.highlight{outline:2px solid #2f6da1}
+  /* Keypad 3 dígitos */
+  .key3{display:flex;gap:.4rem;align-items:center}
+  .key3 select{background:#0f151f;border:1px solid #2a3244;border-radius:8px;color:#dbe6f4;padding:.4rem .5rem}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.active{display:flex}
+  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+  @media (max-width:880px){ .cols-2,.cols-3{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 5</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Objetivo: entra en 3ºB y encuentra la carta de Nieves.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel" title="Idioma">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- EXTERIOR / PORTAL -->
+    <section class="scene active" data-scene="portal">
+      <div class="scene-head">
+        <h2>Capuchinos 7 — Portal</h2>
+        <span class="hint">Buzones, cerradura del portal y vecinos fisgones.</span>
+      </div>
+      <div class="scene-body grid cols-3">
+        <div class="card">
+          <h3>Buzones</h3>
+          <div id="dropBuzon" class="drop">
+            <span id="buzonText">Buzón con plaquita “R”.</span>
+            <span>🔒</span>
+          </div>
+          <div class="list" style="margin-top:.5rem">
+            <div class="item"><span>Losa suelta</span><button onclick="actions.peekTile()">Mirar</button></div>
+            <div class="item"><span>Lista de vecinos</span><button class="ghost" onclick="actions.readList()">Leer</button></div>
+          </div>
+          <p class="hint" id="portalHint">Si tuviera la llave adecuada…</p>
+        </div>
+        <div class="card">
+          <h3>Puerta del portal</h3>
+          <div id="dropCerradura" class="drop">
+            <span id="lockText">Cerradura (cerrada)</span>
+            <span>🚪</span>
+          </div>
+          <div class="choices" style="margin-top:.5rem">
+            <button class="ghost" onclick="ui.note('El portero automático no contesta a estas horas…')">Timbre</button>
+          </div>
+          <p class="hint">Arrastra aquí la llave del portal.</p>
+        </div>
+        <div class="card">
+          <h3>Macetero</h3>
+          <div class="list">
+            <div class="item"><span>Maceta grande</span><button onclick="actions.searchPot()">Hurgar</button></div>
+            <div class="item"><span>Subir escaleras</span><button class="secondary" onclick="nav.toStairs()">Entrar</button></div>
+          </div>
+          <p class="hint">Algo duro debajo de la tierra…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESCALERA -->
+    <section class="scene" data-scene="escalera">
+      <div class="scene-head">
+        <h2>Escalera</h2>
+        <span class="hint">Hasta el 3ºB. Si el perro te deja, claro.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Perro (Baskerville)</h3>
+          <div id="dropDog" class="drop">
+            <span id="dogText">Gruñe bloqueando el tramo al 3º.</span>
+            <span>🐕</span>
+          </div>
+          <p class="hint" id="dogHint">Quizá con un hueso cambie de idea.</p>
+        </div>
+        <div class="card">
+          <h3>Rellanos</h3>
+          <div class="list">
+            <div class="item"><span>1º</span><button class="ghost" onclick="ui.note('Puertas silenciosas…')">Mirar</button></div>
+            <div class="item"><span>2º</span><button class="ghost" onclick="ui.note('Nada interesante.')">Mirar</button></div>
+            <div class="item"><span>3ºB (Nieves)</span><button class="secondary" onclick="nav.toDoor()">Acercarte</button></div>
+            <div class="item"><span>Volver al portal</span><button onclick="nav.go('portal')">Atrás</button></div>
+          </div>
+          <p class="hint">Primero, calma al perro.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PUERTA 3ºB -->
+    <section class="scene" data-scene="puerta">
+      <div class="scene-head">
+        <h2>Puerta 3ºB — Nieves</h2>
+        <span class="hint">Teclado de 3 cifras.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Teclado</h3>
+          <div class="key3">
+            <select id="k1"></select>
+            <select id="k2"></select>
+            <select id="k3"></select>
+            <button class="secondary" onclick="door.try()">Abrir</button>
+          </div>
+          <p class="hint" id="doorHint">Un post-it mencionaba 3-1-4.</p>
+        </div>
+        <div class="card">
+          <h3>Salida</h3>
+          <div class="list">
+            <div class="item"><span>Volver a la escalera</span><button onclick="nav.go('escalera')">Atrás</button></div>
+          </div>
+          <p class="hint">Si aciertas el código, se abre.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Interior 3ºB</h2>
+        <span class="hint">Un hilo que te lleva más adentro.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog" id="finDialog">
+            <div class="line">Encuentras la carta de Nieves: “Nos vemos el jueves a las 20:30. No vengas sola.”</div>
+            <div class="line">La inicial “R” aparece subrayada varias veces.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 5. Progreso guardado.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory" aria-label="Inventario"></div>
+    <div class="hint" id="hintFooter">Abre buzón “R” → consigue llave del portal + post-it (314) → calma al perro → abre 3ºB.</div>
+  </footer>
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" onclick="ui.toggleMapa(false)">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span class="name">Portal</span><button class="secondary" onclick="ui.toggleMapa(false); nav.go('portal')">Ir</button></div>
+      <div class="loc"><span class="name">Escalera</span><button id="btnMapEsc" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Puerta 3ºB</span><button id="btnMapDoor" class="secondary">Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" onclick="ui.togglePistas(false)">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
+      <button onclick="ui.addPista()">Añadir</button>
+      <button class="ghost" onclick="ui.clearPistas()">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" onclick="ui.toggleSlots(false)">Cerrar</button>
+    </div>
+    <div class="list" id="slotsList"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n ==== */
+const i18n = {
+  lang:'es',
+  dict:{
+    es:{
+      imported:'Progreso importado del cap.4.',
+      noImport:'(Sin llave R previa; revisa la losa…)',
+      listRead:'Remedios (R), Nieves (3ºB)… y apellidos irrelevantes.',
+      tilePeek:'Bajo la losa hay algo metálico…',
+      keyRFound:'Has encontrado la Llave “R”.',
+      needKeyR:'Necesitas una llave con “R”.',
+      boxOpen:'El buzón se abre. Hay una llave y un post-it.',
+      gotPortalKey:'Llave del portal conseguida.',
+      postit:'Post-it: 3 1 4.',
+      needPortalKey:'Necesitas la llave del portal.',
+      portalOpen:'La puerta del portal se abre.',
+      potSearch:'Entre la tierra encuentras un hueso de juguete.',
+      dogCalm:'El perro se entretiene con el hueso.',
+      dogBlock:'El perro te corta el paso.',
+      codeOk:'¡Click! Cerradura abierta.',
+      codeBad:'No es el código.',
+      letterGot:'Carta de Nieves recogida.',
+      saved:'Progreso guardado.',
+      loaded:'Progreso cargado.',
+      slotEmpty:'(vacío)'
+    },
+    en:{
+      imported:'Progress imported from ch.4.',
+      noImport:'(No previous R key; check the loose tile…)',
+      listRead:'Remedios (R), Nieves (3B)… others irrelevant.',
+      tilePeek:'There’s something metallic under the tile…',
+      keyRFound:'You found the “R” key.',
+      needKeyR:'You need a key marked “R”.',
+      boxOpen:'Mailbox opens. A key and a post-it!',
+      gotPortalKey:'Got building key.',
+      postit:'Post-it: 3 1 4.',
+      needPortalKey:'You need the building key.',
+      portalOpen:'Building door unlocked.',
+      potSearch:'In the soil, a toy bone.',
+      dogCalm:'Dog gets busy with the bone.',
+      dogBlock:'Dog blocks the way.',
+      codeOk:'Click! Door opens.',
+      codeBad:'Wrong code.',
+      letterGot:'Picked Nieves’ letter.',
+      saved:'Game saved.',
+      loaded:'Game loaded.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+function t(k){ return (i18n.dict[i18n.lang]||{})[k]||k; }
+
+/* ==== Scene names ==== */
+const sceneNames = { portal:'Portal', escalera:'Escalera', puerta:'Puerta 3ºB', fin:'(Fin)' };
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(freq=440,dur=.08,type='triangle',vol=.02){
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      if (!this.ctx || this.ctx.state !== 'running') return;
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+dur);
+    }catch(_){}
+  },
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)},
+  err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  imported:false,
+  // Portal
+  haveKeyR:false, boxOpened:false, havePortalKey:false, postit314:false,
+  // Escalera
+  haveBone:false, dogCalmed:false,
+  // Puerta 3ºB
+  doorOpen:false, gotLetter:false
+};
+const pistas = [];
+const inventory = []; // {id,name,tag,icon}
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap5_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('saved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap5_auto'); if(!raw) return;
+    try{
+      const d=JSON.parse(raw)||{};
+      Object.assign(flags,d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+      nav.go(nav.current||'portal'); portal.bindDrops(); stairs.bindDrops(); door.populate();
+      if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+      ui.note(t('loaded'));
+    }catch(_){}
+  },
+  saveToSlot(n){
+    localStorage.setItem('cacho_cap5_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang}));
+    ui.renderSlots(); ui.note(t('saved')); if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+  },
+  loadFromSlot(n){
+    const raw=localStorage.getItem('cacho_cap5_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    Object.assign(flags,d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es';
+    ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+    nav.go(nav.current||'portal'); portal.bindDrops(); stairs.bindDrops(); door.populate();
+    if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+    ui.note(t('loaded'));
+  },
+  reset(){ localStorage.removeItem('cacho_cap5_auto'); location.reload(); }
+};
+
+/* ==== UI ==== */
+const ui = {
+  say(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; },
+  note(msg){ this.say('statusHint', msg); },
+  setScene(name){ this.say('statusScene', 'Escena: '+name); },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id; slot.draggable=true;
+      slot.title = it.name;
+      slot.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', it.id); });
+      slot.innerHTML=`<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); sfx.pick(); persist.save(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); if(show) this.ensureMapButtons(); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); this.renderPistas(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  ensureMapButtons(){
+    const b1=document.getElementById('btnMapEsc'); if(b1){ b1.onclick=()=>{ ui.toggleMapa(false); nav.toStairs(); }; }
+    const b2=document.getElementById('btnMapDoor'); if(b2){ b2.onclick=()=>{ ui.toggleMapa(false); nav.toDoor(); }; }
+  },
+  renderPistas(){ const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">Sin notas por ahora.</div>`;
+    pistas.slice(-18).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item'; row.innerHTML=`<span>${p}</span><button class="ghost" onclick="ui.delPista(${i})">Borrar</button>`; box.appendChild(row); });
+  },
+  addPista(){ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; this.renderPistas(); persist.save(); sfx.click(); },
+  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
+  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap5_slot_'+n); const meta= raw? 'OK' : t('slotEmpty');
+      const row=document.createElement('div'); row.className='item';
+      row.innerHTML = `<span><b>Slot ${n}</b> — ${meta}</span>
+        <span><button class="secondary" onclick="persist.saveToSlot(${n})">Guardar</button>
+              <button class="ghost" onclick="persist.loadFromSlot(${n})">Cargar</button></span>`;
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    document.getElementById('doorHint').textContent = (i18n.lang==='es'?'Un post-it mencionaba 3-1-4.':'A post-it hinted 3-1-4.');
+    document.getElementById('portalHint').textContent = flags.havePortalKey ? (i18n.lang==='es'?'Ya puedes abrir el portal.':'You can unlock the building now.') : (i18n.lang==='es'?'Si tuviera la llave adecuada…':'If only you had the right key…');
+  }
+};
+
+/* ==== Navegación ==== */
+const nav = {
+  current:'portal',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='portal') portal.bindDrops();
+    if(scene==='escalera') stairs.bindDrops();
+    if(scene==='puerta') door.populate();
+  },
+  toStairs(){
+    if(!flags.havePortalKey){ ui.note(t('needPortalKey')); sfx.err(); return; }
+    if(!flags.dogCalmed) ui.note(t('dogBlock'));
+    nav.go('escalera');
+  },
+  toDoor(){
+    if(!flags.dogCalmed){ ui.note(t('dogBlock')); sfx.err(); return; }
+    nav.go('puerta');
+  },
+  finish(){
+    if(!flags.gotLetter){ ui.note('Aún falta la carta.'); sfx.err(); return; }
+    nav.go('fin'); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Acciones ==== */
+const actions = {
+  readList(){ ui.note(t('listRead')); sfx.click(); if(!pistas.find(p=>p.includes('Remedios'))) pistas.push('Remedios (R) – Nieves (3ºB).'); ui.renderPistas(); persist.save(); },
+  peekTile(){
+    ui.note(t('tilePeek')); sfx.click();
+    // Si no traes llave R de cap4, la ponemos aquí
+    if(!flags.haveKeyR){
+      flags.haveKeyR=true;
+      ui.addItem({id:'llaveR',name:'Llave “R”',tag:'🔑',icon:'🟥'});
+      if(!pistas.find(p=>p.includes('Llave “R”'))) pistas.push('Llave “R” (en el portal).');
+      ui.renderPistas(); ui.note(t('keyRFound')); sfx.pick(); persist.save();
+    }
+  },
+  searchPot(){
+    if(flags.haveBone) return;
+    flags.haveBone=true;
+    ui.addItem({id:'hueso',name:'Hueso de juguete',tag:'🦴',icon:'🦴'});
+    ui.note(t('potSearch')); sfx.pick(); persist.save();
+  }
+};
+
+/* ==== Portal: drops buzón y cerradura ==== */
+const portal = {
+  bindDrops(){
+    const bz=document.getElementById('dropBuzon'); if(bz){
+      bz.ondragover = e=>{ e.preventDefault(); bz.classList.add('highlight'); };
+      bz.ondragleave = ()=> bz.classList.remove('highlight');
+      bz.ondrop = e=>{
+        e.preventDefault(); bz.classList.remove('highlight');
+        const id=e.dataTransfer.getData('text/plain');
+        if(id==='llaveR'){
+          if(flags.boxOpened) return;
+          flags.boxOpened=true;
+          if(!flags.havePortalKey){
+            flags.havePortalKey=true; ui.addItem({id:'llavePortal',name:'Llave del portal',tag:'🔑',icon:'🗝️'}); ui.note(t('gotPortalKey')); sfx.ok();
+          }
+          if(!flags.postit314){ flags.postit314=true; if(!pistas.find(p=>p.includes('3 1 4'))) pistas.push('Post-it: 3 1 4.'); ui.renderPistas(); ui.note(t('postit')); }
+          document.getElementById('buzonText').textContent = (i18n.lang==='es'?'Buzón “R” (vacío).':'Mailbox “R” (empty).');
+          document.getElementById('portalHint').textContent = (i18n.lang==='es'?'Ya puedes abrir el portal.':'You can unlock the building now.');
+          persist.save();
+        } else {
+          ui.note(t('needKeyR')); sfx.err();
+        }
+      };
+    }
+    const lk=document.getElementById('dropCerradura'); if(lk){
+      lk.ondragover = e=>{ e.preventDefault(); lk.classList.add('highlight'); };
+      lk.ondragleave = ()=> lk.classList.remove('highlight');
+      lk.ondrop = e=>{
+        e.preventDefault(); lk.classList.remove('highlight');
+        const id=e.dataTransfer.getData('text/plain');
+        if(id==='llavePortal'){
+          if(!flags.havePortalKey){ ui.note(t('needPortalKey')); sfx.err(); return; }
+          document.getElementById('lockText').textContent = (i18n.lang==='es'?'Cerradura (abierta)':'Lock (open)');
+          ui.note(t('portalOpen')); sfx.ok(); persist.save();
+        } else {
+          ui.note('Eso no entra ahí.'); sfx.err();
+        }
+      };
+    }
+  }
+};
+
+/* ==== Escalera: drop al perro ==== */
+const stairs = {
+  bindDrops(){
+    const dg=document.getElementById('dropDog'); if(!dg) return;
+    dg.ondragover = e=>{ e.preventDefault(); dg.classList.add('highlight'); };
+    dg.ondragleave = ()=> dg.classList.remove('highlight');
+    dg.ondrop = e=>{
+      e.preventDefault(); dg.classList.remove('highlight');
+      const id=e.dataTransfer.getData('text/plain');
+      if(id==='hueso'){
+        if(flags.dogCalmed) return;
+        flags.dogCalmed=true; ui.removeItem('hueso');
+        document.getElementById('dogText').textContent = (i18n.lang==='es'?'Jugueteando, te deja pasar.':'Busy chewing; lets you pass.');
+        ui.note(t('dogCalm')); sfx.ok(); persist.save();
+      } else {
+        ui.note('No parece interesarle.'); sfx.err();
+      }
+    };
+  }
+};
+
+/* ==== Puerta 3ºB: teclado ==== */
+const door = {
+  code:['3','1','4'],
+  populate(){
+    const fill=(id)=>{ const s=document.getElementById(id); if(!s) return; s.innerHTML=''; for(let i=0;i<=9;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=String(i); s.appendChild(o);} };
+    fill('k1'); fill('k2'); fill('k3');
+    if(flags.doorOpen){ document.getElementById('k1').value='3'; document.getElementById('k2').value='1'; document.getElementById('k3').value='4'; }
+  },
+  try(){
+    const a=document.getElementById('k1').value;
+    const b=document.getElementById('k2').value;
+    const c=document.getElementById('k3').value;
+    if(a===this.code[0] && b===this.code[1] && c===this.code[2]){
+      if(!flags.doorOpen) { flags.doorOpen=true; sfx.ok(); ui.note(t('codeOk')); }
+      if(!flags.gotLetter){
+        flags.gotLetter=true;
+        if(!pistas.find(p=>p.includes('Carta de Nieves'))) pistas.push('Carta de Nieves: jueves 20:30; no vengas sola. “R” subrayada.');
+        ui.renderPistas(); ui.note(t('letterGot')); sfx.ok(); persist.save();
+      }
+      nav.finish();
+    } else { ui.note(t('codeBad')); sfx.err(); }
+  }
+};
+
+/* ==== Importar progreso del cap.4 (Llave R) ==== */
+function importFromCap4(){
+  try{
+    const raw=localStorage.getItem('cacho_cap4_auto'); if(!raw) { ui.note(t('noImport')); return; }
+    const d=JSON.parse(raw)||{}; const f=(d.flags||{});
+    if(f.keyR && !flags.haveKeyR){
+      flags.haveKeyR=true;
+      ui.addItem({id:'llaveR',name:'Llave “R”',tag:'🔑',icon:'🟥'});
+      ui.note(t('imported')); sfx.ok();
+    } else {
+      ui.note(t('noImport'));
+    }
+  }catch(_){ ui.note(t('noImport')); }
+}
+
+/* ==== Header bindings ==== */
+document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+document.getElementById('langSel').addEventListener('change', (e)=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+/* ==== Gesto del usuario → reanudar audio ==== */
+window.addEventListener('pointerdown', async () => {
+  try{
+    sfx.ctx = sfx.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (sfx.ctx.state === 'suspended') await sfx.ctx.resume();
+  }catch(e){}
+}, { once:true });
+
+/* ==== Init ==== */
+ui.setScene('Portal');
+ui.refreshInventory();
+ui.applyLang();
+ui.ensureMapButtons();
+portal.bindDrops();
+stairs.bindDrops();
+door.populate();
+// Importa la llave R si vienes del capítulo 4
+importFromCap4();
+// Carga guardado local del cap.5 (si existiera, sustituye el estado importado)
+persist.load();
+
+/* Export globals para inline handlers */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions; window.portal=portal; window.stairs=stairs; window.door=door; window.persist=persist;
+</script>
+</body>
+</html>

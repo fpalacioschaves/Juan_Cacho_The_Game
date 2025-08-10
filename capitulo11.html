@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="chapter-id" content="cap011"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Juan Cacho — Capítulo 11 (Azotea)</title>
+<style>
+:root{
+  --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+  --accent:#7fd1ae;--accent2:#7fb0d1;--danger:#ff6b6b;--ok:#06d6a0;
+  --radius:14px;--shadow:0 8px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Inter,Arial}
+button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+button:hover{filter:brightness(1.06)}
+button.ghost{background:transparent;border:1px solid #2a3242;color:var(--text)}
+button.secondary{background:var(--accent2)}
+.wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:1rem 1.2rem;background:linear-gradient(180deg,#12161d,#0f1115);border-bottom:1px solid #212836;position:sticky;top:0;z-index:10}
+.brand{display:flex;gap:.75rem;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+h1{margin:0;font-size:1.05rem;color:#d8efe6;letter-spacing:.3px}
+.toolbar{display:flex;gap:.5rem;align-items:center}
+.sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+.content{padding:1.1rem;display:grid;gap:1rem}
+.scene{display:none;background:var(--panel);border:1px solid #222a3a;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.scene.active{display:grid}
+.scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242d3e;background:linear-gradient(180deg,#1a202b,#161b24)}
+.scene-head h2{margin:0;font-size:1.1rem}
+.scene-body{padding:1rem;display:grid;gap:1rem}
+.grid{display:grid;gap:1rem}
+.cols-2{grid-template-columns:1fr 1fr}
+.cols-3{grid-template-columns:1fr 1fr 1fr}
+@media (max-width:900px){.cols-2,.cols-3{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid #2a3142;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+.dialog{display:grid;gap:.5rem}
+.line{background:#1a2030;border:1px solid #273145;padding:.6rem .8rem;border-radius:10px}
+.choices{display:grid;gap:.5rem}
+.hint{color:var(--muted);font-size:.85rem}
+.drop{min-height:64px;border:1px dashed #334459;border-radius:12px;background:#121722;padding:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.drop.highlight{outline:2px solid #2f6da1}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem 1rem;background:#0f1216;border-top:1px solid #1f2836}
+.inventory{display:flex;gap:.5rem;flex-wrap:wrap}
+.inv-slot{min-width:44px;min-height:44px;background:#131924;border:1px dashed #2a3242;border-radius:10px;display:flex;align-items:center;justify-content:center;position:relative}
+.inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.05rem .35rem;border-radius:999px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+.overlay.active{display:flex}
+.modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+.map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+.keypad{display:flex;gap:.4rem;flex-wrap:wrap}
+.keypad select{background:#111722;color:#dbe7f6;border:1px solid #2a3448;border-radius:10px;padding:.5rem}
+.pill{background:#1a2130;border:1px solid #283248;border-radius:999px;padding:.2rem .6rem;font-size:.8rem;color:#cfe0f5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 11</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Objetivo: abre el cuarto de antenas y saca los logs.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- ESCALERA -->
+    <section class="scene active" data-scene="escalera">
+      <div class="scene-head">
+        <h2>Escalera — Último tramo</h2>
+        <span class="hint" id="escHint">Caja de limpieza y un mural con un ave enorme.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Mural</h3>
+          <div class="dialog" id="muralDialog">
+            <div class="line" id="muralLine">Un albatros pintado sobre un nido. Debajo, letras desgastadas: _ _ _ _.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnAnotarPista">Anotar pista</button>
+            <button class="ghost" id="btnSubirAzotea">Subir a la azotea</button>
+          </div>
+          <p class="hint" id="muralHint">Si recuerdas “ALBATROS”, lo natural es…</p>
+        </div>
+
+        <div class="card">
+          <h3>Caja de limpieza</h3>
+          <div class="dialog">
+            <div class="line">Dentro asoman una percha metálica y unos alicates.</div>
+            <div class="line" id="craftStatus">Puedes improvisar una ganzúa.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnGetPercha">Coger percha</button>
+            <button class="secondary" id="btnGetAlicates">Coger alicates</button>
+            <button class="ghost" id="btnCraft">Improvisar ganzúa</button>
+          </div>
+          <p class="hint">Necesitas <b>percha</b> + <b>alicates</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AZOTEA -->
+    <section class="scene" data-scene="azotea">
+      <div class="scene-head">
+        <h2>Azotea — Puerta del cuarto de antenas</h2>
+        <span class="hint" id="roofHint">Puedes forzar el candado o probar un código de 4 letras.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Candado</h3>
+          <div id="dropLock" class="drop">
+            <span id="lockText">Candado robusto.</span>
+            <span>🔒</span>
+          </div>
+          <p class="hint">Arrastra una <b>ganzúa</b> del inventario aquí.</p>
+        </div>
+
+        <div class="card">
+          <h3>Teclado</h3>
+          <div class="dialog">
+            <div class="line" id="padLine">Introducir código (4 letras):</div>
+          </div>
+          <div class="choices keypad">
+            <select id="k1"></select><select id="k2"></select><select id="k3"></select><select id="k4"></select>
+            <button class="secondary" id="btnTryCode">Abrir</button>
+          </div>
+          <p class="hint" id="padHint">Pista: ALBATROS → <b>NIDO</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUARTO ANTENAS -->
+    <section class="scene" data-scene="cuarto">
+      <div class="scene-head">
+        <h2>Cuarto de antenas — Rack improvisado</h2>
+        <span class="hint" id="roomHint">Copia los logs y anota la clave.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Router / DVR</h3>
+          <div id="dropUSB" class="drop">
+            <span id="usbText">Puerto USB esperando.</span>
+            <span>💻</span>
+          </div>
+          <div class="dialog" id="logDialog">
+            <div class="line">En pantalla: “Insertar dispositivo para volcar registros”.</div>
+          </div>
+          <p class="hint">Arrastra el <b>USB</b> del inventario.</p>
+        </div>
+
+        <div class="card">
+          <h3>Banco de trabajo</h3>
+          <div class="dialog" id="benchDialog">
+            <div class="line" id="benchLine">Cable coaxial suelto y cinta aislante.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnGetTape">Coger cinta aislante</button>
+            <button class="ghost" id="btnFixCable">Reparar cable</button>
+          </div>
+          <p class="hint" id="benchHint">La señal mejorará, por si hace falta.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Salida de la azotea</h2>
+        <span class="hint" id="finHint">Próximo: bajar sin hacer ruido.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog" id="finDialog">
+            <div class="line">Guardas los <b>logs</b> y la nueva clave: <b>MAREA</b>.</div>
+            <div class="line">La brisa mueve el tendedero. Hora de irse.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 11. Progreso guardado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory"></div>
+    <div class="hint" id="hintFooter">Pista: ALBATROS → NIDO · Percha+Alicates→Ganzúa · USB→Logs · Clave: MAREA.</div>
+  </footer>
+</div>
+
+<!-- Overlays -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" id="btnCloseMapa">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span>Escalera</span><button class="secondary" id="mapEsc">Ir</button></div>
+      <div class="loc"><span>Azotea</span><button class="secondary" id="mapAz">Ir</button></div>
+      <div class="loc"><span>Cuarto antenas</span><button class="secondary" id="mapCu">Ir</button></div>
+      <div class="loc"><span>Salida (fin)</span><button class="secondary" id="mapFin">Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" id="btnClosePistas">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem"/>
+      <button id="btnAddPista">Añadir</button>
+      <button class="ghost" id="btnClearPistas">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" id="btnCloseSlots">Cerrar</button>
+    </div>
+    <div id="slotsList" class="list"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n ==== */
+const i18n = {
+  lang: 'es',
+  dict: {
+    es: {
+      noteSaved:'Progreso guardado.', noteLoaded:'Progreso cargado.',
+      gotPercha:'Obtienes una percha.', gotAlicates:'Obtienes unos alicates.',
+      needBoth:'Necesitas percha y alicates.', gotPick:'Improvisas una ganzúa.',
+      lockPicked:'¡Click! Candado abierto.',
+      codeOk:'Código correcto. Abierto.',
+      codeBad:'No es ese código.',
+      needUSB:'Necesitas un USB.',
+      logsOk:'Volcado completado. Clave nueva: MAREA.',
+      gotTape:'Obtienes cinta aislante.',
+      cableOk:'Cable reparado.',
+      muralNote:'Pista: ALBATROS → NIDO.',
+      slotEmpty:'(vacío)'
+    },
+    en: {
+      noteSaved:'Progress saved.', noteLoaded:'Progress loaded.',
+      gotPercha:'You got a hanger.', gotAlicates:'You got pliers.',
+      needBoth:'You need hanger and pliers.', gotPick:'You improvise a lockpick.',
+      lockPicked:'Click! Lock opened.',
+      codeOk:'Code correct. Open.',
+      codeBad:'That is not the code.',
+      needUSB:'You need a USB stick.',
+      logsOk:'Dump complete. New pass: MAREA.',
+      gotTape:'You got electrical tape.',
+      cableOk:'Cable fixed.',
+      muralNote:'Hint: ALBATROS → NIDO.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+const t = k => (i18n.dict[i18n.lang]||{})[k]||k;
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(f=520,d=.07,type='triangle',v=.02){ try{
+    this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+    if(this.ctx.state!=='running') return;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.value=f; g.gain.value=v; o.connect(g); g.connect(this.ctx.destination);
+    o.start(); o.stop(this.ctx.currentTime+d);
+  }catch(_){/*noaudio*/}},
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)}, err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  // apertura
+  lockOpen:false,
+  // items locales
+  havePercha:false, haveAlicates:false, havePick:false,
+  haveTape:false, cableFixed:false,
+  // logs
+  logsDumped:false, haveUSB:false, haveCodename:false, // from cap10
+};
+const pistas = [];
+const inventory = [];
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap11_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('noteSaved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap11_auto'); if(!raw) return;
+    try{
+      const d=JSON.parse(raw)||{};
+      Object.assign(flags,d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas();
+      nav.go(nav.current||'escalera'); bindAreas(); refreshAll(); sfx.ok(); ui.note(t('noteLoaded'));
+    }catch(_){}
+  },
+  saveSlot(n){ localStorage.setItem('cacho_cap11_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.renderSlots(); sfx.ok(); ui.note(t('noteSaved')); },
+  loadSlot(n){
+    const raw=localStorage.getItem('cacho_cap11_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    Object.assign(flags,d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es';
+    ui.refreshInventory(); ui.applyLang(); ui.renderPistas();
+    nav.go(nav.current||'escalera'); bindAreas(); refreshAll(); sfx.ok(); ui.note(t('noteLoaded'));
+  },
+  reset(){ localStorage.removeItem('cacho_cap11_auto'); location.reload(); }
+};
+
+/* ==== UI ==== */
+const ui = {
+  say(id,html){ const el=document.getElementById(id); if(el) el.innerHTML=html; },
+  note(msg){ const el=document.getElementById('statusHint'); if(el) el.textContent = msg; },
+  setScene(name){ const el=document.getElementById('statusScene'); if(el) el.textContent='Escena: '+name; },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id; slot.title=it.name; slot.draggable=true;
+      slot.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', it.id); });
+      slot.innerHTML = `<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); persist.save(); sfx.pick(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active',!!show); o.setAttribute('aria-hidden',(!show).toString()); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active',!!show); o.setAttribute('aria-hidden',(!show).toString()); this.renderPistas(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active',!!show); o.setAttribute('aria-hidden',(!show).toString()); },
+  renderPistas(){
+    const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">${i18n.lang==='es'?'Sin notas por ahora.':'No notes yet.'}</div>`;
+    pistas.slice(-20).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item';
+      const span=document.createElement('span'); span.textContent=p;
+      const b=document.createElement('button'); b.className='ghost'; b.textContent=i18n.lang==='es'?'Borrar':'Delete';
+      b.addEventListener('click', ()=>{ pistas.splice(i,1); ui.renderPistas(); persist.save(); });
+      row.appendChild(span); row.appendChild(b); box.appendChild(row);
+    });
+  },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap11_slot_'+n);
+      const row=document.createElement('div'); row.className='item';
+      const label=document.createElement('span'); label.innerHTML=`<b>Slot ${n}</b> — ${raw?'OK':t('slotEmpty')}`;
+      const act=document.createElement('span');
+      const s=document.createElement('button'); s.className='secondary'; s.textContent=i18n.lang==='es'?'Guardar':'Save';
+      const l=document.createElement('button'); l.className='ghost'; l.textContent=i18n.lang==='es'?'Cargar':'Load';
+      s.addEventListener('click', ()=>persist.saveSlot(n));
+      l.addEventListener('click', ()=>persist.loadSlot(n));
+      act.appendChild(s); act.appendChild(l);
+      row.appendChild(label); row.appendChild(act);
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    document.getElementById('escHint').textContent = i18n.lang==='es'?'Caja de limpieza y un mural con un ave enorme.':'Cleaning box and a huge bird mural.';
+    document.getElementById('muralHint').textContent = i18n.lang==='es'?'Si recuerdas “ALBATROS”, lo natural es…':'If you recall “ALBATROS”, the natural thing is…';
+    document.getElementById('craftStatus').textContent = i18n.lang==='es'?'Puedes improvisar una ganzúa.':'You could improvise a lockpick.';
+    document.getElementById('roofHint').textContent = i18n.lang==='es'?'Puedes forzar el candado o probar un código de 4 letras.':'Pick the lock or try a 4-letter code.';
+    document.getElementById('padLine').textContent = i18n.lang==='es'?'Introducir código (4 letras):':'Enter code (4 letters):';
+    document.getElementById('padHint').innerHTML = i18n.lang==='es'?'Pista: ALBATROS → <b>NIDO</b>.':'Hint: ALBATROS → <b>NIDO</b>.';
+    document.getElementById('roomHint').textContent = i18n.lang==='es'?'Copia los logs y anota la clave.':'Dump the logs and note the pass.';
+    document.getElementById('benchLine').textContent = i18n.lang==='es'?'Cable coaxial suelto y cinta aislante.':'Loose coax cable and electrical tape.';
+    document.getElementById('benchHint').textContent = i18n.lang==='es'?'La señal mejorará, por si hace falta.':'Signal will improve, just in case.';
+    document.getElementById('finHint').textContent = i18n.lang==='es'?'Próximo: bajar sin hacer ruido.':'Next: go down quietly.';
+    document.getElementById('hintFooter').textContent = i18n.lang==='es'
+      ? 'Pista: ALBATROS → NIDO · Percha+Alicates→Ganzúa · USB→Logs · Clave: MAREA.'
+      : 'Hint: ALBATROS → NIDO · Hanger+Pliers→Pick · USB→Logs · Pass: MAREA.';
+  }
+};
+
+/* ==== Navegación ==== */
+const sceneNames = {escalera:'Escalera', azotea:'Azotea', cuarto:'Cuarto', fin:'(Fin)'};
+const nav = {
+  current:'escalera',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='azotea') keypad.populate();
+  },
+  finish(){
+    if(!(flags.logsDumped)){ ui.note(i18n.lang==='es'?'Primero vuelca los logs.':'Dump the logs first.'); sfx.err(); return; }
+    this.go('fin'); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Acciones generales ==== */
+const actions = {
+  note(text){ if(!pistas.includes(text)){ pistas.push(text); ui.renderPistas(); persist.save(); sfx.click(); } }
+};
+
+/* ==== Escalera (mural & craft) ==== */
+const stair = {
+  takePercha(){ if(flags.havePercha) return; flags.havePercha=true; ui.addItem({id:'percha',name:i18n.lang==='es'?'Percha':'Hanger',tag:'',icon:'🪝'}); ui.note(t('gotPercha')); },
+  takeAlicates(){ if(flags.haveAlicates) return; flags.haveAlicates=true; ui.addItem({id:'alicates',name:i18n.lang==='es'?'Alicates':'Pliers',tag:'',icon:'🔧'}); ui.note(t('gotAlicates')); },
+  craftPick(){
+    if(!(flags.havePercha && flags.haveAlicates)){ ui.note(t('needBoth')); sfx.err(); return; }
+    if(flags.havePick) return;
+    flags.havePick=true;
+    ui.removeItem('percha'); ui.removeItem('alicates');
+    ui.addItem({id:'ganzua',name:i18n.lang==='es'?'Ganzúa':'Lockpick',tag:'',icon:'🗝️'});
+    ui.note(t('gotPick')); sfx.ok();
+  },
+  muralNote(){
+    actions.note(i18n.lang==='es'?'ALBATROS → NIDO':'ALBATROS → NEST');
+    ui.note(t('muralNote')); sfx.click();
+  }
+};
+
+/* ==== Azotea (candado + keypad) ==== */
+const roof = {
+  bind(){
+    const dz=document.getElementById('dropLock');
+    dz.ondragover = e=>{ e.preventDefault(); dz.classList.add('highlight'); };
+    dz.ondragleave = ()=>dz.classList.remove('highlight');
+    dz.ondrop = e=>{
+      e.preventDefault(); dz.classList.remove('highlight');
+      const id=e.dataTransfer.getData('text/plain');
+      if(id==='ganzua'){
+        if(!flags.lockOpen){ flags.lockOpen=true; ui.say('lockText', i18n.lang==='es'?'Candado abierto.':'Lock opened.'); sfx.ok(); nav.go('cuarto'); }
+      } else {
+        sfx.err();
+      }
+    };
+  }
+};
+const keypad = {
+  letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+  code:['N','I','D','O'],
+  populate(){
+    ['k1','k2','k3','k4'].forEach(id=>{
+      const s=document.getElementById(id); if(!s) return; s.innerHTML='';
+      this.letters.forEach(L=>{ const o=document.createElement('option'); o.value=L; o.textContent=L; s.appendChild(o); });
+    });
+  },
+  try(){
+    const v=['k1','k2','k3','k4'].map(id=>document.getElementById(id).value.toUpperCase());
+    if(v.join('')===this.code.join('')){
+      if(!flags.lockOpen){ flags.lockOpen=true; ui.note(t('codeOk')); sfx.ok(); nav.go('cuarto'); }
+    } else { ui.note(t('codeBad')); sfx.err(); }
+  }
+};
+
+/* ==== Cuarto (USB + cinta) ==== */
+const room = {
+  bind(){
+    const dz=document.getElementById('dropUSB');
+    dz.ondragover = e=>{ e.preventDefault(); dz.classList.add('highlight'); };
+    dz.ondragleave = ()=>dz.classList.remove('highlight');
+    dz.ondrop = e=>{
+      e.preventDefault(); dz.classList.remove('highlight');
+      const id=e.dataTransfer.getData('text/plain');
+      if(id==='usb'){
+        if(!flags.logsDumped){
+          flags.logsDumped=true;
+          ui.say('usbText', i18n.lang==='es'?'USB conectado.':'USB connected.');
+          ui.say('logDialog', `<div class="line">${i18n.lang==='es'?'Volcado en progreso… Completado.':'Dumping… Complete.'}</div>`);
+          actions.note(i18n.lang==='es'?'Clave: MAREA':'Pass: MAREA');
+          flags.haveCodename = true;
+          ui.note(t('logsOk')); sfx.ok(); persist.save();
+        }
+      } else {
+        ui.note(t('needUSB')); sfx.err();
+      }
+    };
+  },
+  takeTape(){
+    if(flags.haveTape) return;
+    flags.haveTape=true;
+    ui.addItem({id:'cinta',name:i18n.lang==='es'?'Cinta aislante':'Electrical tape',tag:'',icon:'🩹'});
+    ui.note(t('gotTape')); sfx.pick();
+  },
+  fixCable(){
+    if(!flags.haveTape){ ui.note(i18n.lang==='es'?'Te falta cinta.':'You lack tape.'); sfx.err(); return; }
+    if(flags.cableFixed) return;
+    flags.cableFixed=true; ui.note(t('cableOk')); sfx.ok();
+    document.getElementById('benchLine').textContent = i18n.lang==='es'?'Cable reparado. Señal estable.':'Cable fixed. Signal stable.';
+  }
+};
+
+/* ==== Bindings ==== */
+function bindUI(){
+  // toolbar
+  document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+  document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+  document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+  document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+  document.getElementById('langSel').addEventListener('change', e=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+  // overlays
+  document.getElementById('btnCloseMapa').addEventListener('click', ()=>ui.toggleMapa(false));
+  document.getElementById('btnClosePistas').addEventListener('click', ()=>ui.togglePistas(false));
+  document.getElementById('btnCloseSlots').addEventListener('click', ()=>ui.toggleSlots(false));
+
+  // mapa
+  document.getElementById('mapEsc').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('escalera'); });
+  document.getElementById('mapAz').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('azotea'); });
+  document.getElementById('mapCu').addEventListener('click', ()=>{ ui.toggleMapa(false); if(flags.lockOpen) nav.go('cuarto'); else { ui.note(i18n.lang==='es'?'Primero abre la puerta.':'Open the door first.'); } });
+  document.getElementById('mapFin').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.finish(); });
+
+  // pistas overlay
+  document.getElementById('btnAddPista').addEventListener('click', ()=>{ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; ui.renderPistas(); persist.save(); sfx.click(); });
+  document.getElementById('btnClearPistas').addEventListener('click', ()=>{ pistas.splice(0,pistas.length); ui.renderPistas(); persist.save(); });
+
+  // escalera
+  document.getElementById('btnAnotarPista').addEventListener('click', ()=>stair.muralNote());
+  document.getElementById('btnSubirAzotea').addEventListener('click', ()=>nav.go('azotea'));
+  document.getElementById('btnGetPercha').addEventListener('click', ()=>stair.takePercha());
+  document.getElementById('btnGetAlicates').addEventListener('click', ()=>stair.takeAlicates());
+  document.getElementById('btnCraft').addEventListener('click', ()=>stair.craftPick());
+
+  // azotea
+  document.getElementById('btnTryCode').addEventListener('click', ()=>keypad.try());
+
+  // cuarto
+  document.getElementById('btnGetTape').addEventListener('click', ()=>room.takeTape());
+  document.getElementById('btnFixCable').addEventListener('click', ()=>room.fixCable());
+}
+function bindAreas(){ roof.bind(); room.bind(); }
+function refreshAll(){
+  // lock text
+  if(flags.lockOpen){ ui.say('lockText', i18n.lang==='es'?'Candado abierto.':'Lock opened.'); }
+  // usb/logs
+  if(flags.logsDumped){
+    ui.say('usbText', i18n.lang==='es'?'USB conectado.':'USB connected.');
+    ui.say('logDialog', `<div class="line">${i18n.lang==='es'?'Volcado en progreso… Completado.':'Dumping… Complete.'}</div>`);
+  }
+  // inventory present ones
+  if(flags.havePercha && !inventory.find(i=>i.id==='percha')) ui.addItem({id:'percha',name:i18n.lang==='es'?'Percha':'Hanger',icon:'🪝'});
+  if(flags.haveAlicates && !inventory.find(i=>i.id==='alicates')) ui.addItem({id:'alicates',name:i18n.lang==='es'?'Alicates':'Pliers',icon:'🔧'});
+  if(flags.havePick && !inventory.find(i=>i.id==='ganzua')) ui.addItem({id:'ganzua',name:i18n.lang==='es'?'Ganzúa':'Lockpick',icon:'🗝️'});
+  if(flags.haveTape && !inventory.find(i=>i.id==='cinta')) ui.addItem({id:'cinta',name:i18n.lang==='es'?'Cinta aislante':'Electrical tape',icon:'🩹'});
+}
+
+/* ==== Audio unlock ==== */
+window.addEventListener('pointerdown', async () => {
+  try{
+    sfx.ctx = sfx.ctx || new (window.AudioContext||window.webkitAudioContext)();
+    if(sfx.ctx.state==='suspended') await sfx.ctx.resume();
+  }catch(_){}
+}, { once:true });
+
+/* ==== INIT ==== */
+function initKeypad(){
+  keypad.populate();
+  // default to N I D O for faster test
+  ['k1','k2','k3','k4'].forEach((id,idx)=>{
+    const s=document.getElementById(id);
+    const target=keypad.code[idx];
+    const i=keypad.letters.indexOf(target);
+    if(s && i>=0) s.selectedIndex=i;
+  });
+}
+
+function importFromCap10(){
+  // Trae items/notas del cap 10 si no hay guardado local
+  if(localStorage.getItem('cacho_cap11_auto')) return;
+  try{
+    const d=JSON.parse(localStorage.getItem('cacho_cap10_auto')||'{}');
+    (d.inventory||[]).forEach(it=>{
+      if(!inventory.find(x=>x.id===it.id)) ui.addItem(it);
+      if(it.id==='usb') flags.haveUSB=true;
+    });
+    // Busca pista ALBATROS
+    if((d.pistas||[]).some(p=>/ALBATROS/i.test(p))){ flags.haveCodename=true; }
+  }catch(_){}
+}
+
+function ready(){
+  ui.applyLang();
+  ui.setScene('Escalera');
+  ui.refreshInventory();
+  ui.renderPistas();
+  bindUI();
+  bindAreas();
+  initKeypad();
+  importFromCap10();
+  persist.load(); // si existe guardado de este capítulo, pisa lo importado
+}
+ready();
+
+/* ==== Export debug ==== */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions;
+window.stair=stair; window.roof=roof; window.keypad=keypad; window.room=room; window.persist=persist;
+</script>
+</body>
+</html>

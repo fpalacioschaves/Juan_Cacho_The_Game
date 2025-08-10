@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="chapter-id" content="cap04"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Juan Cacho — Capítulo 4 (Dos Tercios del Quinto)</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
+    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
+  button.secondary{background:var(--accent-2)}
+  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
+  .brand{display:flex;gap:.75rem;align-items:center}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
+  .toolbar{display:flex;gap:.5rem;align-items:center}
+  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+  .content{padding:1.2rem;display:grid;gap:1rem}
+  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scene.active{display:grid}
+  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
+  .scene-head h2{margin:0;font-size:1.1rem}
+  .scene-body{display:grid;gap:1rem;padding:1rem}
+  .grid{display:grid;gap:1rem}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+  .subtitle{color:var(--muted);font-size:.9rem;margin:.15rem 0 .4rem}
+  .list{display:grid;gap:.5rem}
+  .item{display:flex;align-items:center;justify-content:space-between;background:#222735;border:1px solid #2a3040;padding:.6rem .75rem;border-radius:10px}
+  .dialog{display:grid;gap:.5rem}
+  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
+  .choices{display:grid;gap:.5rem}
+  .choices button{justify-self:start}
+  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
+  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
+  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
+  .hint{color:var(--muted);font-size:.85rem}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.active{display:flex}
+  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+  .badgebar{display:flex;flex-wrap:wrap;gap:.4rem}
+  .badge{font-size:.78rem;background:#1a2230;border:1px solid #2b3850;color:#cfeadf;border-radius:999px;padding:.15rem .5rem}
+  .drop{min-height:60px;border:1px dashed #324057;border-radius:10px;background:#151a22;padding:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .drop.highlight{outline:2px solid #2f6da1}
+  .strips{display:grid;gap:.5rem}
+  .strip{user-select:none;background:#0f151f;border:1px dashed #2a3244;border-radius:10px;padding:.5rem .7rem}
+  .strip.dragging{opacity:.6;outline:2px solid #2f6da1}
+  .slot-ui{display:grid;gap:.6rem}
+  .slot-screen{background:#0d131b;border:1px solid #2a3244;border-radius:10px;padding:.6rem;text-align:center;font:700 1.1rem/1.2rem ui-monospace,SFMono-Regular,Consolas,monospace}
+  .slot-buttons{display:flex;flex-wrap:wrap;gap:.5rem}
+  @media (max-width:880px){
+    .cols-2,.cols-3{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 4</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Objetivo: saca algo útil del bar.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel" title="Idioma">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- BAR -->
+    <section class="scene active" data-scene="bar">
+      <div class="scene-head">
+        <h2>Bar “Dos Tercios del Quinto”</h2>
+        <span class="hint">Dudu seca vasos, el Moro mira; al fondo suena el dominó.</span>
+      </div>
+      <div class="scene-body grid cols-3">
+        <div class="card">
+          <h3>Barra</h3>
+          <div class="list">
+            <div class="item"><span>Taburete torcido</span><button onclick="actions.getCoin()">Mirar debajo</button></div>
+            <div class="item"><span>Hablar con Dudu</span><button class="ghost" onclick="actions.talkDudu()">Charlar</button></div>
+            <div class="item"><span>Tragaperras</span><button class="secondary" onclick="nav.go('slots')">Acercarte</button></div>
+          </div>
+          <p class="hint">Una moneda nunca viene mal.</p>
+        </div>
+        <div class="card">
+          <h3>Servicios</h3>
+          <div class="list">
+            <div class="item"><span>Papelera</span><button onclick="nav.go('bano')">Rebuscar</button></div>
+            <div class="item"><span>Volver luego</span><button class="ghost" onclick="ui.note('Huele a mil batallas…')">Uff</button></div>
+          </div>
+          <p class="hint">Algo arrugado asoma.</p>
+        </div>
+        <div class="card">
+          <h3>Mesa del dominó</h3>
+          <div class="dialog" id="domText">
+            <div class="line">Nino y Gollina discuten; Vicente “el Dedos” sonríe.</div>
+            <div class="line">Si consigues algo suculento, Vicente te lo cambia por información.</div>
+          </div>
+          <div class="choices">
+            <button class="ghost" onclick="ui.note('Primero consigue algo valioso.')">Pedir favor</button>
+          </div>
+          <p class="hint">Quizá algo escondido en el bar valga más que dinero.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BAÑO -->
+    <section class="scene" data-scene="bano">
+      <div class="scene-head">
+        <h2>Servicios (gloriosos)</h2>
+        <span class="hint">Una nota hecha trizas. Si la recompones…</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Papelera</h3>
+          <div class="list">
+            <div class="item"><span>Nota rota</span><button class="secondary" onclick="ui.toggleNota(true)">Montar</button></div>
+            <div class="item"><span>Volver al bar</span><button onclick="nav.go('bar')">Atrás</button></div>
+          </div>
+          <p class="hint" id="noteHint">Parece una instrucción de máquina…</p>
+        </div>
+        <div class="card">
+          <h3>Grafitis</h3>
+          <div class="dialog">
+            <div class="line">“El que lea esto que invite” (firmado: el Moro).</div>
+            <div class="line">“Amparito ♡ jueves” tachado varias veces.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRAGAPERRAS -->
+    <section class="scene" data-scene="slots">
+      <div class="scene-head">
+        <h2>Tragaperras</h2>
+        <span class="hint">¿Sin moneda? Nada de magia.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Máquina</h3>
+          <div class="slot-ui">
+            <div class="slot-screen" id="slotScreen">Inserta moneda…</div>
+            <div class="slot-buttons">
+              <button class="ghost" onclick="slots.dropCoin()">Insertar moneda (usa tu inventario)</button>
+              <button onclick="slots.cambio()">CAMBIO</button>
+              <button class="secondary" onclick="slots.palanca()">PALANCA</button>
+              <button class="ghost" onclick="nav.go('bar')">Atrás</button>
+            </div>
+          </div>
+          <p class="hint" id="slotHint">Hay trucos para estas cosas… si sabes cuál.</p>
+        </div>
+        <div class="card">
+          <h3>Progreso</h3>
+          <div class="badgebar" id="slotBadges"></div>
+          <p class="hint">Orden correcto: CAMBIO, CAMBIO, PALANCA (con moneda).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRASTERO -->
+    <section class="scene" data-scene="trastero">
+      <div class="scene-head">
+        <h2>Trastero del bar</h2>
+        <span class="hint">Huele a lejía y secretos húmedos.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Estantería</h3>
+          <div class="list">
+            <div class="item"><span>Sobre con inicial “R”</span><button class="secondary" onclick="actions.pickEnvelope()">Coger</button></div>
+            <div class="item"><span>Volver al bar</span><button onclick="nav.go('bar')">Atrás</button></div>
+          </div>
+          <p class="hint" id="envHint">Pesa un poco. Dentro hay un papel doblado.</p>
+        </div>
+        <div class="card">
+          <h3>Salida</h3>
+          <div class="list">
+            <div class="item"><span>Terminar capítulo</span><button class="secondary" onclick="nav.finish()">Salir</button></div>
+          </div>
+          <p class="hint">No te vayas sin el sobre.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Fuera del bar</h2>
+        <span class="hint">El aire fresco te despeja la cabeza.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog" id="finDialog">
+            <div class="line">El sobre dice: “Nieves — Capuchinos 7, 3ºB. Jueves 20:30”.</div>
+            <div class="line">Otra pieza que encaja con el diario.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 4. Progreso guardado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory" aria-label="Inventario"></div>
+    <div class="hint" id="hintFooter">Reconstruye la nota → trucar la tragaperras → llave “R” → sobre en trastero.</div>
+  </footer>
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" onclick="ui.toggleMapa(false)">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span class="name">Bar</span><button class="secondary" onclick="ui.toggleMapa(false); nav.go('bar')">Ir</button></div>
+      <div class="loc"><span class="name">Baño</span><button id="btnMapBano" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Tragaperras</span><button id="btnMapSlots" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Trastero</span><button id="btnMapTrastero" class="secondary">Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" onclick="ui.togglePistas(false)">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
+      <button onclick="ui.addPista()">Añadir</button>
+      <button class="ghost" onclick="ui.clearPistas()">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay: Nota rota -->
+<div class="overlay" id="overlayNota" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+      <h3 style="margin:0">Nota rota</h3>
+      <button class="ghost" onclick="ui.toggleNota(false)">Cerrar</button>
+    </div>
+    <div class="strips" id="stripsBox"></div>
+    <div style="display:flex;gap:.5rem;margin-top:.6rem">
+      <button class="secondary" onclick="nota.check()">Comprobar</button>
+      <button class="ghost" onclick="nota.shuffle()">Mezclar</button>
+    </div>
+    <p class="hint" id="notaHint">Arrastra las tiras para ponerlas en orden.</p>
+  </div>
+</div>
+
+<!-- Overlay: Slots (guardado) -->
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" onclick="ui.toggleSlots(false)">Cerrar</button>
+    </div>
+    <div class="list" id="slotsList"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n simple ==== */
+const i18n = {
+  lang:'es',
+  dict:{
+    es:{
+      gotCoin:'Moneda conseguida.',
+      talkDudu:'“Mientras no molestes y pagues, haz lo que quieras… sin romper nada.”',
+      noteClue:'Nota recompuesta: “CAMBIO, CAMBIO, PALANCA (con moneda)”.',
+      slotNeedCoin:'Primero una moneda.',
+      slotCoinIn:'Moneda dentro.',
+      slotWrong:'No pasó nada. Quizá no era ese el orden.',
+      slotJack:'¡Premio! Una llavecita roja cae a la bandeja.',
+      needKey:'Necesitas una llave… roja.',
+      keyGet:'Llave “R” conseguida.',
+      envGet:'Sobre con “R” al bolsillo.',
+      saved:'Progreso guardado.',
+      loaded:'Progreso cargado.',
+      slotEmpty:'(vacío)'
+    },
+    en:{
+      gotCoin:'Got a coin.',
+      talkDudu:'“Pay and don’t break anything… do whatever.”',
+      noteClue:'Rebuilt note: “CHANGE, CHANGE, LEVER (with coin)”.',
+      slotNeedCoin:'Need a coin first.',
+      slotCoinIn:'Coin inserted.',
+      slotWrong:'Nothing happened. Maybe wrong order.',
+      slotJack:'Jackpot! A small red key drops.',
+      needKey:'You need a red key.',
+      keyGet:'Got “R” key.',
+      envGet:'Letter with “R” pocketed.',
+      saved:'Game saved.',
+      loaded:'Game loaded.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+function t(k){ return (i18n.dict[i18n.lang]||{})[k]||k; }
+
+/* ==== Nombres de escena (una sola vez) ==== */
+const sceneNames = { bar:'Bar', bano:'Baño', slots:'Tragaperras', trastero:'Trastero', fin:'(Fin)' };
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(freq=440,dur=.08,type='triangle',vol=.02){
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      if (!this.ctx || this.ctx.state !== 'running') return;
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+dur);
+    }catch(_){}
+  },
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)},
+  err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  coin:false,
+  noteSolved:false,
+  slotCoin:false,
+  slotSeq:[],
+  slotWin:false,
+  keyR:false,
+  envelope:false
+};
+const pistas = [];
+const inventory = [];
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap4_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('saved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap4_auto'); if(!raw) return;
+    try{
+      const d=JSON.parse(raw)||{};
+      Object.assign(flags,d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+      nav.go(nav.current||'bar'); slots.renderBadges();
+      if(flags.noteSolved) document.getElementById('noteHint').textContent = t('noteClue');
+      if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+      ui.note(t('loaded'));
+    }catch(_){}
+  },
+  saveToSlot(n){
+    localStorage.setItem('cacho_cap4_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang}));
+    ui.renderSlots(); ui.note(t('saved')); if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+  },
+  loadFromSlot(n){
+    const raw=localStorage.getItem('cacho_cap4_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    Object.assign(flags,d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es';
+    ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
+    nav.go(nav.current||'bar'); slots.renderBadges();
+    if(flags.noteSolved) document.getElementById('noteHint').textContent = t('noteClue');
+    if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+    ui.note(t('loaded'));
+  },
+  reset(){ localStorage.removeItem('cacho_cap4_auto'); location.reload(); }
+};
+
+/* ==== UI ==== */
+const ui = {
+  say(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; },
+  note(msg){ this.say('statusHint', msg); },
+  setScene(name){ this.say('statusScene', 'Escena: '+name); },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id; slot.draggable=true;
+      slot.title = it.name;
+      slot.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', it.id); });
+      slot.innerHTML=`<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); sfx.pick(); persist.save(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); if(show) this.ensureMapButtons(); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); this.renderPistas(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  toggleNota(show){ const o=document.getElementById('overlayNota'); if(show){ nota.render(); } o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  ensureMapButtons(){
+    const b1=document.getElementById('btnMapBano'); if(b1){ b1.onclick=()=>{ ui.toggleMapa(false); nav.go('bano'); }; }
+    const b2=document.getElementById('btnMapSlots'); if(b2){ b2.onclick=()=>{ ui.toggleMapa(false); nav.go('slots'); }; }
+    const b3=document.getElementById('btnMapTrastero'); if(b3){ b3.onclick=()=>{ ui.toggleMapa(false); nav.toTrastero(); }; }
+  },
+  renderPistas(){ const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">Sin notas por ahora.</div>`;
+    pistas.slice(-18).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item'; row.innerHTML=`<span>${p}</span><button class="ghost" onclick="ui.delPista(${i})">Borrar</button>`; box.appendChild(row); });
+  },
+  addPista(){ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; this.renderPistas(); persist.save(); sfx.click(); },
+  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
+  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap4_slot_'+n); const meta= raw? 'OK' : t('slotEmpty');
+      const row=document.createElement('div'); row.className='item';
+      row.innerHTML = `<span><b>Slot ${n}</b> — ${meta}</span>
+        <span><button class="secondary" onclick="persist.saveToSlot(${n})">Guardar</button>
+              <button class="ghost" onclick="persist.loadFromSlot(${n})">Cargar</button></span>`;
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    if(flags.noteSolved) document.getElementById('noteHint').textContent = t('noteClue');
+  }
+};
+
+/* ==== Navegación ==== */
+const nav = {
+  current:'bar',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='slots') slots.renderBadges();
+  },
+  toTrastero(){
+    if(!flags.keyR){ ui.note(t('needKey')); sfx.err(); return; }
+    nav.go('trastero');
+  },
+  finish(){
+    if(!flags.envelope){ ui.note('Coge el sobre primero.'); sfx.err(); return; }
+    nav.go('fin'); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Acciones ==== */
+const actions = {
+  getCoin(){ if(flags.coin) return; flags.coin=true; ui.addItem({id:'moneda',name:'Moneda',tag:'💰',icon:'🪙'}); ui.note(t('gotCoin')); sfx.pick(); },
+  talkDudu(){ ui.note(t('talkDudu')); sfx.click(); },
+  pickEnvelope(){
+    if(flags.envelope) return;
+    flags.envelope=true;
+    if(!pistas.find(p=>p.includes('Capuchinos 7'))) pistas.push('Dirección de Nieves: Capuchinos 7, 3ºB. Jueves 20:30.');
+    document.getElementById('envHint').textContent = 'Dentro: “Nieves — Capuchinos 7, 3ºB. Jueves 20:30”.';
+    ui.renderPistas(); ui.note(t('envGet')); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Nota rota ==== */
+const nota = {
+  correct:['CAMBIO,','CAMBIO,','PALANCA','(con moneda)'],
+  pool:[],
+  render(){
+    const box=document.getElementById('stripsBox'); if(!box) return;
+    this.pool = this.correct.slice().map((txt,i)=>({id:'s'+i, txt}));
+    this.shuffle(true);
+  },
+  uiRender(){
+    const box=document.getElementById('stripsBox'); box.innerHTML='';
+    this.pool.forEach((s,idx)=>{
+      const el=document.createElement('div'); el.className='strip'; el.draggable=true; el.dataset.id=s.id; el.textContent = s.txt;
+      el.addEventListener('dragstart', e=>{ el.classList.add('dragging'); e.dataTransfer.setData('text/plain', s.id); });
+      el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
+      el.addEventListener('dragover', e=>{ e.preventDefault(); });
+      el.addEventListener('drop', e=>{
+        e.preventDefault();
+        const fromId=e.dataTransfer.getData('text/plain');
+        const a = this.pool.findIndex(z=>z.id===fromId);
+        const b = idx;
+        if(a<0 || b<0 || a===b) return;
+        const [m] = this.pool.splice(a,1);
+        this.pool.splice(b,0,m);
+        this.uiRender();
+      });
+      box.appendChild(el);
+    });
+  },
+  shuffle(first=false){
+    this.pool.sort(()=>Math.random()-0.5);
+    if(first && this.pool.every((s,i)=>s.txt===this.correct[i])) this.pool.reverse();
+    this.uiRender();
+  },
+  check(){
+    const ok = this.pool.every((s,i)=>s.txt===this.correct[i]);
+    if(ok){
+      flags.noteSolved=true;
+      const text = t('noteClue');
+      if(!pistas.find(p=>p.includes('CAMBIO'))) pistas.push(text);
+      document.getElementById('noteHint').textContent = text;
+      ui.renderPistas(); ui.toggleNota(false); ui.note(text); sfx.ok(); persist.save();
+    }else{ ui.note('No parece correcto.'); sfx.err(); }
+  }
+};
+
+/* ==== Tragaperras ==== */
+const slots = {
+  renderBadges(){
+    const bar=document.getElementById('slotBadges'); if(!bar) return;
+    const tags=[];
+    if(flags.noteSolved) tags.push('Truco conocido');
+    if(flags.slotCoin) tags.push('Moneda insertada');
+    if(flags.slotWin) tags.push('Premio');
+    bar.innerHTML = tags.length? tags.map(x=>`<span class="badge">${x}</span>`).join('') : `<span class="hint">Sin progreso.</span>`;
+    document.getElementById('slotScreen').textContent = flags.slotCoin ? 'Listo…' : 'Inserta moneda…';
+  },
+  dropCoin(){
+    if(flags.slotCoin) { ui.note('Ya hay una moneda.'); return; }
+    const has = inventory.find(x=>x.id==='moneda');
+    if(!has){ ui.note(t('slotNeedCoin')); sfx.err(); return; }
+    flags.slotCoin=true; ui.removeItem('moneda'); ui.note(t('slotCoinIn')); sfx.pick(); this.renderBadges(); persist.save();
+  },
+  cambio(){
+    if(!flags.slotCoin){ ui.note(t('slotNeedCoin')); sfx.err(); return; }
+    flags.slotSeq.push('C');
+    if(flags.slotSeq.length>3) flags.slotSeq.shift();
+    ui.note('Cambio pulsado.'); sfx.click();
+  },
+  palanca(){
+    if(!flags.slotCoin){ ui.note(t('slotNeedCoin')); sfx.err(); return; }
+    flags.slotSeq.push('P');
+    if(flags.slotSeq.length>3) flags.slotSeq.shift();
+    const pat = flags.slotSeq.join('');
+    if(pat==='CCP'){
+      flags.slotWin=true; flags.slotCoin=false; flags.slotSeq=[];
+      ui.note(t('slotJack')); sfx.ok(); this.renderBadges(); persist.save();
+      if(!flags.keyR){ flags.keyR=true; ui.addItem({id:'llaveR',name:'Llave “R”',tag:'🔑',icon:'🟥'}); if(!pistas.find(p=>p.includes('Llave “R”'))) pistas.push('Llave “R” obtenida en la tragaperras.'); ui.renderPistas(); ui.note(t('keyGet')); }
+      document.getElementById('slotScreen').textContent = 'Click… ¡algo cayó!';
+    }else{
+      flags.slotCoin=false; flags.slotSeq=[];
+      ui.note(t('slotWrong')); sfx.err(); this.renderBadges(); persist.save();
+      document.getElementById('slotScreen').textContent = '— — —';
+    }
+  }
+};
+
+/* ==== Header bindings ==== */
+document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+document.getElementById('langSel').addEventListener('change', (e)=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+/* ==== Gesto del usuario → reanudar audio ==== */
+window.addEventListener('pointerdown', async () => {
+  try{
+    sfx.ctx = sfx.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (sfx.ctx.state === 'suspended') await sfx.ctx.resume();
+  }catch(e){}
+}, { once:true });
+
+/* ==== Init ==== */
+ui.setScene('Bar');
+ui.refreshInventory();
+ui.applyLang();
+ui.ensureMapButtons();
+persist.load();
+
+/* Export para inline handlers */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions; window.nota=nota; window.slots=slots; window.persist=persist;
+</script>
+</body>
+</html>

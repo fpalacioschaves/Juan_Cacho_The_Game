@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="chapter-id" content="cap010"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<title>Juan Cacho — Capítulo 10 (Piso de Nieves)</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
+    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
+  button.secondary{background:var(--accent-2)}
+  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
+  .brand{display:flex;gap:.75rem;align-items:center}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
+  .toolbar{display:flex;gap:.5rem;align-items:center}
+  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+  .content{padding:1.2rem;display:grid;gap:1rem}
+  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scene.active{display:grid}
+  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
+  .scene-head h2{margin:0;font-size:1.1rem}
+  .scene-body{display:grid;gap:1rem;padding:1rem}
+  .grid{display:grid;gap:1rem}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+  .dialog{display:grid;gap:.5rem}
+  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
+  .choices{display:grid;gap:.5rem}
+  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
+  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
+  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
+  .hint{color:var(--muted);font-size:.85rem}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.active{display:flex}
+  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+  .drop{min-height:58px;border:1px dashed #324057;border-radius:10px;background:#151a22;padding:.6rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+  .drop.highlight{outline:2px solid #2f6da1}
+  .bar{height:10px;border-radius:999px;background:#1a2130;border:1px solid #2a3144;overflow:hidden}
+  .bar .fill{height:100%;width:0;background:linear-gradient(90deg,#7fb0d1,#7fd1ae)}
+  @media (max-width:880px){ .cols-2,.cols-3{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 10</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Objetivo: gana la confianza de Nieves y abre su diario.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel" title="Idioma">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- RECIBIDOR -->
+    <section class="scene active" data-scene="recibidor">
+      <div class="scene-head">
+        <h2>Recibidor — Puerta entornada</h2>
+        <span class="hint" id="recHint">Saluda con respeto. Nieves observa.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Nieves</h3>
+          <div class="dialog" id="nievesDialog">
+            <div class="line" id="trustLine">Nieves te mide con los ojos. “¿Vienes por Juan?”</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnToneCalm">Tono calmado</button>
+            <button class="ghost" id="btnToneDirect">Ir al grano</button>
+            <button class="ghost" id="btnToSalon">Pasar al salón</button>
+          </div>
+          <div style="margin-top:.5rem">
+            <div class="hint" id="trustHint">Confianza:</div>
+            <div class="bar"><div id="trustFill" class="fill"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Ambiente</h3>
+          <div class="dialog">
+            <div class="line">Piso luminoso, ordenado a su manera. Un paraguero con historias.</div>
+            <div class="line">En la pared, un corcho con entradas y fotos.</div>
+          </div>
+          <div class="choices">
+            <button class="ghost" id="btnRecToSalon">Ir al salón</button>
+            <button class="ghost" id="btnRecToCocina">Asomarse a la cocina</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SALÓN -->
+    <section class="scene" data-scene="salon">
+      <div class="scene-head">
+        <h2>Salón — Corcho y mesa baja</h2>
+        <span class="hint" id="salonHint">Una mancha en la alfombra y una taza esperando.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Corcho</h3>
+          <div class="dialog" id="boardDialog">
+            <div class="line">Entrada de cine: “<b>17·05·06</b>” — Café Central.</div>
+            <div class="line">Foto con dedicatoria: “Para N.”</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnNotaFecha">Anotar fecha</button>
+            <button class="ghost" id="btnToDiario">Ir al diario</button>
+          </div>
+          <p class="hint">Tal vez esa fecha sea importante.</p>
+        </div>
+
+        <div class="card">
+          <h3>Mesa y alfombra</h3>
+          <div id="dropMancha" class="drop">
+            <span id="manchaText">Mancha de café reciente.</span>
+            <span>🫗</span>
+          </div>
+          <div class="choices" style="margin-top:.6rem">
+            <button class="ghost" id="btnSalonToCocina">Pedir un paño</button>
+          </div>
+          <p class="hint" id="manchaHint">Arrastra un <b>paño</b> desde el inventario.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- COCINA -->
+    <section class="scene" data-scene="cocina">
+      <div class="scene-head">
+        <h2>Cocina — Tetera y grifo</h2>
+        <span class="hint" id="cookHint">Un té arregla media vida.</span>
+      </div>
+      <div class="scene-body grid cols-3">
+        <div class="card">
+          <h3>Cajón</h3>
+          <div class="dialog" id="drawerDialog">
+            <div class="line">Paños doblados. Uno parece decente.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnGetCloth">Coger paño</button>
+          </div>
+          <p class="hint">Úsalo en la mancha del salón.</p>
+        </div>
+
+        <div class="card">
+          <h3>Grifo</h3>
+          <div class="dialog">
+            <div class="line">El agua corre clara.</div>
+          </div>
+          <div class="choices">
+            <button class="ghost" id="btnFillKettle">Llenar tetera</button>
+          </div>
+          <p class="hint">Necesitas tener la tetera.</p>
+        </div>
+
+        <div class="card">
+          <h3>Encimera</h3>
+          <div class="dialog" id="kettleDialog">
+            <div class="line">Una tetera metálica. Tazas cerca.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" id="btnGetKettle">Coger tetera</button>
+            <button class="ghost" id="btnBoilKettle">Hervir tetera</button>
+            <button class="ghost" id="btnTeaToSalon">Llevar té al salón</button>
+          </div>
+          <p class="hint" id="kettleHint">Llena → Hierve → Sirve en la taza del salón.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIARIO -->
+    <section class="scene" data-scene="diario">
+      <div class="scene-head">
+        <h2>Diario — Cerradura numérica</h2>
+        <span class="hint" id="diaryHint">Gánate la confianza y prueba la fecha de la entrada.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Portada</h3>
+          <div class="dialog" id="diaryDialog">
+            <div class="line" id="trustGate">Nieves: “Preferiría que no lo tocases… todavía”.</div>
+          </div>
+          <div class="choices" id="diaryGateBtns">
+            <button class="ghost" id="btnDiaryBack">Volver al salón</button>
+          </div>
+          <div class="choices" id="diaryPad" style="display:none;margin-top:.5rem">
+            <div class="keyN">
+              <select id="c1"></select>
+              <select id="c2"></select>
+              <select id="c3"></select>
+              <select id="c4"></select>
+              <select id="c5"></select>
+              <select id="c6"></select>
+              <button class="secondary" id="btnDiaryOpen">Abrir</button>
+            </div>
+          </div>
+          <p class="hint" id="codeHint">Pista: “17·05·06” → <b>170506</b>.</p>
+        </div>
+
+        <div class="card">
+          <h3>Resultados</h3>
+          <div class="dialog" id="resultDialog">
+            <div class="line">—</div>
+          </div>
+          <div class="choices">
+            <button class="ghost" id="btnFinish">Terminar capítulo</button>
+          </div>
+          <p class="hint">Necesitas el USB y el nombre clave.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Salida del piso</h2>
+        <span class="hint">Siguiente: azoteas y noche larga.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog" id="finDialog">
+            <div class="line">Guardas el <b>USB</b> y la nota: <b>ALBATROS</b>.</div>
+            <div class="line">Nieves asiente. “No tardes”.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 10. Progreso guardado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory" aria-label="Inventario"></div>
+    <div class="hint" id="hintFooter">Paño → mancha (+1) · Té servido (+1) · Corcho: 170506 → Diario: USB + ALBATROS.</div>
+  </footer>
+</div>
+
+<!-- OVERLAYS -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" id="btnCloseMapa">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span class="name">Recibidor</span><button class="secondary" id="mapRecibidor">Ir</button></div>
+      <div class="loc"><span class="name">Salón</span><button class="secondary" id="mapSalon">Ir</button></div>
+      <div class="loc"><span class="name">Cocina</span><button class="secondary" id="mapCocina">Ir</button></div>
+      <div class="loc"><span class="name">Diario</span><button class="secondary" id="mapDiario">Ir</button></div>
+      <div class="loc"><span class="name">Salida (fin)</span><button class="secondary" id="mapFin">Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" id="btnClosePistas">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
+      <button id="btnAddPista">Añadir</button>
+      <button class="ghost" id="btnClearPistas">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" id="btnCloseSlots">Cerrar</button>
+    </div>
+    <div class="list" id="slotsList"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n ==== */
+const i18n = {
+  lang:'es',
+  dict:{
+    es:{
+      trustUp:'+1 confianza.',
+      trustNeutral:'Mantienes el tono.',
+      trustDown:'Uy. Has tensado el ambiente.',
+      clothGot:'Obtienes un paño.',
+      stainClean:'La mancha desaparece.',
+      needCloth:'Necesitas un paño.',
+      kettleGot:'Obtienes la tetera.',
+      kettleNeed:'Primero coge la tetera.',
+      kettleFilled:'Llenas la tetera.',
+      kettleBoiled:'La tetera silba: agua lista.',
+      kettleNeedWater:'Llénala antes.',
+      teaServed:'Sirves el té. (+1 confianza)',
+      needHotKettle:'Hace falta agua caliente.',
+      diaryNotYet:'Gánate su confianza antes.',
+      diaryOpen:'Click. Diario abierto.',
+      diaryBad:'No abre con ese código.',
+      gotUSB:'Encuentras un USB.',
+      gotCodename:'Nombre clave: ALBATROS.',
+      saved:'Progreso guardado.',
+      loaded:'Progreso cargado.',
+      slotEmpty:'(vacío)'
+    },
+    en:{
+      trustUp:'+1 trust.',
+      trustNeutral:'You keep it cool.',
+      trustDown:'That strained the air.',
+      clothGot:'You obtain a cloth.',
+      stainClean:'Stain disappears.',
+      needCloth:'You need a cloth.',
+      kettleGot:'You obtain the kettle.',
+      kettleNeed:'Grab the kettle first.',
+      kettleFilled:'You fill the kettle.',
+      kettleBoiled:'Kettle whistles: hot water ready.',
+      kettleNeedWater:'Fill it first.',
+      teaServed:'You serve tea. (+1 trust)',
+      needHotKettle:'You need hot water.',
+      diaryNotYet:'Earn her trust first.',
+      diaryOpen:'Click. Diary opens.',
+      diaryBad:'Code is wrong.',
+      gotUSB:'You find a USB stick.',
+      gotCodename:'Codename: ALBATROS.',
+      saved:'Game saved.',
+      loaded:'Game loaded.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+function t(k){ return (i18n.dict[i18n.lang]||{})[k]||k; }
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(freq=440,dur=.08,type='triangle',vol=.02){
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      if (!this.ctx || this.ctx.state !== 'running') return;
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+dur);
+    }catch(_){}
+  },
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)},
+  err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  trust:0,
+  // tareas
+  haveCloth:false, stainClean:false,
+  haveKettle:false, kettleFilled:false, kettleHot:false, teaServed:false,
+  // diario
+  diaryOpen:false, haveUSB:false, haveCodename:false
+};
+const pistas = [];
+const inventory = [];
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap10_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('saved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap10_auto'); if(!raw) return;
+    try{
+      const d=JSON.parse(raw)||{};
+      Object.assign(flags,d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas();
+      nav.go(nav.current||'recibidor'); living.bind(); kitchen.bind(); diary.populate();
+      sfx.ok(); ui.note(t('loaded'));
+      talk.refresh(); living.refresh(); kitchen.refresh(); diary.refresh();
+    }catch(_){}
+  },
+  saveToSlot(n){
+    localStorage.setItem('cacho_cap10_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang}));
+    ui.renderSlots(); ui.note(t('saved')); if (sfx.ctx && sfx.ctx.state === 'running') sfx.ok();
+  },
+  loadFromSlot(n){
+    const raw=localStorage.getItem('cacho_cap10_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{};
+    Object.assign(flags,d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es';
+    ui.refreshInventory(); ui.applyLang(); ui.renderPistas();
+    nav.go(nav.current||'recibidor'); living.bind(); kitchen.bind(); diary.populate();
+    sfx.ok(); talk.refresh(); living.refresh(); kitchen.refresh(); diary.refresh();
+    ui.note(t('loaded'));
+  },
+  reset(){ localStorage.removeItem('cacho_cap10_auto'); location.reload(); }
+};
+
+/* ==== UI base ==== */
+const ui = {
+  say(id,txt){ const el=document.getElementById(id); if(el) el.innerHTML=txt; },
+  note(msg){ this.say('statusHint', msg); },
+  setScene(name){ this.say('statusScene', 'Escena: '+name); },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id; slot.draggable=true;
+      slot.title = it.name;
+      slot.addEventListener('dragstart', e=>{ e.dataTransfer.setData('text/plain', it.id); });
+      slot.innerHTML=`<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); sfx.pick(); persist.save(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); this.renderPistas(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  renderPistas(){ const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">Sin notas por ahora.</div>`;
+    pistas.slice(-18).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item';
+      const span=document.createElement('span'); span.textContent=p;
+      const btn=document.createElement('button'); btn.className='ghost'; btn.textContent='Borrar';
+      btn.addEventListener('click', ()=>ui.delPista(i));
+      row.appendChild(span); row.appendChild(btn); box.appendChild(row);
+    });
+  },
+  addPista(){ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; this.renderPistas(); persist.save(); sfx.click(); },
+  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
+  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap10_slot_'+n); const meta= raw? 'OK' : t('slotEmpty');
+      const row=document.createElement('div'); row.className='item';
+      const label=document.createElement('span'); label.innerHTML=`<b>Slot ${n}</b> — ${meta}`;
+      const actions=document.createElement('span');
+      const bSave=document.createElement('button'); bSave.className='secondary'; bSave.textContent='Guardar';
+      const bLoad=document.createElement('button'); bLoad.className='ghost'; bLoad.textContent='Cargar';
+      bSave.addEventListener('click', ()=>persist.saveToSlot(n));
+      bLoad.addEventListener('click', ()=>persist.loadFromSlot(n));
+      actions.appendChild(bSave); actions.appendChild(bLoad);
+      row.appendChild(label); row.appendChild(actions);
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    document.getElementById('recHint').textContent = (i18n.lang==='es'?'Saluda con respeto. Nieves observa.':'Greet respectfully. Nieves watches.');
+    document.getElementById('salonHint').textContent = (i18n.lang==='es'?'Una mancha en la alfombra y una taza esperando.':'A stain on the rug and a waiting cup.');
+    document.getElementById('cookHint').textContent = (i18n.lang==='es'?'Un té arregla media vida.':'Tea fixes half of life.');
+    document.getElementById('diaryHint').textContent = (i18n.lang==='es'?'Gánate la confianza y prueba la fecha de la entrada.':'Earn trust and try the ticket date.');
+    document.getElementById('manchaHint').textContent = (i18n.lang==='es'?'Arrastra un paño desde el inventario.':'Drag a cloth from your inventory.');
+    document.getElementById('kettleHint').textContent = (i18n.lang==='es'?'Llena → Hierve → Sirve en la taza del salón.':'Fill → Boil → Serve in the living room mug.');
+    document.getElementById('codeHint').innerHTML = (i18n.lang==='es'?'Pista: “17·05·06” → <b>170506</b>.':'Hint: “17·05·06” → <b>170506</b>.');
+    talk.refresh(); living.refresh(); kitchen.refresh(); diary.refresh();
+  }
+};
+
+/* ==== Navegación ==== */
+const sceneNames={recibidor:'Recibidor', salon:'Salón', cocina:'Cocina', diario:'Diario', fin:'(Fin)'};
+const nav = {
+  current:'recibidor',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='salon') living.bind();
+    if(scene==='cocina') kitchen.bind();
+    if(scene==='diario') diary.populate();
+  },
+  finish(){
+    if(!(flags.haveUSB && flags.haveCodename)){ ui.note(i18n.lang==='es'?'Primero abre el diario.':'Open the diary first.'); sfx.err(); return; }
+    this.go('fin'); sfx.ok(); persist.save();
+  }
+};
+
+/* ==== Acciones generales ==== */
+const actions = {
+  note(txt){ if(!pistas.includes(txt)){ pistas.push(txt); ui.renderPistas(); persist.save(); sfx.click(); } }
+};
+
+/* ==== Conversación / Confianza ==== */
+const talk = {
+  tone(kind){
+    if(kind==='calm'){ flags.trust=Math.min(flags.trust+1,3); ui.note(t('trustUp')); sfx.ok(); }
+    else if(kind==='direct'){ flags.trust=Math.max(flags.trust-1,0); ui.note(t('trustDown')); sfx.err(); }
+    else { ui.note(t('trustNeutral')); sfx.click(); }
+    this.refresh(); persist.save();
+  },
+  refresh(){
+    const fill=document.getElementById('trustFill'); if(fill) fill.style.width = (flags.trust/3*100)+'%';
+    const tl=document.getElementById('trustLine');
+    if(!tl) return;
+    if(flags.trust>=2){
+      tl.innerHTML = (i18n.lang==='es'?'Nieves suspira. “Vale. Ayúdame con un par de cosas y hablamos del diario”.':'Nieves sighs. “Fine. Help me with a couple things and we talk about the diary.”');
+    }else if(flags.trust===1){
+      tl.innerHTML = (i18n.lang==='es'?'“Te escucho… con reservas”.':'“I’m listening… cautiously.”');
+    }else{
+      tl.innerHTML = (i18n.lang==='es'?'“No me hagas perder el tiempo.”':'“Don’t waste my time.”');
+    }
+  }
+};
+
+/* ==== Salón: mancha + servir té ==== */
+const living = {
+  bind(){
+    const dz=document.getElementById('dropMancha'); if(!dz) return;
+    dz.ondragover = e=>{ e.preventDefault(); dz.classList.add('highlight'); };
+    dz.ondragleave = ()=> dz.classList.remove('highlight');
+    dz.ondrop = e=>{
+      e.preventDefault(); dz.classList.remove('highlight');
+      const id=e.dataTransfer.getData('text/plain');
+      if(id==='pano'){
+        if(!flags.stainClean){
+          flags.stainClean=true; ui.say('manchaText', i18n.lang==='es'?'Limpio.':'Clean.'); sfx.ok();
+          if(flags.trust<3){ flags.trust=Math.min(flags.trust+1,3); ui.note(t('stainClean')+' '+t('trustUp')); talk.refresh(); }
+          ui.refreshInventory(); persist.save();
+        }
+      } else if(id==='tetera_hot'){
+        if(!flags.teaServed){
+          flags.teaServed=true; ui.note(t('teaServed')); sfx.ok();
+          if(flags.trust<3){ flags.trust=Math.min(flags.trust+1,3); talk.refresh(); }
+          ui.removeItem('tetera_hot'); ui.addItem({id:'tetera',name:(i18n.lang==='es'?'Tetera':'Kettle'),tag:'',icon:'☕'});
+          persist.save();
+        }
+      } else {
+        ui.note(id==='tetera' || id==='tetera_water' ? t('needHotKettle') : t('needCloth')); sfx.err();
+      }
+    };
+  },
+  refresh(){
+    document.getElementById('manchaHint').textContent = flags.stainClean
+      ? (i18n.lang==='es'?'La alfombra agradece.':'Rug is thankful.')
+      : (i18n.lang==='es'?'Arrastra un paño desde el inventario.':'Drag a cloth from your inventory.');
+    if(flags.stainClean) ui.say('manchaText', i18n.lang==='es'?'Limpio.':'Clean.');
+  }
+};
+
+/* ==== Cocina: paño y té ==== */
+const kitchen = {
+  bind(){ /* no drag aquí; acciones por botones */ },
+  getCloth(){
+    if(flags.haveCloth) return;
+    flags.haveCloth=true;
+    ui.addItem({id:'pano',name:(i18n.lang==='es'?'Paño':'Cloth'),tag:'',icon:'🧽'}); ui.note(t('clothGot')); sfx.pick();
+  },
+  getKettle(){
+    if(flags.haveKettle) return;
+    flags.haveKettle=true;
+    ui.addItem({id:'tetera',name:(i18n.lang==='es'?'Tetera':'Kettle'),tag:'',icon:'☕'}); ui.note(t('kettleGot')); sfx.pick();
+  },
+  fillKettle(){
+    if(!inventory.find(i=>i.id==='tetera')){ ui.note(t('kettleNeed')); sfx.err(); return; }
+    if(flags.kettleFilled) return;
+    flags.kettleFilled=true;
+    ui.removeItem('tetera'); ui.addItem({id:'tetera_water',name:(i18n.lang==='es'?'Tetera con agua':'Kettle with water'),tag:'',icon:'💧'});
+    ui.note(t('kettleFilled')); sfx.click(); persist.save();
+  },
+  boilKettle(){
+    if(!inventory.find(i=>i.id==='tetera_water')){ ui.note(t('kettleNeedWater')); sfx.err(); return; }
+    if(flags.kettleHot) return;
+    flags.kettleHot=true;
+    ui.removeItem('tetera_water'); ui.addItem({id:'tetera_hot',name:(i18n.lang==='es'?'Tetera caliente':'Hot kettle'),tag:'',icon:'🔥'});
+    ui.note(t('kettleBoiled')); sfx.ok(); persist.save();
+  },
+  refresh(){}
+};
+
+/* ==== Diario ==== */
+const diary = {
+  code:['1','7','0','5','0','6'],
+  populate(){
+    ['c1','c2','c3','c4','c5','c6'].forEach(id=>{
+      const s=document.getElementById(id); if(!s) return; s.innerHTML='';
+      for(let i=0;i<=9;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=String(i); s.appendChild(o); }
+    });
+    this.refresh();
+  },
+  refresh(){
+    const gate=document.getElementById('trustGate');
+    const pad=document.getElementById('diaryPad');
+    const gateBtns=document.getElementById('diaryGateBtns');
+    if(flags.trust>=2){
+      gate.innerHTML = (i18n.lang==='es'?'Nieves asiente en silencio.':'Nieves nods in silence.');
+      pad.style.display='block'; gateBtns.style.display='none';
+    }else{
+      gate.innerHTML = (i18n.lang==='es'?'Nieves: “Preferiría que no lo tocases… todavía”.':'“I’d rather you didn’t… yet.”');
+      pad.style.display='none'; gateBtns.style.display='grid';
+    }
+    const resBox=document.getElementById('resultDialog'); if(flags.diaryOpen){ resBox.innerHTML = `<div class="line">${i18n.lang==='es'?'Páginas con anotaciones, un USB y una hoja suelta.':'Pages with notes, a USB stick and a loose sheet.'}</div>`; }
+  },
+  try(){
+    if(flags.trust<2){ ui.note(t('diaryNotYet')); sfx.err(); return; }
+    const v=[ 'c1','c2','c3','c4','c5','c6' ].map(id=>document.getElementById(id).value);
+    if(v.join('')===this.code.join('')){
+      if(!flags.diaryOpen){ flags.diaryOpen=true; ui.note(t('diaryOpen')); sfx.ok(); }
+      if(!flags.haveUSB){ flags.haveUSB=true; ui.addItem({id:'usb',name:'USB',tag:'U',icon:'💾'}); ui.note(t('gotUSB')); sfx.pick(); }
+      if(!flags.haveCodename){ flags.haveCodename=true; actions.note((i18n.lang==='es'?'Nombre clave: ALBATROS.':'Codename: ALBATROS.')); ui.note(t('gotCodename')); sfx.ok(); }
+      persist.save(); this.refresh();
+    } else { ui.note(t('diaryBad')); sfx.err(); }
+  }
+};
+
+/* ==== Header & UI bindings ==== */
+function bindUI(){
+  // Toolbar
+  document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+  document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+  document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+  document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+  document.getElementById('langSel').addEventListener('change', (e)=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+  // Overlays close
+  document.getElementById('btnCloseMapa').addEventListener('click', ()=>ui.toggleMapa(false));
+  document.getElementById('btnClosePistas').addEventListener('click', ()=>ui.togglePistas(false));
+  document.getElementById('btnCloseSlots').addEventListener('click', ()=>ui.toggleSlots(false));
+
+  // Mapa
+  document.getElementById('mapRecibidor').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('recibidor'); });
+  document.getElementById('mapSalon').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('salon'); });
+  document.getElementById('mapCocina').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('cocina'); });
+  document.getElementById('mapDiario').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.go('diario'); });
+  document.getElementById('mapFin').addEventListener('click', ()=>{ ui.toggleMapa(false); nav.finish(); });
+
+  // Pistas overlay
+  document.getElementById('btnAddPista').addEventListener('click', ()=>ui.addPista());
+  document.getElementById('btnClearPistas').addEventListener('click', ()=>ui.clearPistas());
+
+  // Recibidor acciones
+  document.getElementById('btnToneCalm').addEventListener('click', ()=>talk.tone('calm'));
+  document.getElementById('btnToneDirect').addEventListener('click', ()=>talk.tone('direct'));
+  document.getElementById('btnToSalon').addEventListener('click', ()=>nav.go('salon'));
+  document.getElementById('btnRecToSalon').addEventListener('click', ()=>nav.go('salon'));
+  document.getElementById('btnRecToCocina').addEventListener('click', ()=>nav.go('cocina'));
+
+  // Salón
+  document.getElementById('btnNotaFecha').addEventListener('click', ()=>actions.note('Entrada cine: 17·05·06'));
+  document.getElementById('btnToDiario').addEventListener('click', ()=>nav.go('diario'));
+  document.getElementById('btnSalonToCocina').addEventListener('click', ()=>nav.go('cocina'));
+
+  // Cocina
+  document.getElementById('btnGetCloth').addEventListener('click', ()=>kitchen.getCloth());
+  document.getElementById('btnFillKettle').addEventListener('click', ()=>kitchen.fillKettle());
+  document.getElementById('btnGetKettle').addEventListener('click', ()=>kitchen.getKettle());
+  document.getElementById('btnBoilKettle').addEventListener('click', ()=>kitchen.boilKettle());
+  document.getElementById('btnTeaToSalon').addEventListener('click', ()=>nav.go('salon'));
+
+  // Diario
+  document.getElementById('btnDiaryBack').addEventListener('click', ()=>nav.go('salon'));
+  document.getElementById('btnDiaryOpen').addEventListener('click', ()=>diary.try());
+
+  // Fin
+  document.getElementById('btnFinish').addEventListener('click', ()=>nav.finish());
+}
+
+/* ==== Audio unlock ==== */
+window.addEventListener('pointerdown', async () => {
+  try{
+    sfx.ctx = sfx.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    if (sfx.ctx.state === 'suspended') await sfx.ctx.resume();
+  }catch(e){}
+}, { once:true });
+
+/* ==== INIT ==== */
+ui.setScene('Recibidor');
+ui.refreshInventory();
+ui.applyLang();
+ui.renderPistas();
+talk.refresh();
+living.bind();
+kitchen.bind();
+diary.populate();
+bindUI();
+
+// Importar cosillas del cap.9 si no hay guardado propio (opcional)
+if(!localStorage.getItem('cacho_cap10_auto')){
+  try{
+    const prev=JSON.parse(localStorage.getItem('cacho_cap9_auto')||'{}');
+    (prev.inventory||[]).forEach(it=>{ if(!inventory.find(x=>x.id===it.id)) ui.addItem(it); });
+    ui.renderPistas();
+  }catch(_){}
+}
+
+// Cargar guardado si existe
+persist.load();
+
+/* ==== Expose for debug ==== */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions;
+window.talk=talk; window.living=living; window.kitchen=kitchen; window.diary=diary; window.persist=persist;
+</script>
+</body>
+</html>

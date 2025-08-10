@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="chapter-id" content="cap02"><!-- ej.: cap01, cap12 -->
+
+<!-- Antes de tu script principal del capítulo: -->
+<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
+<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
+ <script src="core/engine.js"></script>
+<script src="remote-saves.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Juan Cacho — Capítulo 2 (Visita a Dolores)</title>
+<style>
+  :root{
+    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
+    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
+    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
+  button:hover{filter:brightness(1.05)}
+  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
+  button.secondary{background:var(--accent-2)}
+  button.warn{background:var(--warn);color:#000}
+  button.danger{background:var(--danger)}
+  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
+  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
+  .brand{display:flex;gap:.75rem;align-items:center}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
+  .hud{display:flex;gap:.5rem;align-items:center}
+  .hud .pill{background:#141821;border:1px solid #242b38;color:var(--muted);padding:.35rem .6rem;border-radius:999px;font-size:.85rem}
+  .toolbar{display:flex;gap:.5rem;align-items:center}
+  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
+  .content{padding:1.2rem;display:grid;gap:1rem}
+  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .scene.active{display:grid}
+  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
+  .scene-head h2{margin:0;font-size:1.1rem}
+  .scene-body{display:grid;gap:1rem;padding:1rem}
+  .grid{display:grid;gap:1rem}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:1fr 1fr 1fr}
+  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
+  .subtitle{color:var(--muted);font-size:.9rem;margin:.15rem 0 .4rem}
+  .list{display:grid;gap:.5rem}
+  .item{display:flex;align-items:center;justify-content:space-between;background:#222735;border:1px solid #2a3040;padding:.6rem .75rem;border-radius:10px}
+  .dialog{display:grid;gap:.5rem}
+  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
+  .choices{display:grid;gap:.5rem}
+  .choices button{justify-self:start}
+  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
+  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
+  .inv-slot.dragging{outline:2px solid #2f6da1}
+  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
+  .hint{color:var(--muted);font-size:.85rem}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
+  .overlay.active{display:flex}
+  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
+  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
+  .loc.locked{opacity:.55;filter:grayscale(1)}
+  .loc .name{font-weight:700}
+  .kitchen-badges{display:flex;flex-wrap:wrap;gap:.4rem}
+  .badge{font-size:.78rem;background:#1a2230;border:1px solid #2b3850;color:#cfeadf;border-radius:999px;padding:.15rem .5rem}
+  @media (max-width:880px){
+    .cols-2,.cols-3{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Juan Cacho — Capítulo 2</h1>
+      <span class="pill" id="statusScene">Escena: —</span>
+      <span class="pill" id="statusHint">Consejo: llega a casa de Dolores y atiéndela.</span>
+    </div>
+    <div class="toolbar">
+      <select id="langSel" class="sel" title="Idioma">
+        <option value="es" selected>ES</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="ghost" id="btnPistas" title="Abrir libretita">🗒️ Pistas</button>
+      <button class="ghost" id="btnMapa" title="Abrir mapa (lugares)">🗺️ Mapa</button>
+      <button class="ghost" id="btnSlots" title="Guardado/Carga">💾 Guardar/Cargar</button>
+      <button class="ghost" id="btnReset" title="Borrar progreso">Reiniciar</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- CALLE (inicio) -->
+    <section class="scene active" data-scene="calle">
+      <div class="scene-head">
+        <h2>Calles del barrio</h2>
+        <span class="hint">Primero, a la parada de autobús.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Acera</h3>
+          <div class="list">
+            <div class="item">
+              <span>Un euro en el suelo</span>
+              <button onclick="actions.pickMoney()">Coger</button>
+            </div>
+            <div class="item">
+              <span>Mirar alrededor</span>
+              <button class="ghost" onclick="ui.toast('around')">Observar</button>
+            </div>
+          </div>
+          <p class="hint">Puedes ir a la <b>Parada</b> desde el Mapa.</p>
+        </div>
+        <div class="card">
+          <h3>Narrativa</h3>
+          <div class="dialog">
+            <div class="line">Megafonía electoral a todo trapo. El barrio no calla.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" onclick="ui.toggleMapa(true)">Abrir mapa</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARADA -->
+    <section class="scene" data-scene="parada">
+      <div class="scene-head">
+        <h2>Parada de autobús</h2>
+        <span class="hint">Billete o batallita — las dos valen.</span>
+      </div>
+      <div class="scene-body grid cols-2">
+        <div class="card">
+          <h3>Jubilado</h3>
+          <div class="dialog">
+            <div class="line">— “Yo antes… bueno, mejor te invito si me escuchas.”</div>
+          </div>
+          <div class="choices">
+            <button class="ghost" onclick="actions.listenOld()">Escuchar batallita</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Quiosco</h3>
+          <p class="subtitle">Café y prensa. El básico.</p>
+          <div class="list">
+            <div class="item">
+              <span>Café para llevar</span>
+              <button onclick="actions.getCoffee()">Comprar</button>
+            </div>
+            <div class="item">
+              <span>Comprar billete</span>
+              <button class="secondary" onclick="nav.boardBus()">Subir al bus</button>
+            </div>
+          </div>
+          <p class="hint">Sin dinero: escucha la batallita y te invitan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUS -->
+    <section class="scene" data-scene="bus">
+      <div class="scene-head">
+        <h2>Autobús</h2>
+        <span class="hint">Un trayecto corto, pero vale para pensar.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog">
+            <div class="line">— “Próxima parada: Capuchinos”.</div>
+          </div>
+          <div class="choices">
+            <button class="secondary" onclick="nav.go('dolores')">Bajar en Capuchinos</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CASA DE DOLORES -->
+    <section class="scene" data-scene="dolores">
+      <div class="scene-head">
+        <h2>Casa de Dolores</h2>
+        <span class="hint">Atiende primero; charla después.</span>
+      </div>
+      <div class="scene-body grid cols-3">
+        <div class="card">
+          <h3>Pasillo</h3>
+          <div class="list">
+            <div class="item">
+              <span>Portera (estado arrastrado)</span>
+              <button class="ghost" onclick="ui.toast(flags.metPortera || 'cordial')">Comentar</button>
+            </div>
+            <div class="item">
+              <span>Vecina del rellano</span>
+              <button onclick="actions.helpNeighbor()">Ayudar con bolsas</button>
+            </div>
+          </div>
+          <p class="hint">La vecina podría agradecerte con algo dulce.</p>
+        </div>
+
+        <div class="card">
+          <h3>Cocina</h3>
+          <p class="subtitle">Prepara una infusión decente.</p>
+
+          <div class="kitchen-badges" id="kitchenBadges"></div>
+
+          <div class="list" style="margin-top:.5rem">
+            <div class="item">
+              <span>Alacena (infusiones / galletas)</span>
+              <button onclick="kitchen.openPantry()">Abrir</button>
+            </div>
+            <div class="item">
+              <span>Mueble (taza)</span>
+              <button onclick="kitchen.getCup()">Coger taza</button>
+            </div>
+            <div class="item">
+              <span>Azucarero</span>
+              <button onclick="kitchen.getSugar()">Coger azúcar</button>
+            </div>
+            <div class="item">
+              <span>Jarra eléctrica</span>
+              <span>
+                <button class="ghost" onclick="kitchen.toggleKettlePlug()">Enchufar/Desenchufar</button>
+                <button onclick="kitchen.fillWater('kettle')">Llenar de agua</button>
+                <button class="secondary" onclick="kitchen.boilKettle()">Hervir</button>
+              </span>
+            </div>
+            <div class="item">
+              <span>Cazo + Vitro</span>
+              <span>
+                <button class="ghost" onclick="kitchen.toggleHob()">Encender/Apagar vitro</button>
+                <button onclick="kitchen.fillWater('pot')">Llenar cazo</button>
+                <button class="secondary" onclick="kitchen.boilPot()">Hervir</button>
+              </span>
+            </div>
+            <div class="item">
+              <span>Preparar infusión</span>
+              <button class="secondary" onclick="kitchen.prepareTea()">Mezclar</button>
+            </div>
+            <div class="item">
+              <span>Servir a Dolores</span>
+              <button class="secondary" onclick="kitchen.serveTea()">Servir</button>
+            </div>
+          </div>
+
+          <p id="kitchenMsg" class="hint" style="margin-top:.5rem">Consejo: taza + infusión + agua hirviendo. Azúcar/galletas mejoran el ánimo.</p>
+        </div>
+
+        <div class="card">
+          <h3>Salón con Dolores</h3>
+          <div class="dialog" id="doloresDialog">
+            <div class="line">— “Ay, mi niño… siéntate, que te vea.”</div>
+          </div>
+          <div class="choices">
+            <button onclick="story.talkDolores()">Hablar (tras servir)</button>
+          </div>
+          <p id="doloresMsg" class="hint">Primero, atiéndela.</p>
+        </div>
+      </div>
+      <div class="scene-body">
+        <div class="item">
+          <span>Salir de casa</span>
+          <button class="secondary" onclick="nav.finish()">Salir</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIN -->
+    <section class="scene" data-scene="fin">
+      <div class="scene-head">
+        <h2>Portal de Capuchinos</h2>
+        <span class="hint">Otra pieza encaja.</span>
+      </div>
+      <div class="scene-body">
+        <div class="card">
+          <div class="dialog">
+            <div class="line"><strong>Dolores</strong> te ha dado una pista sobre <em>Remedios</em>.</div>
+          </div>
+          <p class="hint">Fin del Capítulo 2. (Progreso guardado.)</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="inventory" id="inventory" aria-label="Inventario"></div>
+    <div class="hint" id="hintFooter">Usa el mapa para moverte; prepara la infusión en la cocina.</div>
+  </footer>
+</div>
+
+<!-- OVERLAY: MAPA -->
+<div class="overlay" id="overlayMapa" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Mapa</h3>
+      <button class="ghost" onclick="ui.toggleMapa(false)">Cerrar</button>
+    </div>
+    <div class="map">
+      <div class="loc"><span class="name">Calle del barrio</span><button class="secondary" onclick="ui.toggleMapa(false); nav.go('calle')">Ir</button></div>
+      <div class="loc"><span class="name">Parada de autobús</span><button id="btnMapParada" class="secondary">Ir</button></div>
+      <div class="loc"><span class="name">Casa de Dolores</span><button id="btnMapDolores" class="secondary" disabled>Ir</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: PISTAS -->
+<div class="overlay" id="overlayPistas" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Libretita</h3>
+      <button class="ghost" onclick="ui.togglePistas(false)">Cerrar</button>
+    </div>
+    <div id="pistasBox" class="list"></div>
+    <div style="margin-top:.75rem;display:flex;gap:.5rem">
+      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
+      <button onclick="ui.addPista()">Añadir</button>
+      <button class="ghost" onclick="ui.clearPistas()">Vaciar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: SLOTS -->
+<div class="overlay" id="overlaySlots" aria-hidden="true">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <h3 style="margin:0">Guardado / Carga</h3>
+      <button class="ghost" onclick="ui.toggleSlots(false)">Cerrar</button>
+    </div>
+    <div class="list" id="slotsList"></div>
+  </div>
+</div>
+
+<script>
+/* ==== i18n ==== */
+const i18n = {
+  lang:'es',
+  dict:{
+    es:{
+      around:'El barrio respira: persianas, voces, olor a panadería.',
+      pickedMoney:'Un euro al bolsillo.',
+      needMoney:'Sin billete… salvo que alguien te invite.',
+      oldStory:'Escuchaste la batallita. El viaje corre de su cuenta.',
+      coffeeGet:'Café para llevar: buena idea para ablandar corazones.',
+      busBoard:'Siguiente: Capuchinos.',
+      invCup:'Taza lista.',
+      invTea:'Infusión (manzanilla).',
+      invSugar:'Azúcar, por si acaso.',
+      invCookies:'Galletas cortesía de la vecina.',
+      powerOn:'Vitro encendida.',
+      powerOff:'Vitro apagada.',
+      kettlePlug:'Jarra enchufada.',
+      kettleUnplug:'Jarra desenchufada.',
+      waterFilled:'Agua preparada.',
+      needCupTeaHot:'Taza + infusión + agua hirviendo. Falta algo.',
+      boiled:'Agua hirviendo.',
+      teaReady:'Infusión preparada.',
+      teaServed:'Servido. Dolores te mira con otros ojos.',
+      needServeTea:'Primero prepara algo en la cocina.',
+      neighborHelp:'Le echaste una mano a la vecina.',
+      clueBase:'Dolores: “Nieves estaba inquieta por Remedios. Hablaban de un diario y de La Milagrosa fuera de horario.”',
+      cluePlus:'Dolores: “Creo que era los jueves, después de las 20:00… Remedios nunca iba sin su colgante con la R.”',
+      saved:'Progreso guardado.',
+      loaded:'Progreso cargado.',
+      slotEmpty:'(vacío)'
+    },
+    en:{
+      around:'The neighborhood breathes: shutters, voices, bakery smell.',
+      pickedMoney:'A euro pocketed.',
+      needMoney:'No ticket… unless someone covers you.',
+      oldStory:'You heard the tale. The ride is on him.',
+      coffeeGet:'Coffee to go: smart way to soften hearts.',
+      busBoard:'Next: Capuchinos.',
+      invCup:'Cup ready.',
+      invTea:'Chamomile tea.',
+      invSugar:'Sugar, just in case.',
+      invCookies:'Cookies from the neighbor.',
+      powerOn:'Hob on.',
+      powerOff:'Hob off.',
+      kettlePlug:'Kettle plugged.',
+      kettleUnplug:'Kettle unplugged.',
+      waterFilled:'Water prepared.',
+      needCupTeaHot:'Cup + tea + boiling water. Something is missing.',
+      boiled:'Water boiling.',
+      teaReady:'Tea ready.',
+      teaServed:'Served. Dolores warms up.',
+      needServeTea:'Prepare something first.',
+      neighborHelp:'You helped the neighbor.',
+      clueBase:'Dolores: “Nieves worried about Remedios. A diary, and La Milagrosa after hours.”',
+      cluePlus:'Dolores: “I think Thursdays after 20:00… Remedios never without her R pendant.”',
+      saved:'Game saved.',
+      loaded:'Game loaded.',
+      slotEmpty:'(empty)'
+    }
+  }
+};
+function t(k){ return i18n.dict[i18n.lang][k] || k; }
+
+/* ==== SFX ==== */
+const sfx = {
+  ctx:null,
+  beep(freq=440,dur=.08,type='triangle',vol=.02){
+    try{
+      this.ctx = this.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(this.ctx.destination);
+      o.start(); o.stop(this.ctx.currentTime+dur);
+    }catch(_){}
+  },
+  click(){this.beep(520,.05,'square',.015)}, ok(){this.beep(660,.08,'sine',.03)},
+  err(){this.beep(220,.12,'sawtooth',.03)}, pick(){this.beep(880,.05,'triangle',.02)}
+};
+
+/* ==== Estado ==== */
+const flags = {
+  metPortera:'cordial', // del cap 1, por defecto
+  hasMoney:false,
+  busPaid:false, heardOld:false,
+  atDolores:false, visitedDolores:false,
+  kitchenReady:false, gotClueRemedios:false,
+  helpedVecina:false, doloresMood:'normal', // normal | tocado | contenta
+  powerOn:false, kettlePlugged:false,
+  waterInKettle:false, waterInPot:false, waterHot:false,
+  teaPrepared:false,
+  coffeeToGo:false // opcional (comprado en parada)
+};
+const pistas = [];
+const inventory = []; // {id, name, tag, icon}
+
+/* ==== Persistencia ==== */
+const persist = {
+  save(){ localStorage.setItem('cacho_cap2_auto', JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.note(t('saved')); },
+  load(){ const raw=localStorage.getItem('cacho_cap2_auto'); if(!raw) return;
+    try{ const d=JSON.parse(raw)||{};
+      Object.assign(flags, d.flags||{});
+      pistas.splice(0,pistas.length,...(d.pistas||[]));
+      inventory.splice(0,inventory.length,...(d.inventory||[]));
+      if(d.lang) i18n.lang=d.lang;
+      ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons(); nav.go(nav.current);
+      ui.note(t('loaded')); sfx.ok();
+    }catch(_){}
+  },
+  saveToSlot(n){ localStorage.setItem('cacho_cap2_slot_'+n, JSON.stringify({flags,pistas,inventory,lang:i18n.lang})); ui.renderSlots(); ui.note(t('saved')); sfx.ok(); },
+  loadFromSlot(n){ const raw=localStorage.getItem('cacho_cap2_slot_'+n); if(!raw) return;
+    const d=JSON.parse(raw)||{}; Object.assign(flags, d.flags||{});
+    pistas.splice(0,pistas.length,...(d.pistas||[]));
+    inventory.splice(0,inventory.length,...(d.inventory||[]));
+    i18n.lang=d.lang||'es'; ui.refreshInventory(); ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons(); nav.go(nav.current);
+    ui.note(t('loaded')); sfx.ok();
+  },
+  reset(){ localStorage.removeItem('cacho_cap2_auto'); location.reload(); }
+};
+
+/* ==== UI ==== */
+const ui = {
+  say(id,txt){ const el=document.getElementById(id); if(el) el.textContent=txt; },
+  note(msg){ this.say('statusHint', msg); },
+  toast(key){ this.note(t(key)); sfx.click(); },
+  setScene(name){ this.say('statusScene', 'Escena: '+name); },
+  refreshInventory(){
+    const box=document.getElementById('inventory'); if(!box) return; box.innerHTML='';
+    inventory.forEach(it=>{
+      const slot=document.createElement('div'); slot.className='inv-slot'; slot.dataset.item=it.id;
+      slot.innerHTML=`<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
+      box.appendChild(slot);
+    });
+  },
+  addItem(it){ if(!inventory.find(x=>x.id===it.id)){ inventory.push(it); this.refreshInventory(); sfx.pick(); persist.save(); } },
+  removeItem(id){ const i=inventory.findIndex(x=>x.id===id); if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); } },
+  ensureMapButtons(){
+    const p=document.getElementById('btnMapParada'); const d=document.getElementById('btnMapDolores');
+    if(p) p.onclick=()=>{ ui.toggleMapa(false); nav.go('parada'); };
+    if(d){ d.disabled = !flags.atDolores; d.onclick=()=>{ ui.toggleMapa(false); nav.go('dolores'); }; }
+  },
+  toggleMapa(show){ const o=document.getElementById('overlayMapa'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); if(show) this.ensureMapButtons(); },
+  togglePistas(show){ const o=document.getElementById('overlayPistas'); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); this.renderPistas(); },
+  renderPistas(){ const box=document.getElementById('pistasBox'); if(!box) return;
+    box.innerHTML = pistas.length? '' : `<div class="hint">Sin notas por ahora.</div>`;
+    pistas.slice(-12).forEach((p,i)=>{ const row=document.createElement('div'); row.className='item'; row.innerHTML=`<span>${p}</span><button class="ghost" onclick="ui.delPista(${i})">Borrar</button>`; box.appendChild(row); });
+  },
+  addPista(){ const inp=document.getElementById('pistaInput'); const v=(inp.value||'').trim(); if(!v) return; pistas.push(v); inp.value=''; this.renderPistas(); persist.save(); sfx.click(); },
+  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
+  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
+  toggleSlots(show){ const o=document.getElementById('overlaySlots'); if(show) this.renderSlots(); o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString()); },
+  renderSlots(){
+    const box=document.getElementById('slotsList'); if(!box) return; box.innerHTML='';
+    [1,2,3].forEach(n=>{
+      const raw=localStorage.getItem('cacho_cap2_slot_'+n); const meta= raw? 'OK' : t('slotEmpty');
+      const row=document.createElement('div'); row.className='item';
+      row.innerHTML = `<span><b>Slot ${n}</b> — ${meta}</span>
+        <span><button class="secondary" onclick="persist.saveToSlot(${n})">Guardar</button>
+              <button class="ghost" onclick="persist.loadFromSlot(${n})">Cargar</button></span>`;
+      box.appendChild(row);
+    });
+  },
+  applyLang(){
+    document.getElementById('langSel').value=i18n.lang;
+    this.note('');
+    this.say('kitchenMsg', (i18n.lang==='es'?'Consejo: taza + infusión + agua hirviendo. Azúcar/galletas mejoran el ánimo.':'Tip: cup + tea + boiling water. Sugar/cookies improve the mood.'));
+  }
+};
+
+/* ==== Navegación ==== */
+const nav = {
+  current:'calle',
+  go(scene){
+    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+    const el=document.querySelector(`.scene[data-scene="${scene}"]`); if(el){ el.classList.add('active'); this.current=scene; ui.setScene(sceneNames[scene]||scene); persist.save(); }
+    if(scene==='dolores'){ flags.atDolores=true; ui.ensureMapButtons(); kitchen.renderBadges(); }
+  },
+  boardBus(){
+    if(flags.hasMoney){ flags.busPaid=true; ui.toast('busBoard'); this.go('bus'); }
+    else if(flags.heardOld){ flags.busPaid=true; ui.toast('busBoard'); this.go('bus'); }
+    else { ui.toast('needMoney'); sfx.err(); }
+  },
+  finish(){
+    if(!flags.visitedDolores || !flags.gotClueRemedios){ ui.note('Aún te queda algo por cerrar aquí.'); sfx.err(); return; }
+    this.go('fin'); sfx.ok(); persist.save();
+  }
+};
+const sceneNames = {calle:'Calle', parada:'Parada', bus:'Autobús', dolores:'Casa de Dolores', fin:'(Fin)'};
+
+/* ==== Acciones ==== */
+const actions = {
+  pickMoney(){ if(flags.hasMoney) return; flags.hasMoney=true; ui.addItem({id:'dinero',name:'Euro',tag:'€',icon:'💶'}); ui.toast('pickedMoney'); pistas.push('Tengo un euro para el bus.'); },
+  listenOld(){ if(flags.heardOld) return; flags.heardOld=true; pistas.push('El jubilado cuenta su batallita y me invita al bus.'); ui.toast('oldStory'); sfx.ok(); },
+  getCoffee(){ if(flags.coffeeToGo) return; flags.coffeeToGo=true; ui.addItem({id:'cafeToGo',name:'Café para llevar',tag:'☕',icon:'🥤'}); ui.toast('coffeeGet'); },
+  helpNeighbor(){ if(flags.helpedVecina) return; flags.helpedVecina=true; ui.addItem({id:'galletas',name:'Galletas',tag:'🍪',icon:'🍪'}); ui.toast('invCookies'); pistas.push(t('neighborHelp')); }
+};
+
+/* ==== Cocina (puzzle) ==== */
+const kitchen = {
+  renderBadges(){
+    const b=document.getElementById('kitchenBadges'); if(!b) return;
+    const tags=[];
+    if(flags.kettlePlugged) tags.push('Jarra enchufada');
+    if(flags.powerOn) tags.push('Vitro ON');
+    if(flags.waterInKettle) tags.push('Agua en jarra');
+    if(flags.waterInPot) tags.push('Agua en cazo');
+    if(flags.waterHot) tags.push('Agua HIRVIENDO');
+    if(flags.teaPrepared) tags.push('Infusión lista');
+    if(flags.kitchenReady) tags.push('Servido');
+    b.innerHTML = tags.map(x=>`<span class="badge">${x}</span>`).join('') || `<span class="hint">Estado: sin preparar.</span>`;
+  },
+  openPantry(){
+    // Siempre hay manzanilla
+    if(!inventory.find(x=>x.id==='infusion')) ui.addItem({id:'infusion',name:'Manzanilla',tag:'🌿',icon:'🫖'});
+    // Las galletas llegan por la vecina (opcional)
+    sfx.click(); this.renderBadges();
+  },
+  getCup(){ if(!inventory.find(x=>x.id==='taza')) ui.addItem({id:'taza',name:'Taza',tag:'☕',icon:'🍵'}); ui.toast('invCup'); sfx.pick(); },
+  getSugar(){ if(!inventory.find(x=>x.id==='azucar')) ui.addItem({id:'azucar',name:'Azúcar',tag:'S',icon:'🧂'}); ui.toast('invSugar'); sfx.pick(); },
+  toggleKettlePlug(){ flags.kettlePlugged=!flags.kettlePlugged; ui.note(flags.kettlePlugged?t('kettlePlug'):t('kettleUnplug')); sfx.click(); },
+  toggleHob(){ flags.powerOn=!flags.powerOn; ui.note(flags.powerOn?t('powerOn'):t('powerOff')); sfx.click(); this.renderBadges(); },
+  fillWater(where){ if(where==='kettle'){ flags.waterInKettle=true; flags.waterInPot=false; } else { flags.waterInPot=true; flags.waterInKettle=false; } ui.note(t('waterFilled')); sfx.click(); this.renderBadges(); },
+  boilKettle(){
+    if(!flags.kettlePlugged || !flags.waterInKettle){ ui.note('Enchufa la jarra y llénala de agua.'); sfx.err(); return; }
+    flags.waterHot=true; ui.note(t('boiled')); sfx.ok(); this.renderBadges();
+  },
+  boilPot(){
+    if(!flags.powerOn || !flags.waterInPot){ ui.note('Enciende la vitro y llena el cazo de agua.'); sfx.err(); return; }
+    flags.waterHot=true; ui.note(t('boiled')); sfx.ok(); this.renderBadges();
+  },
+  prepareTea(){
+    const hasCup=inventory.find(x=>x.id==='taza');
+    const hasTea=inventory.find(x=>x.id==='infusion');
+    if(!hasCup || !hasTea || !flags.waterHot){ ui.note(t('needCupTeaHot')); sfx.err(); return; }
+    flags.teaPrepared=true; ui.note(t('teaReady')); sfx.ok(); this.renderBadges();
+  },
+  serveTea(){
+    if(!flags.teaPrepared){ ui.note(t('needServeTea')); sfx.err(); return; }
+    ui.removeItem('infusion');
+    const hasCookies=inventory.find(x=>x.id==='galletas');
+    if(hasCookies || flags.coffeeToGo){ flags.doloresMood='contenta'; } else { flags.doloresMood='normal'; }
+    flags.kitchenReady=true; ui.note(t('teaServed')); sfx.ok(); this.renderBadges();
+  }
+};
+
+/* ==== Historia en salón ==== */
+const story = {
+  talkDolores(){
+    const box=document.getElementById('doloresDialog'); const msg=document.getElementById('doloresMsg');
+    if(!flags.kitchenReady){ msg.textContent=t('needServeTea'); sfx.err(); return; }
+    flags.visitedDolores=true;
+    if(flags.doloresMood==='contenta'){
+      if(!flags.gotClueRemedios){ pistas.push('Pista: '+t('cluePlus')); }
+      box.innerHTML = `<div class="line">${t('cluePlus')}</div>`;
+    }else{
+      if(!flags.gotClueRemedios){ pistas.push('Pista: '+t('clueBase')); }
+      box.innerHTML = `<div class="line">${t('clueBase')}</div>`;
+    }
+    flags.gotClueRemedios=true;
+    msg.textContent = 'Ya puedes irte cuando quieras.';
+    ui.renderPistas(); persist.save();
+  }
+};
+
+/* ==== Header bindings ==== */
+document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
+document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
+document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
+document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
+document.getElementById('langSel').addEventListener('change', (e)=>{ i18n.lang=e.target.value; ui.applyLang(); persist.save(); sfx.click(); });
+
+/* ==== Init ==== */
+ui.setScene('Calle');
+ui.ensureMapButtons();
+ui.refreshInventory();
+ui.applyLang();
+persist.load();
+
+/* ==== Exponer al global para onclick inline ==== */
+window.flags=flags; window.ui=ui; window.nav=nav; window.actions=actions; window.kitchen=kitchen; window.story=story;
+</script>
+</body>
+</html>
