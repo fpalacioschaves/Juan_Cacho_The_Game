@@ -1,0 +1,65 @@
+Puzzles por capítulo (detalle operativo)
+
+Cap. 1 — Prólogo
+
+Enseña mirar/coger/usar y abrir cuaderno.
+
+Mini-puzzle: encontrar Apuntes de fluidos bajo una pila caótica (tres clics de orden).
+
+Cap. 2 — Cafelito y hipoteca
+
+Objetivo social con portera → desbloquea confianza_portera.
+
+Trueque: Plumero por llave_contadores si cumples un recado (llevar nota al Bar o Academia).
+
+Cap. 3 — Dos Tercios del Quinto
+
+Árbol de chismes; según opción de humor, abren pistas distintas.
+
+Puzzle de cafetería: reparar cafetera con cinta adhesiva o llave improvisada.
+
+Cap. 4 — Baskerville se conecta
+
+Minijuego de selección: tres rondas, barra de prudencia (fail suave si te pasas → escena de bronca más tarde).
+
+Cap. 5 — Academia
+
+Gestión de acceso: usar tarjeta_academia para entrar a almacén y conseguir cinta adhesiva/nota.
+
+Cap. 6 — Reunión
+
+Sigilo de salón↔despacho con ventanas de oportunidad (cuando Remedios u Odón miran a otro lado).
+
+Hallazgos: VHS y apunte_sospechoso (lista de vecinos con marcas).
+
+Cap. 7 — Despacho y cintas
+
+Abrir estantería: secuencia peso/orden de libros o imán (según dificultad elegida).
+
+Reproducir VHS en casa o en el Bar (si obtuviste reproductor).
+
+Cap. 8 — Velatorio/Entierro
+
+Minijuego de pésames: asocias gesto→emoción para detectar contradicciones.
+
+Desbloquea foco en té y tetera (NPC menciona la asa).
+
+Cap. 9 — Laboratorio de cocina
+
+Montaje de tetera: retirar cera del asa (calor), ver canal interno; probar flujos con agua fría/caliente.
+
+Conclusión: flag descubrio_cera=true.
+
+Cap. 10 — Noche de portal
+
+Diálogo-deducción: ordenar correctamente Motivo → Oportunidad → Método usando pruebas del cuaderno.
+
+Finales: Verdadero / Gris / Fallo (ver abajo).
+
+Finales
+
+Verdadero: presentas el mecanismo del asa + contradicciones; Odón detenido. Epílogo luminoso.
+
+Gris: sin probar el “cómo”, sólo sospechas; Odón escapa legalmente. Epílogo ambiguo.
+
+Fallo: acusas mal; game over suave → reintento desde inicio del cap.10.

@@ -1,0 +1,11 @@
+UI/UX
+
+Hud inferior: inventario (scrollable), botón Cuaderno, botón Mapa.
+
+Inspección: panel lateral con descripción sarcástica de Juan.
+
+Diálogos: retratos simples, opciones con tags [Serio] [Broma] [Tirar del hilo].
+
+Feedback: partículas sutiles en hotspots; sonido leve al descubrir pista.
+
+Accesibilidad: modo alto contraste, subtítulos, tamaño de texto escalable, opción “hacer visible todos los hotspots”.

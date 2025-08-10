@@ -1,0 +1,10 @@
+
+Accesibilidad y opciones
+
+Modo hotspots visibles.
+
+Texto escalable (125–175%).
+
+Subtítulos siempre activos; opción de simplificar el sarcasmo (texto plano).
+
+Modo daltonismo (iconos alternativos en UI).
