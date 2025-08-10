@@ -1,4 +1,4 @@
-/* engine.js — gestor de datos, escenas, inventario y diálogo */
+/* engine.js — gestor de datos, escenas, inventario y diálogo (cap.2) */
 const Game = (() => {
   const DATA = { scenes: {}, items: {}, dialogue: [], chapters: [] };
   const STATE = {
@@ -12,16 +12,16 @@ const Game = (() => {
 
   // Helpers de estado
   const hasItem = id => STATE.inventory.includes(id);
-  const addItem = id => { if(!hasItem(id)){ STATE.inventory.push(id); UI.toast(`Has conseguido: ${DATA.items[id]?.name || id}`); renderHUD(); saveLocal(); } };
+  const addItem = id => { if(!id) return; if(!hasItem(id)){ STATE.inventory.push(id); UI.toast(`Has conseguido: ${DATA.items[id]?.name || id}`); renderHUD(); saveLocal(); } };
   const removeItem = id => { STATE.inventory = STATE.inventory.filter(x=>x!==id); renderHUD(); saveLocal(); };
   const hasFlag = k => !!STATE.flags[k];
   const setFlag = (k,v=true) => { STATE.flags[k]=v; saveLocal(); };
-  const note = t => { STATE.notebook.push(t); UI.updateNotebook(STATE.notebook); saveLocal(); };
-  const moveTo = loc => { STATE.location = loc; renderScene(loc); saveLocal(); };
+  const note = t => { if(!t) return; STATE.notebook.push(t); UI.updateNotebook(STATE.notebook); saveLocal(); };
+  const moveTo = loc => { if(!loc) return; STATE.location = loc; renderScene(loc); saveLocal(); };
 
   // Persistencia
   const saveLocal = () => localStorage.setItem('jc_state', JSON.stringify(STATE));
-  const loadLocal = () => { const s = localStorage.getItem('jc_state'); if(s){ Object.assign(STATE, JSON.parse(s)); } };
+  const loadLocal = () => { const s = localStorage.getItem('jc_state'); if(s){ try{ Object.assign(STATE, JSON.parse(s)); }catch{} } };
   const saveRemote = async () => {
     try{
       await fetch(`${window.JC_CONFIG.apiBase}/save.php`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:window.JC_CONFIG.userId, state:STATE})});
@@ -52,7 +52,7 @@ const Game = (() => {
     DATA.items = indexById(items);
     DATA.chapters = chapters;
   }
-  const indexById = arr => arr.reduce((m,o)=> (m[o.id]=o, m), {});
+  const indexById = arr => Array.isArray(arr) ? arr.reduce((m,o)=> (m[o.id]=o, m), {}) : {};
 
   // Render
   function renderAll(){ renderScene(STATE.location); renderHUD(); UI.updateNotebook(STATE.notebook); }
@@ -96,7 +96,7 @@ const Game = (() => {
       d.className = 'hotspot';
       if(scene.debug) d.classList.add('debug');
       positionHotspot(d, h.shape);
-      d.onclick = (ev)=> handleHotspot(h);
+      d.onclick = ()=> handleHotspot(h);
       d.oncontextmenu = (ev)=>{ ev.preventDefault(); handleHotspotContext(h); };
       d.title = h.id;
       hs.appendChild(d);
@@ -104,6 +104,7 @@ const Game = (() => {
   }
 
   function positionHotspot(el, shape){
+    if(!shape) return;
     if(shape.type==='rect'){
       el.style.left = shape.x+'px';
       el.style.top = shape.y+'px';
@@ -113,7 +114,7 @@ const Game = (() => {
   }
 
   function handleHotspot(h){
-    // Prioridad: usar item seleccionado > onPick > onTalk > onLook
+    // 1) Usar item seleccionado sobre el hotspot (si procede)
     if(selectedItem && h.onUse){
       if(canSatisfy(h.onUse.requires||[])){
         applyEffects(h.onUse.effect||[]);
@@ -123,14 +124,25 @@ const Game = (() => {
       }
       return;
     }
+    // 2) Coger
     if(h.onPick && h.onPick.gainItem){ addItem(h.onPick.gainItem); return; }
+    // 3) Hablar
     if(h.onTalk){ startDialogue(h.onTalk); return; }
+    // 4) Usar genérico (sin item seleccionado)
+    if(h.onUse){
+      if(canSatisfy(h.onUse.requires||[])){
+        applyEffects(h.onUse.effect||[]);
+      } else {
+        UI.toast('Te falta algo.');
+      }
+      return;
+    }
+    // 5) Mirar
     if(h.onLook){ UI.toast(h.onLook); return; }
     UI.toast('Nada que rascar.');
   }
 
   function handleHotspotContext(h){
-    // Clic derecho: mirar siempre
     if(h.onLook){ UI.toast(h.onLook); }
   }
 
@@ -148,7 +160,8 @@ const Game = (() => {
       if(e.type==='addItem') addItem(e.id);
       if(e.type==='removeItem') removeItem(e.id);
       if(e.type==='moveTo') moveTo(e.id);
-      if(e.type==='appendNotebook') note(e.text);
+      if(e.type==='appendNotebook' || e.type==='note') note(e.text);
+      if(e.type==='setChapter'){ STATE.chapter = e.val ?? STATE.chapter; saveLocal(); }
       if(e.type==='startCutscene' && e.id){ /* hook futuro */ }
     });
   }
@@ -190,9 +203,8 @@ const Game = (() => {
     await loadData();
     bindUI();
     renderAll();
-    // Notas iniciales
     if(STATE.chapter===1 && STATE.notebook.length===0){
-      note('El piso pide orden. La portera pide la renta. Prioridades.');
+      note('Clic izquierdo: ACCIONAR. Clic derecho: MIRAR.');
     }
   }
 

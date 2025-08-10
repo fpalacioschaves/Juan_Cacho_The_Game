@@ -1,16 +1,51 @@
 [
   {
-    "id": "dlg_portera",
+    "id": "dlg_jaime",
+    "npc": "telefono",
+    "nodes": [
+      {
+        "id":"root",
+        "text":"¿Juan? Soy Jaime. Te recuerdo lo de hoy: la reunión de vecinos a las seis.",
+        "opts":[
+          {"txt":"Ok, Jaime. Apuntado.","end":true,"effect":[{"type":"appendNotebook","text":"Reunión de vecinos (18:00)."}]}
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "dlg_portera_c2",
     "npc": "portera",
     "nodes": [
-      {"id":"root","text":"¿Y la renta, Juan?","opts":[
-        {"txt":"[Serio] Vengo a hablar de la reunión","go":"reunion"},
-        {"txt":"[Broma] He venido a por tu pluma de oro","go":"broma","req":{"flag":"confianza_portera"}}
-      ]},
-      {"id":"reunion","text":"Será a las seis. Y nada de colarse.","opts":[
-        {"txt":"Entendido","end":true, "effect":[{"type":"appendNotebook","text":"Reunión de vecinos a las 18:00."}]}
-      ]},
-      {"id":"broma","text":"La tendrás cuando pagues.","opts":[{"txt":"Auch","end":true}]}
+      {
+        "id":"root",
+        "text":"¿Y la renta, Juan?",
+        "opts":[
+          { "txt":"Sobre la reunión de vecinos…", "go":"reunion"},
+          { "txt":"[Entregar] Te traigo algo para el polvo del portal", "go":"trueque", "req":{"item":"plumero"} },
+          { "txt":"Nada, disculpa.", "end": true }
+        ]
+      },
+      {
+        "id": "reunion",
+        "text": "Será a las seis. Y no me montes jaleo.",
+        "opts": [ { "txt":"Anotado", "end": true } ]
+      },
+      {
+        "id": "trueque",
+        "text": "¿Un plumero? Mira qué majo. Te has ganado mi confianza.",
+        "opts": [
+          { "txt":"¿Me dejas la llave del cuarto de contadores?",
+            "end": true,
+            "effect": [
+              {"type":"removeItem","id":"plumero"},
+              {"type":"addItem","id":"llave_contadores"},
+              {"type":"setFlag","key":"confianza_portera","val":true},
+              {"type":"appendNotebook","text":"La portera me dio la llave del cuarto. Confianza ganada."}
+            ]
+          }
+        ]
+      }
     ]
   }
 ]

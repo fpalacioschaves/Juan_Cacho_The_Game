@@ -1,9 +1,0 @@
-Milestones (propuesta)
-
-Vertical slice (cap. 2 + 6 + 9): 3–4 escenas, inventario, diálogo, un minijuego.
-
-Contenido capítulos 1–5: fondos, hotspots, diálogos base.
-
-Contenido capítulos 6–10: set pieces, minijuegos restantes.
-
-Pulido: pistas, accesibilidad, QA, balance de humor.

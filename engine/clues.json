@@ -1,0 +1,6 @@
+[
+  { "id": "CLUE_MESA_DESPEJADA", "name": "Mesa despejada", "summary": "Ya se ve el tablero de operaciones." },
+  { "id": "CLUE_APUNTES", "name": "Apuntes de fluidos", "summary": "Localizados y listos para consulta." },
+  { "id": "CLUE_LLAMADA_JAIME", "name": "Llamada de Jaime", "summary": "Te recuerda el asunto de hoy." },
+  { "id": "CLUE_REUNION_18H", "name": "Reunión a las 18:00", "summary": "Hora exacta confirmada." }
+]
