@@ -1,979 +1,429 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="chapter-id" content="cap01"><!-- ej.: cap01, cap12 -->
-
-<!-- Antes de tu script principal del capítulo: -->
-<!-- Si PHP está en la misma carpeta, no pongas nada. Si está en /juan_cacho/, puedes forzarlo: -->
-<!-- <script>window.__API_BASE__ = '/juan_cacho/';</script> -->
- <script src="core/engine.js"></script>
-<script src="remote-saves.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Juan Cacho — Capítulo 1 (vertical slice)</title>
-<style>
-  :root{
-    --bg:#0f1115;--panel:#171a21;--card:#1f2430;--muted:#aab2c0;--text:#e7ecf3;
-    --accent:#7fd1ae;--accent-2:#7fb0d1;--danger:#ff6b6b;--warn:#ffd166;--ok:#06d6a0;
-    --shadow:0 8px 30px rgba(0,0,0,.35);--radius:14px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-  button{cursor:pointer;border:none;background:var(--accent);color:#0d1b14;padding:.6rem 1rem;border-radius:10px;font-weight:600;transition:.15s}
-  button:hover{filter:brightness(1.05)}
-  button.ghost{background:transparent;border:1px solid #2a2f3a;color:var(--text)}
-  button.secondary{background:var(--accent-2)}
-  button.warn{background:var(--warn);color:#000}
-  button.danger{background:var(--danger)}
-  .wrap{display:grid;grid-template-rows:auto 1fr auto;min-height:100%}
-  header{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:linear-gradient(180deg,#12151b 0%, #0f1115 100%);border-bottom:1px solid #202531;position:sticky;top:0;z-index:10}
-  .brand{display:flex;gap:.75rem;align-items:center}
-  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
-  .brand h1{margin:0;font-size:1.05rem;letter-spacing:.4px;color:#cfeadf}
-  .hud{display:flex;gap:.5rem;align-items:center}
-  .hud .pill{background:#141821;border:1px solid #242b38;color:var(--muted);padding:.35rem .6rem;border-radius:999px;font-size:.85rem}
-  .toolbar{display:flex;gap:.5rem;align-items:center}
-  .sel{appearance:none;background:#121722;border:1px solid #263043;color:#d6e3f1;border-radius:10px;padding:.45rem .6rem}
-  .content{padding:1.2rem;display:grid;gap:1rem}
-  .scene{display:none;background:var(--panel);border:1px solid #222938;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-  .scene.active{display:grid}
-  .scene-head{display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid #242b38;background:linear-gradient(180deg,#1a1f29,#171b22)}
-  .scene-head h2{margin:0;font-size:1.1rem}
-  .scene-body{display:grid;gap:1rem;padding:1rem}
-  .grid{display:grid;gap:1rem}
-  .cols-2{grid-template-columns:1fr 1fr}
-  .card{background:var(--card);border:1px solid #2a3040;border-radius:12px;padding:1rem;box-shadow:var(--shadow)}
-  .subtitle{color:var(--muted);font-size:.9rem;margin:.15rem 0 .4rem}
-  .list{display:grid;gap:.5rem}
-  .item{display:flex;align-items:center;justify-content:space-between;background:#222735;border:1px solid #2a3040;padding:.6rem .75rem;border-radius:10px}
-  .dialog{display:grid;gap:.5rem}
-  .dialog .line{background:#1b202b;padding:.6rem .8rem;border-radius:10px;border:1px solid #273044}
-  .choices{display:grid;gap:.5rem}
-  .choices button{justify-self:start}
-  .footer{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:#0f1217;border-top:1px solid #202531;gap:.5rem}
-  .inventory{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-  .inv-slot{min-width:44px;min-height:44px;border-radius:10px;border:1px dashed #2a2f3a;background:#141821;display:flex;align-items:center;justify-content:center;position:relative}
-  .inv-slot.dragging{outline:2px solid #2f6da1}
-  .inv-slot .tag{position:absolute;bottom:-6px;right:-6px;background:#253045;border:1px solid #2c3750;color:#b8c7dc;font-size:.65rem;padding:.1rem .35rem;border-radius:999px}
-  .hint{color:var(--muted);font-size:.85rem}
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:20}
-  .overlay.active{display:flex}
-  .modal{width:min(900px,92vw);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid #263043;border-radius:16px;box-shadow:var(--shadow);padding:1rem}
-  .map{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-  .loc{display:flex;align-items:center;justify-content:space-between;background:#1b2130;border:1px solid #2a3144;border-radius:12px;padding:1rem}
-  .loc.locked{opacity:.55;filter:grayscale(1)}
-  .loc .name{font-weight:700}
-  /* PIZARRA */
-  .board-wrap{position:relative}
-  .chalk-hint{position:absolute;inset:6px;border-radius:10px;border:1px dashed #335;pointer-events:none;opacity:.0;transition:.3s;display:flex;align-items:center;justify-content:center}
-  .chalk-hint.show{opacity:.7}
-  .chalk-hint span{background:rgba(20,26,36,.85);border:1px solid #2c3750;border-radius:10px;padding:.4rem .6rem;color:#cfeadf}
-  .board{display:grid;grid-template-columns:120px repeat(4, 1fr);border:1px solid #2c3447;border-radius:12px;overflow:hidden}
-  .board .row{display:grid;grid-template-columns:120px repeat(4, 1fr)}
-  .board .cell{border-left:1px solid #2c3447;border-top:1px solid #2c3447;min-height:64px;position:relative}
-  .board .cell.drop{outline:2px dashed #36507a;outline-offset:-6px}
-  .board .time{display:flex;align-items:center;justify-content:center;background:#151923;color:#9fb0c9;font-weight:700}
-  .tile-pool{display:flex;flex-wrap:wrap;gap:.5rem}
-  .tile{user-select:none;padding:.4rem .6rem;background:#24314a;border:1px solid #2f3c57;border-radius:10px;display:inline-flex;align-items:center;gap:.5rem}
-  .tile.dragging, .tile.selected{outline:2px solid #3f6aa6}
-  .tag-mini{font-size:.7rem;color:#cfeadf;background:#1a8a63;border:1px solid #126649;padding:.1rem .35rem;border-radius:6px}
-  .cell .tile{position:absolute;inset:6px;display:flex;align-items:center;justify-content:center}
-  .memory{display:grid;gap:.5rem;grid-template-columns:repeat(6,1fr)}
-  .mem-card{aspect-ratio:1/1;border-radius:10px;background:#212739;border:1px solid #2d3550;display:flex;align-items:center;justify-content:center;font-weight:700}
-  .mem-card.active{background:#274056}
-  @media (max-width:880px){
-    .cols-2{grid-template-columns:1fr}
-    .board{grid-template-columns:1fr}
-    .board .row{grid-template-columns:120px repeat(4,1fr)}
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Capítulo 1 — El Dedos, La Milagrosa y unas clases</title>
+  <meta name="chapter-id" content="cap01" />
+  <style>
+    :root{
+      --bg:#0f1014; --panel:#171923; --muted:#a3adc2; --line:#242836;
+      --ink:#e9ecf1; --accent:#2c7be5; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Calibri,sans-serif;background:var(--bg);color:var(--ink)}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:#0e1017;position:sticky;top:0;z-index:50}
+    header h1{font-size:18px;margin:0}
+    .muted{color:var(--muted)}
+    .btn{appearance:none;border:1px solid var(--line);background:#10131c;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.primary{border-color:transparent;background:var(--accent)}
+    .btn.ghost{background:#0d1017}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .grid{display:grid;grid-template-columns:260px 1fr;gap:16px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+    nav.tabs{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    nav.tabs .tab{border:1px solid var(--line);background:#0e1119;padding:8px 10px;border-radius:999px;cursor:pointer}
+    nav.tabs .tab.active{background:#1b2351;border-color:#31407a}
+    .scene{display:none}
+    .scene.active{display:block}
+    /* Inventario */
+    .inv{display:flex;gap:8px;flex-wrap:wrap}
+    .item{border:1px solid var(--line);background:#0f121a;padding:8px 10px;border-radius:10px;cursor:grab}
+    .item:active{cursor:grabbing}
+    .shelf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    /* Pistas */
+    .pistas{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+    .pill{display:inline-flex;gap:6px;align-items:center;background:#0e1119;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    /* Academia: pizarra + puzzle */
+    .academy{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .pizarra{position:relative;background:#0c1118;border:1px solid var(--line);border-radius:12px;min-height:220px;padding:16px}
+    .pizarra h3{margin:0 0 10px}
+    .pizarra .pista{position:absolute;left:16px;right:16px;bottom:16px;background:rgba(17,24,39,.7);border:1px dashed #3b4257;padding:10px;border-radius:10px}
+    .hidden{display:none}
+    /* Puzzle horario */
+    .board{background:#0c1118;border:1px solid var(--line);border-radius:12px;padding:12px}
+    .board h3{margin:0 0 8px}
+    .pool{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tile{border:1px solid #334155;background:#111827;padding:8px 10px;border-radius:10px;cursor:pointer;user-select:none}
+    .tile.selected{outline:2px solid var(--accent)}
+    .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .col{background:#0a0e14;border:1px dashed #324055;border-radius:10px;min-height:82px;padding:8px}
+    .col h4{margin:0 0 6px;font-size:13px;color:var(--muted)}
+    .cell{background:#0d121a;border:1px solid #2a3344;border-radius:8px;min-height:44px;display:flex;align-items:center;justify-content:center;font-weight:600;color:#cbd5e1}
+    .cell.filled{background:#101827;border-style:solid}
+    .note{font-size:12px;color:var(--muted);margin-top:8px}
+    /* Pickups */
+    .pickup{display:inline-flex;align-items:center;gap:6px;border:1px dashed #3b4257;background:#0e121b;padding:6px 10px;border-radius:10px;cursor:pointer}
+    .pickup:hover{filter:brightness(1.1)}
+  </style>
 </head>
 <body>
-<div class="wrap">
   <header>
-    <div class="brand">
-      <div class="dot"></div>
-      <h1>Juan Cacho — Capítulo 1</h1>
-      <span class="pill" id="statusScene">Escena: —</span>
-      <span class="pill" id="statusHint">Consejo: explora</span>
-    </div>
-    <div class="toolbar">
-      <select id="langSel" class="sel" title="Idioma">
-        <option value="es" selected>ES</option>
-        <option value="en">EN</option>
-      </select>
-      <button class="ghost" id="btnPistas" title="Abrir libretita">🗒️ Pistas</button>
-      <button class="ghost" id="btnMapa" title="Abrir mapa (lugares)">🗺️ Mapa</button>
-      <button class="ghost" id="btnSlots" title="Guardado/Carga">💾 Guardar/Cargar</button>
-      <button class="ghost" id="btnReset" title="Borrar progreso">Reiniciar</button>
+    <h1>Capítulo 1 <span class="muted">— El Dedos, La Milagrosa y unas clases</span></h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="btnSave1">Guardar (S1)</button>
+      <button class="btn ghost" id="btnLoad1">Cargar (L1)</button>
+      <button class="btn primary" id="btnLauncher">Launcher</button>
     </div>
   </header>
 
-  <main class="content" id="content">
+  <div class="wrap">
+    <nav class="tabs" id="tabs">
+      <div class="tab active" data-target="piso">Piso de Juan</div>
+      <div class="tab" data-target="bar">Dos Tercios del Quinto</div>
+      <div class="tab" data-target="academia">La Milagrosa</div>
+      <div class="tab" data-target="angel">Casa de Ángel</div>
+    </nav>
 
-    <!-- ESCENA: PISO -->
-    <section class="scene active" data-scene="piso">
-      <div class="scene-head">
-        <h2>Piso de Juan — Mañana</h2>
-        <span class="hint" data-i18n="hintStart">Busca lo básico antes de salir.</span>
-      </div>
-      <div class="scene-body grid cols-2">
-        <div class="card">
-          <h3>Salón-dormitorio</h3>
-          <p class="subtitle">Cenicero, libros apilados, polvo con pedigrí, una radio tozuda.</p>
-          <div class="list">
-            <div class="item">
-              <span>Radio: escuchar noticias</span>
-              <button class="ghost" onclick="ui.toast('radio')">Escuchar</button>
-            </div>
-            <div class="item">
-              <span>Mesa: libretita</span>
-              <button onclick="actions.takeNotebook()">Coger</button>
-            </div>
-            <div class="item">
-              <span>Chaqueta colgada: dinero suelto</span>
-              <button onclick="actions.takeMoney()">Rebuscar</button>
-            </div>
-            <div class="item">
-              <span>Bolsillo del pantalón: llaves</span>
-              <button onclick="actions.takeKeys()">Coger</button>
-            </div>
-          </div>
+    <div class="grid">
+      <!-- Lateral: Inventario + Pistas -->
+      <aside class="panel">
+        <div class="shelf">
+          <strong>Inventario</strong>
+          <small class="muted" id="invCount"></small>
         </div>
-        <div class="card">
-          <h3>Cocina</h3>
-          <p class="subtitle">Una nevera existencialmente vacía.</p>
-          <div class="list">
-            <div class="item">
-              <span>Nevera</span>
-              <button class="ghost" onclick="ui.toast('fridge')">Abrir</button>
-            </div>
-            <div class="item">
-              <span>Puerta de salida del piso</span>
-              <button class="secondary" onclick="nav.tryLeavePiso()">Salir</button>
-            </div>
-          </div>
-          <p class="hint"><b>Tip:</b> Llaves + Dinero + Libretita antes de salir.</p>
-        </div>
-      </div>
-    </section>
+        <div class="inv inventory" id="inventory"></div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+        <strong>Pistas</strong>
+        <div class="pistas" id="pistas"></div>
+      </aside>
 
-    <!-- ESCENA: PORTAL -->
-    <section class="scene" data-scene="portal">
-      <div class="scene-head">
-        <h2>Portal del edificio</h2>
-        <span class="hint">La portera siempre está… alerta.</span>
-      </div>
-      <div class="scene-body grid cols-2">
-        <div class="card">
-          <h3>Doña María del Pilar</h3>
-          <div class="dialog">
-            <div class="line">— “Don Juan, los pagos…”</div>
+      <!-- Escenas -->
+      <main>
+        <!-- Piso -->
+        <section class="scene active panel" id="scene-piso">
+          <h2>Habitación de Juan</h2>
+          <p class="muted">El despertador martillea, el armario amenaza con caerse… lo de siempre. Puedes salir hacia la academia o pasar por el bar.</p>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" data-goto="academia">Ir a la academia</button>
+            <button class="btn ghost" data-goto="bar">Bajar al bar</button>
           </div>
-          <div class="choices">
-            <button onclick="dialog.portera('cordial')">Cordial: “Luego lo vemos, gracias.”</button>
-            <button class="ghost" onclick="dialog.portera('evasiva')">Evasiva: “Voy con prisa.”</button>
-            <button class="danger" onclick="dialog.portera('sarcastica')">Sarcástica</button>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Vestíbulo</h3>
-          <div class="list">
-            <div class="item">
-              <span>Folleto arrugado en el suelo (bar)</span>
-              <button onclick="actions.pickFlyer()">Recoger</button>
-            </div>
-            <div class="item">
-              <span>Salir a la calle</span>
-              <button class="secondary" onclick="nav.go('calle')">Salir</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <!-- ESCENA: CALLE -->
-    <section class="scene" data-scene="calle">
-      <div class="scene-head">
-        <h2>Calles del barrio</h2>
-        <span class="hint">Bares por cada piedra. Cuesta arriba, cuesta abajo.</span>
-      </div>
-      <div class="scene-body grid cols-2">
-        <div class="card">
-          <h3>Acera & banco</h3>
-          <div class="list">
-            <div class="item">
-              <span>Jubilado con prensa</span>
-              <button class="ghost" onclick="ui.toast('banco')">Escuchar</button>
-            </div>
-            <div class="item">
-              <span>Obra: una tiza olvidada</span>
-              <button onclick="actions.takeChalk()">Coger</button>
-            </div>
-          </div>
-          <p class="hint">Abre el <b>Mapa</b> para ir al Bar o a la Academia.</p>
-        </div>
-        <div class="card">
-          <h3>Encuentro</h3>
-          <div class="dialog">
-            <div class="line">— Se cruza Vicente “El Dedos”. “Al bar te ponen vida en taza.”</div>
-          </div>
-          <div class="choices">
-            <button onclick="nav.go('bar')">Ir al Bar</button>
-            <button class="ghost" onclick="nav.go('academia')">Ir a la Academia</button>
-          </div>
-        </div>
-      </div>
-    </section>
+        <!-- Bar -->
+        <section class="scene panel" id="scene-bar">
+          <h2>Dos Tercios del Quinto</h2>
+          <p class="muted">El Dudu seca vasos, el Moro cuela aceite y el Nino discute al dominó. Aquí poco que arrastrar, pero algo de chismerío se pesca.</p>
+          <div class="pill"><span>🍺</span> “Tranquilo, Juan —dice el Dedos—, cuida tú la cabeza…”</div>
+          <div style="margin-top:10px"><button class="btn ghost" data-goto="piso">Volver al piso</button></div>
+        </section>
 
-    <!-- ESCENA: BAR -->
-    <section class="scene" data-scene="bar">
-      <div class="scene-head">
-        <h2>Bar “Dos Tercios del Quinto”</h2>
-        <span class="hint">Café, dominó y rumores.</span>
-      </div>
-      <div class="scene-body grid cols-2">
-        <div class="card">
-          <h3>Dudu (barra)</h3>
-          <div class="list">
-            <div class="item">
-              <span>“Vida en taza” (café)</span>
-              <button onclick="actions.takeCoffee()">Pedir</button>
-            </div>
-            <div class="item">
-              <span>Rumor del día</span>
-              <button class="ghost" onclick="actions.listenRumor()">Escuchar</button>
-            </div>
-          </div>
-          <p class="hint">Completa el minijuego y quizá te “inviten para llevar”.</p>
-        </div>
-        <div class="card">
-          <h3>Dominó — Minijuego de Memoria</h3>
-          <p class="subtitle">Observa la secuencia y repítela.</p>
-          <div id="memoryPanel"></div>
-          <div class="list">
-            <div class="item">
-              <span>Estado</span>
-              <span id="memStatus" class="hint">Listo</span>
-            </div>
-            <div class="item">
-              <span>Acciones</span>
-              <span>
-                <button onclick="memory.start()">Mostrar secuencia</button>
-                <button class="ghost" onclick="memory.reset()">Reiniciar</button>
-                <button class="warn" onclick="memory.skip()">Saltar</button>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="scene-body">
-        <div class="item">
-          <span>Ir a la Academia</span>
-          <button class="secondary" onclick="nav.go('academia')">Caminar</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ESCENA: ACADEMIA -->
-    <section class="scene" data-scene="academia">
-      <div class="scene-head">
-        <h2>Academia “La Milagrosa”</h2>
-        <span class="hint">Jaime. Pizarra. Amparo. Y talante… peculiar.</span>
-      </div>
-      <div class="scene-body grid cols-2">
-        <div class="card">
-          <h3>Recepción con Jaime</h3>
-          <div class="dialog"><div class="line">— “Aquí los horarios, sin mezclas, por favor.”</div></div>
-          <div class="choices"><button onclick="pizarra.show()">Abrir pizarra de horarios</button></div>
-          <p class="hint">Coloca todas las fichas sin romper las reglas.</p>
-        </div>
-        <div class="card" id="amparoBlock">
-          <h3>Encuentro con Amparo</h3>
-          <div class="dialog"><div class="line">— “Hola… ¿Eres Juan?”</div></div>
-          <div class="choices">
-            <button onclick="flags.metAmparo=true; ui.note(t('amparo.prof'))">Profesional</button>
-            <button class="ghost" onclick="flags.metAmparo=true; ui.note(t('amparo.tim'))">Tímida</button>
-            <button class="secondary" onclick="flags.metAmparo=true; ui.note(t('amparo.suave'))">Canalla-suave</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="pizarraPanel" class="scene-body" style="display:none">
-        <div class="card">
-          <h3>Puzzle — Pizarra de horarios</h3>
-          <p class="subtitle">Reglas: (1) Económicas ≠ misma hora que Refuerzo ESO. (2) Bachi A a primera hora.</p>
-          <div class="grid cols-2">
-            <div class="board-wrap">
-              <div class="board" id="board"></div>
-              <div class="chalk-hint" id="chalkHint"><span id="chalkText">“17 Bachi A · 18 ESO · 19 Económicas · 20 Bachi B”</span></div>
-            </div>
-            <div>
-              <h4>Fichas</h4>
-              <div class="tile-pool" id="tilePool"></div>
-              <div style="margin-top:.6rem;display:flex;gap:.5rem">
-                <button onclick="pizarra.validate()">Validar</button>
-                <button class="ghost" onclick="pizarra.reset()">Reiniciar</button>
+        <!-- Academia -->
+        <section class="scene panel" id="scene-academia">
+          <h2>Academia La Milagrosa</h2>
+          <div class="academy">
+            <!-- Pizarra (hotspot tiza) -->
+            <div class="pizarra"
+                 id="pizarra"
+                 data-hotspot
+                 data-accept="tiza"
+                 data-reveal="#pizarraPista"
+                 data-flag="pizarra_revelada"
+                 data-pista="pista_pizarra"
+                 data-consume="tiza"
+                 data-toast="La tiza revela una fórmula medio borrada…">
+              <h3>Pizarra</h3>
+              <p class="muted">¿Se adivina algo bajo el polvo? Prueba con <em>tiza</em>.</p>
+              <div id="pizarraPista" class="pista hidden">
+                <strong>Pista:</strong> “∂Ψ/∂t ≈ …” — algo de fluidos que a Juan le persigue.
               </div>
-              <div id="pizMsg" class="hint" style="margin-top:.5rem">Coloca todas las fichas. Puedes arrastrar o hacer click-para-colocar.</div>
-              <div class="hint" style="margin-top:.25rem">Usa la <b>Tiza</b> del inventario sobre la pizarra para ver una “pista de tiza”.</div>
+              <div style="margin-top:10px">
+                <span id="pickupTiza" class="pickup"><span>🧼</span><span>Recoger tiza de la mesa</span></span>
+              </div>
+            </div>
+
+            <!-- Puzzle del horario -->
+            <div class="board">
+              <h3>Cuadra el horario de verano</h3>
+              <div class="note">Coloca las fichas en Lunes–Jueves. Puedes recolocarlas sin pelearte.</div>
+              <div id="pool" class="pool"></div>
+              <div class="cols" id="cols">
+                <div class="col" data-day="lun">
+                  <h4>Lunes</h4>
+                  <div class="cell" data-slot="lun"></div>
+                </div>
+                <div class="col" data-day="mar">
+                  <h4>Martes</h4>
+                  <div class="cell" data-slot="mar"></div>
+                </div>
+                <div class="col" data-day="mie">
+                  <h4>Miércoles</h4>
+                  <div class="cell" data-slot="mie"></div>
+                </div>
+                <div class="col" data-day="jue">
+                  <h4>Jueves</h4>
+                  <div class="cell" data-slot="jue"></div>
+                </div>
+              </div>
+              <div class="note">Solución “canónica”: LUN=ESO, MAR=Económicas, MIÉ=Bachillerato, JUE=Recuperación.</div>
+              <div id="horarioOk" class="pill hidden" style="margin-top:10px"><span>✅</span> Horario listo. Jaime deja de gimotear.</div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="scene-body">
-        <div class="item">
-          <span>Salir de la academia</span>
-          <button class="secondary" onclick="nav.exitAcademia()">Salir</button>
-        </div>
-      </div>
-    </section>
+          <div style="margin-top:12px"><button class="btn ghost" data-goto="piso">Volver al piso</button></div>
+        </section>
 
-    <!-- ESCENA: CLIFF -->
-    <section class="scene" data-scene="cliff">
-      <div class="scene-head">
-        <h2>A la puerta de la academia</h2>
-        <span class="hint">Alguien te espera.</span>
-      </div>
-      <div class="scene-body">
-        <div class="card">
-          <div class="dialog"><div class="line"><strong>Nieves</strong>: “Juan, pásate luego… Es sobre <em>Remedios</em>.”</div></div>
-          <p class="hint">Fin del Capítulo 1. (Progreso guardado.)</p>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="footer">
-    <div class="inventory" id="inventory" aria-label="Inventario"></div>
-    <div class="hint" id="hintFooter">Arrastra objetos sobre elementos interactivos (cuando proceda).</div>
-  </footer>
-</div>
-
-<!-- OVERLAY: MAPA -->
-<div class="overlay" id="overlayMapa" aria-hidden="true">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-      <h3 style="margin:0">Mapa</h3>
-      <button class="ghost" onclick="ui.toggleMapa(false)">Cerrar</button>
-    </div>
-    <div class="map">
-      <div class="loc"><span class="name">Calle del barrio</span><button class="secondary" onclick="ui.toggleMapa(false); nav.go('calle')">Ir</button></div>
-      <div class="loc"><span class="name">Bar “Dos Tercios del Quinto”</span><button id="btnMapBar" class="secondary" disabled>Ir</button></div>
-      <div class="loc"><span class="name">Academia “La Milagrosa”</span><button id="btnMapAcademia" class="secondary" disabled>Ir</button></div>
+        <!-- Casa de Ángel -->
+        <section class="scene panel" id="scene-angel">
+          <h2>Casa de Ángel</h2>
+          <p class="muted">Un flexo, posters y dudas adolescentes. Juan suelta un consejo y se lleva un CD con PDFs de fluidos.</p>
+          <div class="pill"><span>💿</span> Pista: “prueba a acercarte por el chat sin estar delante”.</div>
+          <div style="margin-top:10px"><button class="btn ghost" data-goto="piso">Volver al piso</button></div>
+        </section>
+      </main>
     </div>
   </div>
-</div>
 
-<!-- OVERLAY: PISTAS -->
-<div class="overlay" id="overlayPistas" aria-hidden="true">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-      <h3 style="margin:0">Libretita</h3>
-      <button class="ghost" onclick="ui.togglePistas(false)">Cerrar</button>
-    </div>
-    <div id="pistasBox" class="list"></div>
-    <div style="margin-top:.75rem;display:flex;gap:.5rem">
-      <input id="pistaInput" placeholder="Añadir nota…" style="flex:1;background:#11161e;border:1px solid #28344a;color:#cfeadf;border-radius:10px;padding:.6rem" />
-      <button onclick="ui.addPista()">Añadir</button>
-      <button class="ghost" onclick="ui.clearPistas()">Vaciar</button>
-    </div>
-  </div>
-</div>
+  <!-- Núcleo + remoto -->
+  <script src="core/engine.js"></script>
+  <script src="core/drag.js"></script>
+  <script src="core/hotspots.js"></script>
+  <!-- Has creado 'migrations.js' (plural) → lo cargamos así -->
+  <script src="core/migrations.js"></script>
+  <script src="remote-saves.js"></script>
 
-<!-- OVERLAY: SLOTS -->
-<div class="overlay" id="overlaySlots" aria-hidden="true">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-      <h3 style="margin:0">Guardado / Carga</h3>
-      <button class="ghost" onclick="ui.toggleSlots(false)">Cerrar</button>
-    </div>
-    <div class="list" id="slotsList"></div>
-  </div>
-</div>
+  <script>
+    // ===== Estado y utilidades de este capítulo =====
+    window.flags ||= {};
+    window.pistas ||= [];
+    window.inventory ||= [];
 
-<script>
-/* ===== Idiomas (mensajes dinámicos) ===== */
-const i18n = {
-  lang: 'es',
-  dict: {
-    es: {
-      radio: 'Qué alegría: titulares y gritos a las 9. Perfecto.',
-      fridge: 'Vacía. Como mi cuenta.',
-      banco: 'El barrio habla solo. Poco verde y mucho chisme.',
-      needKeys: 'Me faltan las llaves.',
-      broke: 'Voy pelao… bueno, peor que de costumbre.',
-      invNotebook: 'Vale, libretita al bolsillo.',
-      invMoney: 'Un billete que ha visto cosas.',
-      invKeys: 'Sin esto no salgo ni de la cama.',
-      invChalk: 'Nunca sabes cuándo te salva una tiza.',
-      invFlyer: 'Bar marcado en el mapa.',
-      invCoffee: 'Café adentro. Pupilas abiertas.',
-      rumor: 'Nada concreto, pero me queda zumbando.',
-      memReady:'Listo', memWatch:'Observa…', memRepeat:'Repite la secuencia.',
-      memFail:'Ups. Secuencia incorrecta.',
-      memDone:'¡Hecho! Dudu sonríe.',
-      pizPlace:'Colocado.',
-      pizOccupied:'Esa hora ya está ocupada.',
-      pizMissing:'Faltan clases por ubicar.',
-      pizHint:'Sugerencia: Bachi A debería ir a primera hora (17:00).',
-      pizOrder:'Las combinaciones valen, pero Jaime quería ese orden. Ajusta.',
-      pizOk:'Perfecto. Jaime asiente sin aflojar un euro.',
-      chalkUsed:'(Pista de tiza revelada)',
-      cliffWait:'Mejor dejo cerrados los horarios antes de irme.',
-      slotsEmpty:'(vacío)',
-      saveOk:'Partida guardada en slot ',
-      loadOk:'Partida cargada desde slot ',
-      amparo:{prof:'Profesional: “Sí. Las mates las apañamos.”', tim:'Tímida: “Sí… yo… sí.”', suave:'“El mismo. Resolver incógnitas es lo mío.”'}
-    },
-    en: {
-      radio: 'Great: headlines yelling at 9am. Lovely.',
-      fridge:'Empty. Like my balance.',
-      banco:'The neighborhood hums. Little green, lots of gossip.',
-      needKeys:'I’m missing my keys.',
-      broke:'I’m broke… more than usual.',
-      invNotebook:'Notebook in pocket.',
-      invMoney:'A bill that has seen things.',
-      invKeys:'Can’t leave without these.',
-      invChalk:'Chalk may save your day.',
-      invFlyer:'Bar pinned on the map.',
-      invCoffee:'Coffee in. Pupils wide.',
-      rumor:'Nothing concrete, but it lingers.',
-      memReady:'Ready', memWatch:'Watch…', memRepeat:'Repeat the sequence.',
-      memFail:'Oops. Wrong sequence.',
-      memDone:'Done! Dudu smiles.',
-      pizPlace:'Placed.',
-      pizOccupied:'That hour is already taken.',
-      pizMissing:'Classes still missing.',
-      pizHint:'Hint: Bachi A should be first (17:00).',
-      pizOrder:'Combinations are fine, but Jaime wants that exact order.',
-      pizOk:'Perfect. Jaime nods without raising your pay.',
-      chalkUsed:'(Chalk hint revealed)',
-      cliffWait:'I should lock the schedule before leaving.',
-      slotsEmpty:'(empty)',
-      saveOk:'Saved to slot ',
-      loadOk:'Loaded from slot ',
-      amparo:{prof:'Professional: “Yup. Math, we’ll sort it.”', tim:'Shy: “Yes… I… yes.”', suave:'“That’s me. Solving unknowns is my thing.”'}
+    // Tiles del puzzle (id estables)
+    const TILES = [
+      {id:'eso', label:'ESO'},
+      {id:'eco', label:'Económicas'},
+      {id:'bach', label:'Bachillerato'},
+      {id:'rec', label:'Recuperación'}
+    ];
+    const REQUIRED = { lun:'eso', mar:'eco', mie:'bach', jue:'rec' };
+    const boardState = (flags.board_cap01 = flags.board_cap01 || { lun:null, mar:null, mie:null, jue:null });
+    const tilePlacement = {}; // tileId -> day
+
+    // ===== UI básico: pestañas, inventario, pistas =====
+    function initTabs(){
+      const tabs = document.getElementById('tabs');
+      tabs.querySelectorAll('.tab').forEach(tab=>{
+        tab.onclick = ()=>{
+          tabs.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+          tab.classList.add('active');
+          const target = tab.dataset.target;
+          showScene(target);
+        };
+      });
+      // Botones goto
+      document.querySelectorAll('[data-goto]').forEach(b=>{
+        b.addEventListener('click', ()=> showScene(b.dataset.goto));
+      });
     }
-  }
-};
-function t(key){
-  if(key.includes('.')){
-    const [a,b]=key.split('.');
-    return (i18n.dict[i18n.lang][a]||{})[b] || key;
-  }
-  return i18n.dict[i18n.lang][key] || key;
-}
-
-/* ===== Sonidos ===== */
-const sfx = {
-  ctx: null,
-  beep(freq=440, dur=0.08, type='triangle', vol=0.02){
-    try{
-      if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)();
-      const o = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.value = vol;
-      o.connect(g); g.connect(this.ctx.destination);
-      o.start();
-      o.stop(this.ctx.currentTime + dur);
-    }catch(_){}
-  },
-  click(){ this.beep(520, .05, 'square', .015); },
-  ok(){ this.beep(660, .08, 'sine', .03); },
-  err(){ this.beep(220, .12, 'sawtooth', .03); },
-  pick(){ this.beep(880, .05, 'triangle', .02); }
-};
-
-/* ===== Estado global + guardado ===== */
-const flags = {
-  hasKeys:false, hasCash:false, gotNotebook:false,
-  metPortera:"none", heardBarRumor:false, wonBarMini:false,
-  metJaime:false, metAmparo:false, schedPuzzleDone:false,
-  flyer:false, chalk:false, coffee:false, coffeeToGo:false,
-  hintChalk:false, chapter1Cliff:false
-};
-const pistas = [];
-const inventory = []; // {id, name, tag, icon}
-
-const persist = {
-  save(){ localStorage.setItem("cacho_save_auto", JSON.stringify({flags, pistas, inventory, lang:i18n.lang})); },
-  loadAuto(){
-    const raw = localStorage.getItem("cacho_save_auto"); if(!raw) return;
-    try{
-      const d = JSON.parse(raw)||{};
-      Object.assign(flags, d.flags||{});
-      (d.pistas||[]).forEach(p=>pistas.push(p));
-      (d.inventory||[]).forEach(it=>inventory.push(it));
-      if(d.lang) i18n.lang = d.lang;
-    }catch(e){}
-  },
-  saveToSlot(n){
-    localStorage.setItem("cacho_slot_"+n, JSON.stringify({flags, pistas, inventory, lang:i18n.lang}));
-    ui.note(t('saveOk')+n); sfx.ok(); ui.renderSlots();
-  },
-  loadFromSlot(n){
-    const raw = localStorage.getItem("cacho_slot_"+n);
-    if(!raw) return;
-    const d = JSON.parse(raw)||{};
-    Object.keys(flags).forEach(k=>delete flags[k]);
-    Object.assign(flags, d.flags||{});
-    pistas.splice(0,pistas.length, ...(d.pistas||[]));
-    inventory.splice(0,inventory.length, ...(d.inventory||[]));
-    i18n.lang = d.lang||'es';
-    ui.refreshInventory();
-    ui.note(t('loadOk')+n); sfx.ok();
-    ui.applyLang(); ui.renderPistas(); ui.ensureMapButtons();
-    nav.go(nav.current);
-    persist.save();
-  },
-  reset(){ localStorage.removeItem("cacho_save_auto"); location.reload(); }
-};
-
-/* ===== UI ===== */
-const ui = {
-  say(id, text){ const el = document.getElementById(id); if(el) el.textContent = text; },
-  toast(key){ this.say('statusHint', t(key)); sfx.click(); },
-  note(text){ this.say('statusHint', text); },
-  setSceneName(name){ this.say('statusScene', "Escena: " + name); },
-  refreshInventory(){
-    const box = document.getElementById('inventory'); if(!box) return;
-    box.innerHTML = '';
-    inventory.forEach(it=>{
-      const slot = document.createElement('div');
-      slot.className = 'inv-slot';
-      slot.draggable = true;
-      slot.dataset.item = it.id;
-      slot.setAttribute('aria-label', it.name);
-      slot.addEventListener('dragstart', drag.invStart);
-      slot.addEventListener('dragend', drag.invEnd);
-      slot.innerHTML = `<span>${it.icon||'🎒'}</span><span class="tag">${it.tag||''}</span>`;
-      box.appendChild(slot);
-    });
-  },
-  addItem(obj){
-    if(!inventory.find(x=>x.id===obj.id)){
-      inventory.push(obj); this.refreshInventory(); persist.save(); sfx.pick();
+    function showScene(name){
+      document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+      document.getElementById('scene-'+name)?.classList.add('active');
+      // Actualiza pestaña activa
+      document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.dataset.target===name));
+      // Rebind inventario por si cambia el DOM
+      window.migrate?.bindInventory?.();
     }
-  },
-  removeItem(id){
-    const i = inventory.findIndex(x=>x.id===id);
-    if(i>=0){ inventory.splice(i,1); this.refreshInventory(); persist.save(); }
-  },
-  ensureMapButtons(){
-    const bBar = document.getElementById('btnMapBar');
-    const bAca = document.getElementById('btnMapAcademia');
-    if(bBar){ bBar.disabled = !flags.flyer; bBar.onclick = ()=>{ui.toggleMapa(false); nav.go('bar');}; }
-    if(bAca){ bAca.disabled = false; bAca.onclick = ()=>{ui.toggleMapa(false); nav.go('academia');}; }
-  },
-  toggleMapa(show){
-    const o = document.getElementById('overlayMapa'); if(!o) return;
-    o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString());
-    if(show) ui.ensureMapButtons();
-  },
-  togglePistas(show){
-    const o = document.getElementById('overlayPistas'); if(!o) return;
-    o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString());
-    ui.renderPistas();
-  },
-  renderPistas(){
-    const box = document.getElementById('pistasBox'); if(!box) return;
-    box.innerHTML = pistas.length ? '' : `<div class="hint">Sin notas por ahora.</div>`;
-    pistas.slice(-12).forEach((t,i)=>{
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `<span>${t}</span><button class="ghost" onclick="ui.delPista(${i})">Borrar</button>`;
-      box.appendChild(div);
-    });
-  },
-  addPista(){ const input = document.getElementById('pistaInput'); if(!input) return;
-    const v = (input.value||'').trim(); if(!v) return;
-    pistas.push(v); input.value = ''; this.renderPistas(); persist.save(); sfx.click();
-  },
-  delPista(i){ pistas.splice(i,1); this.renderPistas(); persist.save(); },
-  clearPistas(){ pistas.splice(0,pistas.length); this.renderPistas(); persist.save(); },
-  toggleSlots(show){
-    const o = document.getElementById('overlaySlots'); if(!o) return;
-    if(show) this.renderSlots();
-    o.classList.toggle('active', !!show); o.setAttribute('aria-hidden', (!show).toString());
-  },
-  renderSlots(){
-    const box = document.getElementById('slotsList'); if(!box) return;
-    box.innerHTML = '';
-    [1,2,3].forEach(n=>{
-      const raw = localStorage.getItem("cacho_slot_"+n);
-      let meta = t('slotsEmpty');
-      if(raw){ try{ const d = JSON.parse(raw); meta = `Scene: ${nav.current} · Lang: ${(d.lang||'es').toUpperCase()}`; }catch{} }
-      const row = document.createElement('div');
-      row.className = 'item';
-      row.innerHTML = `<span><b>Slot ${n}</b> — ${meta}</span>
-        <span>
-          <button class="secondary" onclick="persist.saveToSlot(${n})">Guardar</button>
-          <button class="ghost" onclick="persist.loadFromSlot(${n})">Cargar</button>
-        </span>`;
-      box.appendChild(row);
-    });
-  },
-  applyLang(){
-    document.getElementById('langSel').value = i18n.lang;
-    this.say('memStatus', t('memReady'));
-    this.say('statusHint', '');
-    const chalkText = document.getElementById('chalkText');
-    if(chalkText) chalkText.textContent = (i18n.lang==='es' ? '“17 Bachi A · 18 ESO · 19 Económicas · 20 Bachi B”' : '“17 Bachi A · 18 ESO · 19 Economics · 20 Bachi B”');
-  }
-};
 
-/* ===== Navegación ===== */
-const nav = {
-  current:'piso',
-  go(scene){
-    document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
-    const target = document.querySelector(`.scene[data-scene="${scene}"]`);
-    if(target){ target.classList.add('active'); this.current=scene; ui.setSceneName(sceneLabel(scene)); persist.save(); }
-    if(scene==='bar') memory.mount();
-    if(scene==='academia') pizarra.ensureInit();
-  },
-  tryLeavePiso(){
-    if(!flags.hasKeys){ ui.toast('needKeys'); sfx.err(); return; }
-    if(!flags.hasCash) ui.toast('broke');
-    nav.go('portal');
-  },
-  exitAcademia(){
-    if(flags.schedPuzzleDone){
-      nav.go('cliff'); flags.chapter1Cliff = true; persist.save(); sfx.ok();
-    }else{
-      ui.note(t('cliffWait')); sfx.err();
+    // Inventario render
+    window.ui = window.ui || {};
+    window.ui.refreshInventory = function(){
+      const host = document.getElementById('inventory');
+      host.innerHTML = '';
+      inventory.forEach(it=>{
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.dataset.itemId = (typeof it==='string'? it : it.id);
+        el.textContent = iconFor(el.dataset.itemId) + ' ' + niceName(el.dataset.itemId);
+        host.appendChild(el);
+      });
+      document.getElementById('invCount').textContent = `${inventory.length} obj.`;
+      // Vincula drag para los items pintados
+      window.migrate?.bindInventory?.();
+    };
+    function iconFor(id){
+      if (id==='tiza') return '🧼';
+      if (id==='llave_azul') return '🔑';
+      if (id==='moneda') return '🪙';
+      return '🎒';
     }
-  }
-};
-function sceneLabel(k){ return ({piso:'Piso',portal:'Portal',calle:'Calle',bar:'Bar',academia:'Academia',cliff:'(Cliff)'})[k]||k; }
-
-/* ===== Acciones ===== */
-const actions = {
-  takeNotebook(){
-    if(flags.gotNotebook) return;
-    flags.gotNotebook = true; ui.addItem({id:'libreta', name:'Libretita', tag:'📝', icon:'🗒️'});
-    pistas.push('Tengo la libretita para ir anotando.'); ui.toast('invNotebook');
-  },
-  takeMoney(){
-    if(flags.hasCash) return;
-    flags.hasCash = true; ui.addItem({id:'dinero', name:'Billete arrugado', tag:'€', icon:'💶'}); ui.toast('invMoney');
-  },
-  takeKeys(){
-    if(flags.hasKeys) return;
-    flags.hasKeys = true; ui.addItem({id:'llaves', name:'Llaves', tag:'🗝', icon:'🗝️'}); ui.toast('invKeys');
-  },
-  pickFlyer(){
-    if(flags.flyer) return;
-    flags.flyer = true; ui.addItem({id:'flyer', name:'Folleto del bar', tag:'bar', icon:'🧾'}); ui.toast('invFlyer'); ui.ensureMapButtons();
-  },
-  takeChalk(){
-    if(flags.chalk) return;
-    flags.chalk = true; ui.addItem({id:'tiza', name:'Tiza', tag:'🧱', icon:'🖍️'}); ui.toast('invChalk');
-  },
-  takeCoffee(){
-    if(flags.coffee) return;
-    flags.coffee = true; ui.toast('invCoffee');
-  },
-  listenRumor(){
-    if(flags.heardBarRumor) return;
-    flags.heardBarRumor = true; pistas.push('Rumor oído en el bar: Nieves anda seria / Academia tranquila.'); ui.toast('rumor');
-  }
-};
-
-/* ===== Diálogo rápida ===== */
-const dialog = {
-  portera(tone){
-    if(tone==='cordial'){ flags.metPortera='cordial'; pistas.push('Portera cordial.'); }
-    if(tone==='evasiva'){ flags.metPortera='none'; }
-    if(tone==='sarcastica'){ flags.metPortera='hostil'; pistas.push('Portera molesta.'); }
-    persist.save(); sfx.click();
-  }
-};
-
-/* ===== Drag inventario ===== */
-const drag = {
-  dragged:null,
-  invStart(e){ drag.dragged = e.currentTarget.dataset.item; e.currentTarget.classList.add('dragging'); },
-  invEnd(e){ e.currentTarget.classList.remove('dragging'); drag.dragged = null; }
-};
-
-/* ===== Minijuego Memoria ===== */
-const memory = {
-  seq:[], user:[], active:false, panel:null,
-  mount(){
-    this.panel = document.getElementById('memoryPanel');
-    if(!this.panel) return;
-    this.panel.innerHTML = '';
-    const grid = document.createElement('div'); grid.className = 'memory';
-    for(let i=0;i<6;i++){
-      const c = document.createElement('button');
-      c.className = 'mem-card';
-      c.textContent = ['🁣','🁤','🁥','🁦','🁧','🁨'][i];
-      c.addEventListener('click', ()=>this.click(i));
-      grid.appendChild(c);
+    function niceName(id){
+      return ({
+        tiza:'Tiza',
+        llave_azul:'Llave azul',
+        moneda:'Moneda'
+      })[id] || id;
     }
-    this.panel.appendChild(grid);
-    this.reset();
-  },
-  start(){ if(this.active) return; this.user = []; this.seq = Array.from({length:5},()=>Math.floor(Math.random()*6)); this.showSeq(); sfx.click(); },
-  async showSeq(){
-    this.active = true; ui.say('memStatus', t('memWatch'));
-    const cards = this.panel ? this.panel.querySelectorAll('.mem-card') : [];
-    for(let i=0;i<this.seq.length;i++){
-      const idx = this.seq[i]; if(!cards[idx]) continue;
-      cards[idx].classList.add('active'); await new Promise(r=>setTimeout(r, 520));
-      cards[idx].classList.remove('active'); await new Promise(r=>setTimeout(r, 200));
+
+    // Pistas render
+    window.ui.renderPistas = function(){
+      const host = document.getElementById('pistas');
+      host.innerHTML = '';
+      pistas.forEach(p=>{
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+        pill.innerHTML = `<span>🧩</span><span>${prettyPista(p)}</span>`;
+        host.appendChild(pill);
+      });
+    };
+    function prettyPista(id){
+      return ({
+        'pista_pizarra': 'En la pizarra aparece una fórmula medio borrada.',
+        'horario_ok': 'Horario cuadrado: LUN=ESO, MAR=Económicas, MIÉ=Bach, JUE=Recuperación.'
+      })[id] || id;
     }
-    ui.say('memStatus', t('memRepeat')); this.active = false;
-  },
-  click(i){
-    if(this.active || !this.seq.length) return;
-    this.user.push(i);
-    const okSoFar = this.user.every((v,ix)=>v===this.seq[ix]);
-    if(!okSoFar){ ui.say('memStatus', t('memFail')); this.user = []; sfx.err(); return; }
-    if(this.user.length===this.seq.length){ ui.say('memStatus', t('memDone')); this.reward(); this.user = []; sfx.ok(); }
-    else ui.say('memStatus',`OK (${this.user.length}/${this.seq.length})`);
-  },
-  reward(){
-    if(flags.wonBarMini) return;
-    flags.wonBarMini = true; flags.coffeeToGo = true;
-    ui.addItem({id:'cafeToGo', name:'Café para llevar', tag:'☕', icon:'🥤'});
-    pistas.push('Me invitaron un café para llevar (bar).'); persist.save();
-  },
-  reset(){ this.seq = []; this.user = []; ui.say('memStatus', t('memReady')); }
-};
 
-/* ===== Puzzle Pizarra (drag + click-to-place + tiza) ===== */
-const pizarra = {
-  init:false,
-  tilesData:[
-    {id:'bachiA', label:'Bachi A'},
-    {id:'eso', label:'Refuerzo ESO'},
-    {id:'eco', label:'2º Económicas'},
-    {id:'bachiB', label:'Bachi B'}
-  ],
-  hours:['17:00','18:00','19:00','20:00'],
-  boardEl:null, poolEl:null, map:{}, selected:null,
-  ensureInit(){
-    if(this.init) return;
-    this.boardEl = document.getElementById('board');
-    this.poolEl  = document.getElementById('tilePool');
-    if(!this.boardEl || !this.poolEl) return;
+    // Toast
+    window.ui.note = window.ui.note || (msg=>console.log('[NOTE]', msg));
 
-    // Cabecera
-    this.boardEl.innerHTML = '';
-    const head = document.createElement('div'); head.className='row';
-    ['Hora','Lun','Mar','Mié','Jue'].forEach(t=>{
-      const c = document.createElement('div');
-      c.className = 'cell time'; c.textContent = t;
-      head.appendChild(c);
-    });
-    this.boardEl.appendChild(head);
+    // ===== Puzzle: horario (click-para-colocar + recolocación segura) =====
+    function renderPool(){
+      const pool = document.getElementById('pool');
+      pool.innerHTML = '';
+      TILES.forEach(t=>{
+        const el = document.createElement('div');
+        el.className = 'tile';
+        el.dataset.id = t.id;
+        el.textContent = t.label;
+        // Deshabilitar si ya está colocado
+        if (tilePlacement[t.id]) {
+          el.style.opacity = '.45';
+          el.style.pointerEvents = 'none';
+        }
+        el.addEventListener('click', ()=> selectTile(el));
+        pool.appendChild(el);
+      });
+    }
+    let selectedTile = null;
+    function selectTile(el){
+      document.querySelectorAll('.tile').forEach(t=>t.classList.remove('selected'));
+      if (selectedTile===el){ selectedTile=null; return; }
+      selectedTile = el;
+      el.classList.add('selected');
+    }
 
-    // Filas por hora (todas las columnas dropeables + click-place)
-    this.hours.forEach(h=>{
-      const row = document.createElement('div'); row.className='row';
-      const time = document.createElement('div'); time.className='cell time'; time.textContent=h;
-      row.appendChild(time);
-      for(let day=0; day<4; day++){
-        const cell = document.createElement('div');
-        cell.className='cell drop-target';
-        cell.dataset.hour = h;
-        cell.dataset.day  = day;
-
-        // DnD de fichas (y tiza)
-        cell.addEventListener('dragover', (e)=>{
-          // Si arrastramos tiza o una ficha, permitir drop
-          const isTile = (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('text/tile'));
-          if(drag.dragged === 'tiza' || isTile){
-            e.preventDefault();
-            cell.classList.add('drop');
-          }
-        });
-        cell.addEventListener('dragleave', ()=>cell.classList.remove('drop'));
-        cell.addEventListener('drop', (e)=>{
-          e.preventDefault();
-          cell.classList.remove('drop');
-
-          // Tiza como hotspot sobre celda
-          if(drag.dragged === 'tiza'){
-            this.useChalk();
+    function bindCells(){
+      document.querySelectorAll('.cell').forEach(cell=>{
+        cell.addEventListener('click', ()=>{
+          const day = cell.dataset.slot;
+          // Quitar si ya había
+          if (cell.dataset.value){
+            const previous = cell.dataset.value;
+            // liberar tile
+            tilePlacement[previous] = null;
+            cell.dataset.value = '';
+            cell.textContent = '';
+            cell.classList.remove('filled');
+            renderPool();
+            checkSolved();
             return;
           }
-
-          const tid = e.dataTransfer.getData('text/tile');
-          if(!tid) return;
-          this.placeTile(cell, tid);
+          if (!selectedTile) { window.ui.note('Selecciona una ficha en el pool.'); return; }
+          const id = selectedTile.dataset.id;
+          // Si estaba en otro día, limpia ese día
+          const prevDay = tilePlacement[id];
+          if (prevDay){
+            const prevCell = document.querySelector(`.cell[data-slot="${prevDay}"]`);
+            if (prevCell){
+              prevCell.dataset.value = '';
+              prevCell.textContent = '';
+              prevCell.classList.remove('filled');
+            }
+          }
+          // Coloca en el día actual
+          cell.dataset.value = id;
+          cell.textContent = TILES.find(x=>x.id===id).label;
+          cell.classList.add('filled');
+          tilePlacement[id] = day;
+          // Desselecciona y repinta pool
+          selectedTile.classList.remove('selected');
+          selectedTile = null;
+          renderPool();
+          saveBoardState();
+          checkSolved();
         });
+      });
+    }
 
-        // Click-para-colocar
-        cell.addEventListener('click', ()=>{
-          if(!this.selected) return;
-          this.placeTile(cell, this.selected);
-        });
+    function restoreBoard(){
+      // Restaura boardState -> celdas y tilePlacement
+      ['lun','mar','mie','jue'].forEach(day=>{
+        const id = boardState[day];
+        const cell = document.querySelector(`.cell[data-slot="${day}"]`);
+        if (cell && id){
+          cell.dataset.value = id;
+          cell.textContent = TILES.find(x=>x.id===id)?.label || id;
+          cell.classList.add('filled');
+          tilePlacement[id] = day;
+        }
+      });
+      renderPool();
+      checkSolved(true);
+    }
 
-        row.appendChild(cell);
+    function saveBoardState(){
+      ['lun','mar','mie','jue'].forEach(day=>{
+        const cell = document.querySelector(`.cell[data-slot="${day}"]`);
+        boardState[day] = cell?.dataset?.value || null;
+      });
+      // Persistimos en flags (via remote-saves también se guarda)
+      flags.board_cap01 = boardState;
+    }
+
+    function checkSolved(isRestore=false){
+      const ok = ['lun','mar','mie','jue'].every(day=>{
+        const c = document.querySelector(`.cell[data-slot="${day}"]`);
+        return (c?.dataset?.value || '') === REQUIRED[day];
+      });
+      document.getElementById('horarioOk').classList.toggle('hidden', !ok);
+      if (ok && !pistas.includes('horario_ok')){
+        pistas.push('horario_ok');
+        window.ui.renderPistas?.();
+        if (!isRestore) window.ui.note('Horario resuelto.');
       }
-      this.boardEl.appendChild(row);
-    });
+      flags.horario_resuelto = ok;
+    }
 
-    // Drop global en la pizarra (por si sueltan la tiza entre celdas)
-    const wrap = this.boardEl.closest('.board-wrap');
-    const chalkHint = document.getElementById('chalkHint');
-    if(wrap){
-      wrap.addEventListener('dragover', (e)=>{
-        if(drag.dragged === 'tiza'){
-          e.preventDefault();
-          chalkHint.classList.add('show');
-        }
-      });
-      wrap.addEventListener('dragleave', ()=>{
-        if(!flags.hintChalk) chalkHint.classList.remove('show');
-      });
-      wrap.addEventListener('drop', (e)=>{
-        if(drag.dragged === 'tiza'){
-          e.preventDefault();
-          this.useChalk();
+    // ===== Pizarra: pickup tiza y restauración desde flags =====
+    function initTizaPickup(){
+      const pick = document.getElementById('pickupTiza');
+      const has = inventory.some(x=> (typeof x==='string'?x:x?.id)==='tiza');
+      if (has) pick.classList.add('hidden');
+      pick.addEventListener('click', ()=>{
+        if (!inventory.some(x=> (typeof x==='string'?x:x?.id)==='tiza')){
+          inventory.push('tiza');
+          window.ui.refreshInventory();
+          pick.classList.add('hidden');
+          window.ui.note('Has recogido una tiza.');
         }
       });
     }
 
-    this.renderPool();
-    this.init = true;
-  },
-  useChalk(){
-    const chalkHint = document.getElementById('chalkHint');
-    flags.hintChalk = true;
-    chalkHint.classList.add('show');
-    ui.removeItem('tiza');
-    ui.note(t('chalkUsed'));
-    sfx.ok();
-    persist.save();
-  },
-  // coloca una ficha en una celda (drag o click-place)
-  placeTile(cell, tid){
-    // Evitar 2 fichas en la misma celda
-    if(cell.querySelector('.tile')){ ui.say('pizMsg', t('pizOccupied')); sfx.err(); return; }
-
-    const hour = cell.dataset.hour;
-
-    // 1) Dejar SOLO 1 ficha por hora → limpia toda la fila (hora)
-    document.querySelectorAll(`.cell.drop-target[data-hour="${hour}"] .tile`).forEach(el=>{
-      el.parentElement.innerHTML = '';
-    });
-
-    // 2) Cada ficha solo puede estar en un sitio → limpia su ubicación previa
-    document.querySelectorAll('.cell.drop-target .tile').forEach(el=>{
-      if(el.dataset.tid === tid) el.parentElement.innerHTML = '';
-    });
-
-    // 3) Colocar
-    const tile = this.createTile(tid);
-    cell.appendChild(tile);
-
-    // 4) Mapear (hora → ficha)
-    this.map[hour] = tid;
-
-    ui.say('pizMsg', t('pizPlace'));
-    sfx.click();
-  },
-  renderPool(){
-    this.poolEl.innerHTML = '';
-    this.tilesData.forEach(t=>{
-      const el = this.createTile(t.id, true);
-      this.poolEl.appendChild(el);
-    });
-  },
-  createTile(id, fromPool=false){
-    const data = this.tilesData.find(x=>x.id===id);
-    const t = document.createElement('div');
-    t.className = 'tile'; t.draggable = true; t.dataset.tid = id;
-    t.innerHTML = `<span>${data.label}</span><span class="tag-mini">CLASE</span>`;
-
-    // Drag de fichas
-    t.addEventListener('dragstart', (e)=>{
-      e.dataTransfer.setData('text/tile', id);
-      t.classList.add('dragging');
-    });
-    t.addEventListener('dragend', ()=>t.classList.remove('dragging'));
-
-    // Selección para click-place (solo en el pool)
-    if(fromPool){
-      t.addEventListener('click', ()=>{
-        if(this.selected === id){
-          this.selected = null;
-          t.classList.remove('selected');
-        }else{
-          this.selected = id;
-          document.querySelectorAll('.tile-pool .tile').forEach(x=>x.classList.remove('selected'));
-          t.classList.add('selected');
-        }
-      });
+    // ===== Botones guardar/cargar/launcher =====
+    function initTopBar(){
+      document.getElementById('btnSave1').onclick = ()=> persist.saveSlot?.(1);
+      document.getElementById('btnLoad1').onclick = ()=> persist.loadSlot?.(1);
+      document.getElementById('btnLauncher').onclick = ()=> location.href='index.html';
     }
-    return t;
-  },
-  show(){
-    this.ensureInit(); // asegurar construcción “en frío”
-    document.getElementById('pizarraPanel').style.display = 'block';
-    flags.metJaime = true;
-    persist.save();
-  },
-  reset(){
-    document.querySelectorAll('.cell.drop-target').forEach(c=>c.innerHTML='');
-    this.map = {};
-    this.selected = null;
-    this.renderPool();
-    ui.say('pizMsg','Reiniciado.');
-    sfx.click();
-    if(!flags.hintChalk) document.getElementById('chalkHint').classList.remove('show');
-  },
-  validate(){
-    const placed = Object.values(this.map);
-    if(placed.length < 4){ ui.say('pizMsg', t('pizMissing')); sfx.err(); return; }
 
-    // Regla 2: Bachi A a las 17:00
-    const invMap = Object.entries(this.map).reduce((a,[h,tid])=>{ a[tid]=h; return a; },{});
-    if(invMap['bachiA']!=='17:00'){ ui.say('pizMsg', t('pizHint')); sfx.err(); return; }
+    // ===== Arranque =====
+    document.addEventListener('DOMContentLoaded', ()=>{
+      initTabs();
+      window.ui.refreshInventory();
+      window.ui.renderPistas();
+      initTopBar();
 
-    // Orden exacto que quiere Jaime
-    const ok = this.map['17:00']==='bachiA' && this.map['18:00']==='eso' &&
-               this.map['19:00']==='eco'    && this.map['20:00']==='bachiB';
-    if(!ok){ ui.say('pizMsg', t('pizOrder')); sfx.err(); return; }
+      // Academia: puzzle + tiza
+      renderPool();
+      bindCells();
+      restoreBoard();
+      initTizaPickup();
 
-    flags.schedPuzzleDone = true;
-    pistas.push('Horarios listos y “en orden” para Jaime.');
-    ui.say('pizMsg', t('pizOk'));
-    sfx.ok();
-    persist.save();
-  }
-};
-
-/* ===== Init ===== */
-persist.loadAuto();
-ui.refreshInventory();
-ui.setSceneName(sceneLabel(nav.current));
-ui.say('statusHint','Explora. Coge llaves, dinero, libretita.');
-ui.ensureMapButtons();
-ui.applyLang();
-
-/* ===== Eventos header ===== */
-document.getElementById('btnMapa').addEventListener('click', ()=>ui.toggleMapa(true));
-document.getElementById('btnPistas').addEventListener('click', ()=>ui.togglePistas(true));
-document.getElementById('btnReset').addEventListener('click', ()=>persist.reset());
-document.getElementById('btnSlots').addEventListener('click', ()=>ui.toggleSlots(true));
-document.getElementById('langSel').addEventListener('change', (e)=>{
-  i18n.lang = e.target.value; ui.applyLang(); persist.save(); sfx.click();
-});
-
-/* ===== Exponer para handlers inline ===== */
-window.flags = flags; window.ui = ui; window.nav = nav;
-window.actions = actions; window.dialog = dialog;
-window.memory = memory; window.pizarra = pizarra;
-window.persist = persist; window.drag = drag;
-</script>
+      // Si ya estaba revelada la pizarra (flags), el migrations.js se encarga de mostrar #pizarraPista
+      // Rebind inventario para drag
+      window.migrate?.bindInventory?.();
+    });
+  </script>
+  
 </body>
 </html>
