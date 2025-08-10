@@ -6,7 +6,7 @@
 body{font-family:Nunito,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 
 #game{max-width:1280px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-#scene{position:relative;flex:1;background:#111 url('../assets/img/bg/placeholder.jpg') center/cover no-repeat}
+#scene{position:relative;flex:1;background:#111 url('../public/assets/img/bg/placeholder.png') center/cover no-repeat}
 #hotspots{position:absolute;inset:0}
 .hotspot{position:absolute;border:0;background:transparent;cursor:pointer}
 .hotspot.debug{outline:1px dashed rgba(255,255,255,.25)}

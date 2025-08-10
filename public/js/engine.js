@@ -1,4 +1,4 @@
-/* engine.js — gestor de datos, escenas, inventario y diálogo (cap.2) */
+/* /public/js/engine.js — versión estable (auto-cura #inventory y demás) */
 const Game = (() => {
   const DATA = { scenes: {}, items: {}, dialogue: [], chapters: [] };
   const STATE = {
@@ -10,35 +10,74 @@ const Game = (() => {
   };
   let selectedItem = null;
 
-  // Helpers de estado
-  const hasItem = id => STATE.inventory.includes(id);
-  const addItem = id => { if(!id) return; if(!hasItem(id)){ STATE.inventory.push(id); UI.toast(`Has conseguido: ${DATA.items[id]?.name || id}`); renderHUD(); saveLocal(); } };
-  const removeItem = id => { STATE.inventory = STATE.inventory.filter(x=>x!==id); renderHUD(); saveLocal(); };
-  const hasFlag = k => !!STATE.flags[k];
-  const setFlag = (k,v=true) => { STATE.flags[k]=v; saveLocal(); };
-  const note = t => { if(!t) return; STATE.notebook.push(t); UI.updateNotebook(STATE.notebook); saveLocal(); };
-  const moveTo = loc => { if(!loc) return; STATE.location = loc; renderScene(loc); saveLocal(); };
+  // ---------- Utilidades DOM ----------
+  const $ = s => document.querySelector(s);
+  function ensureInventory() {
+    let inv = document.getElementById('inventory');
+    if (inv) return inv;
+    // Crea HUD si tampoco existiera (raro, pero definitivo)
+    let hud = document.getElementById('hud');
+    if (!hud) {
+      const game = document.getElementById('game') || document.body;
+      hud = document.createElement('div');
+      hud.id = 'hud';
+      hud.style.display = 'flex';
+      hud.style.justifyContent = 'space-between';
+      hud.style.gap = '12px';
+      game.appendChild(hud);
+    }
+    inv = document.createElement('div');
+    inv.id = 'inventory';
+    inv.style.display = 'flex';
+    inv.style.gap = '8px';
+    inv.style.padding = '6px';
+    hud.prepend(inv);
+    return inv;
+  }
 
-  // Persistencia
+  // ---------- Estado ----------
+  const hasItem = id => STATE.inventory.includes(id);
+  const addItem = id => {
+    if (!id || hasItem(id)) return;
+    STATE.inventory.push(id);
+    UI.toast(`Has conseguido: ${DATA.items[id]?.name || id}`);
+    renderHUD();
+    saveLocal();
+  };
+  const removeItem = id => {
+    STATE.inventory = STATE.inventory.filter(x => x !== id);
+    renderHUD();
+    saveLocal();
+  };
+  const hasFlag = k => !!STATE.flags[k];
+  const setFlag = (k, v = true) => { STATE.flags[k] = v; saveLocal(); };
+  const note = t => { if (!t) return; STATE.notebook.push(t); UI.updateNotebook(STATE.notebook); saveLocal(); };
+  const moveTo = loc => { if (!loc) return; STATE.location = loc; renderScene(loc); saveLocal(); };
+
+  // ---------- Persistencia ----------
   const saveLocal = () => localStorage.setItem('jc_state', JSON.stringify(STATE));
-  const loadLocal = () => { const s = localStorage.getItem('jc_state'); if(s){ try{ Object.assign(STATE, JSON.parse(s)); }catch{} } };
+  const loadLocal = () => { const s = localStorage.getItem('jc_state'); if (s) { try { Object.assign(STATE, JSON.parse(s)); } catch {} } };
   const saveRemote = async () => {
-    try{
-      await fetch(`${window.JC_CONFIG.apiBase}/save.php`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:window.JC_CONFIG.userId, state:STATE})});
+    try {
+      await fetch(`${window.JC_CONFIG.apiBase}/save.php`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ id: window.JC_CONFIG.userId, state: STATE })
+      });
       UI.toast('Partida guardada');
-    }catch(e){ UI.toast('No se pudo guardar en servidor'); }
+    } catch { UI.toast('No se pudo guardar en servidor'); }
   };
   const loadRemote = async () => {
-    try{
+    try {
       const r = await fetch(`${window.JC_CONFIG.apiBase}/load.php?id=${encodeURIComponent(window.JC_CONFIG.userId)}`);
-      if(!r.ok) throw new Error('404');
+      if (!r.ok) throw 0;
       const data = await r.json();
       Object.assign(STATE, data);
-      renderAll(); UI.toast('Partida cargada');
-    }catch(e){ UI.toast('No hay partida remota'); }
+      renderAll();
+      UI.toast('Partida cargada');
+    } catch { UI.toast('No hay partida remota'); }
   };
 
-  // Carga de datos
+  // ---------- Carga de datos ----------
   async function loadData(){
     const base = window.JC_CONFIG.apiBase;
     const [scenes, dialogue, items, chapters] = await Promise.all([
@@ -52,13 +91,17 @@ const Game = (() => {
     DATA.items = indexById(items);
     DATA.chapters = chapters;
   }
-  const indexById = arr => Array.isArray(arr) ? arr.reduce((m,o)=> (m[o.id]=o, m), {}) : {};
+  const indexById = arr => Array.isArray(arr) ? arr.reduce((m,o)=>(m[o.id]=o,m),{}) : {};
 
-  // Render
-  function renderAll(){ renderScene(STATE.location); renderHUD(); UI.updateNotebook(STATE.notebook); }
+  // ---------- Render ----------
+  function renderAll(){
+    renderScene(STATE.location);
+    renderHUD();                 // ahora nunca rompe: garantiza #inventory
+    UI.updateNotebook(STATE.notebook);
+  }
 
   function renderHUD(){
-    const inv = document.querySelector('#inventory');
+    const inv = ensureInventory();
     inv.innerHTML = '';
     STATE.inventory.forEach(id=>{
       const btn = document.createElement('button');
@@ -74,7 +117,7 @@ const Game = (() => {
     if(!cond) return true;
     if(cond.chapterGte && !(STATE.chapter >= cond.chapterGte)) return false;
     if(cond.requires){
-      return cond.requires.every(req=> {
+      return cond.requires.every(req=>{
         if(req.startsWith('item:')) return hasItem(req.split(':')[1]);
         if(req.startsWith('flag:')) return hasFlag(req.split(':')[1]);
         return hasFlag(req);
@@ -86,9 +129,10 @@ const Game = (() => {
   function renderScene(id){
     const scene = DATA.scenes[id];
     if(!scene){ console.warn('Escena no encontrada', id); return; }
-    const elScene = document.querySelector('#scene');
-    elScene.style.backgroundImage = `url('${scene.bg}')`;
-    const hs = document.querySelector('#hotspots');
+    const elScene = $('#scene');
+    if (elScene) elScene.style.backgroundImage = `url('${scene.bg}')`;
+    const hs = $('#hotspots');
+    if (!hs) return;
     hs.innerHTML = '';
     (scene.hotspots||[]).forEach(h=>{
       if(!sceneVisibleIf(h.visibleIf)) return;
@@ -97,7 +141,7 @@ const Game = (() => {
       if(scene.debug) d.classList.add('debug');
       positionHotspot(d, h.shape);
       d.onclick = ()=> handleHotspot(h);
-      d.oncontextmenu = (ev)=>{ ev.preventDefault(); handleHotspotContext(h); };
+      d.oncontextmenu = ev=>{ ev.preventDefault(); handleHotspotContext(h); };
       d.title = h.id;
       hs.appendChild(d);
     });
@@ -113,8 +157,9 @@ const Game = (() => {
     }
   }
 
+  // ---------- Interacción ----------
   function handleHotspot(h){
-    // 1) Usar item seleccionado sobre el hotspot (si procede)
+    // Usar item seleccionado > Coger > Hablar > Mirar
     if(selectedItem && h.onUse){
       if(canSatisfy(h.onUse.requires||[])){
         applyEffects(h.onUse.effect||[]);
@@ -124,20 +169,8 @@ const Game = (() => {
       }
       return;
     }
-    // 2) Coger
     if(h.onPick && h.onPick.gainItem){ addItem(h.onPick.gainItem); return; }
-    // 3) Hablar
     if(h.onTalk){ startDialogue(h.onTalk); return; }
-    // 4) Usar genérico (sin item seleccionado)
-    if(h.onUse){
-      if(canSatisfy(h.onUse.requires||[])){
-        applyEffects(h.onUse.effect||[]);
-      } else {
-        UI.toast('Te falta algo.');
-      }
-      return;
-    }
-    // 5) Mirar
     if(h.onLook){ UI.toast(h.onLook); return; }
     UI.toast('Nada que rascar.');
   }
@@ -161,12 +194,12 @@ const Game = (() => {
       if(e.type==='removeItem') removeItem(e.id);
       if(e.type==='moveTo') moveTo(e.id);
       if(e.type==='appendNotebook' || e.type==='note') note(e.text);
-      if(e.type==='setChapter'){ STATE.chapter = e.val ?? STATE.chapter; saveLocal(); }
       if(e.type==='startCutscene' && e.id){ /* hook futuro */ }
+      if(e.type==='setChapter'){ STATE.chapter = e.val ?? STATE.chapter; saveLocal(); }
     });
   }
 
-  // Diálogo
+  // ---------- Diálogo ----------
   function startDialogue(id){
     const dlg = DATA.dialogue.find(d=> d.id===id || d.npc===id);
     if(!dlg){ UI.toast('…'); return; }
@@ -197,7 +230,7 @@ const Game = (() => {
     });
   }
 
-  // Bootstrap
+  // ---------- Bootstrap ----------
   async function init(){
     loadLocal();
     await loadData();
@@ -207,15 +240,14 @@ const Game = (() => {
       note('Clic izquierdo: ACCIONAR. Clic derecho: MIRAR.');
     }
   }
-
   function bindUI(){
-    document.getElementById('btn-notebook').onclick = ()=> UI.toggleNotebook();
-    document.querySelector('#notebook .close').onclick = ()=> UI.toggleNotebook(false);
-    document.getElementById('btn-save').onclick = ()=> saveRemote();
-    document.getElementById('btn-load').onclick = ()=> loadRemote();
+    const nb = $('#btn-notebook'); if (nb) nb.onclick = ()=> UI.toggleNotebook();
+    const nbClose = $('#notebook .close'); if (nbClose) nbClose.onclick = ()=> UI.toggleNotebook(false);
+    const bs = $('#btn-save'); if (bs) bs.onclick = ()=> saveRemote();
+    const bl = $('#btn-load'); if (bl) bl.onclick = ()=> loadRemote();
   }
 
-  return { init, moveTo };
+  return { init };
 })();
 
 window.addEventListener('DOMContentLoaded', Game.init);
