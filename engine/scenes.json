@@ -1,0 +1,58 @@
+[
+  {
+    "id": "piso_juan_salon",
+    "bg": "../public/assets/img/bg/piso_juan_salon.jpg",
+    "music": "",
+    "debug": true,
+    "hotspots": [
+      {
+        "id": "apuntes",
+        "shape": {"type":"rect","x": 720, "y": 380, "w": 120, "h": 80},
+        "onLook": "Apuntes de fluidos. Si los ordeno, igual ordeno mi vida.",
+        "onPick": {"gainItem": "apuntes"},
+        "visibleIf": {"chapterGte": 1}
+      },
+      {
+        "id": "puerta",
+        "shape": {"type":"rect","x": 80, "y": 200, "w": 140, "h": 260},
+        "onLook": "La portera me espera con la libreta.",
+        "onUse": {"requires": [], "effect": [{"type":"moveTo","id":"portal"}]}
+      }
+    ]
+  },
+  {
+    "id": "portal",
+    "bg": "../public/assets/img/bg/portal.jpg",
+    "hotspots": [
+      {
+        "id": "portera",
+        "shape": {"type":"rect","x": 540, "y": 340, "w": 180, "h": 200},
+        "onTalk": "portera",
+        "onLook": "La general.",
+        "visibleIf": {"chapterGte": 1}
+      },
+      {
+        "id": "calle",
+        "shape": {"type":"rect","x": 40, "y": 420, "w": 200, "h": 120},
+        "onUse": {"requires": [], "effect": [{"type":"appendNotebook","text":"El bar queda a la vuelta."},{"type":"moveTo","id":"bar"}]}
+      }
+    ]
+  },
+  {
+    "id": "bar",
+    "bg": "../public/assets/img/bg/bar.jpg",
+    "hotspots": [
+      {
+        "id": "barra",
+        "shape": {"type":"rect","x": 300, "y": 400, "w": 600, "h": 180},
+        "onLook": "Dos Tercios del Quinto. Café que cura pecados.",
+        "onPick": {"gainItem": "monedas"}
+      },
+      {
+        "id": "puerta_portal",
+        "shape": {"type":"rect","x": 20, "y": 260, "w": 140, "h": 260},
+        "onUse": {"requires": [], "effect": [{"type":"moveTo","id":"portal"}]}
+      }
+    ]
+  }
+]

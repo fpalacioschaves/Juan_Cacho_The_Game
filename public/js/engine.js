@@ -1,0 +1,209 @@
+/* engine.js — gestor de datos, escenas, inventario y diálogo */
+const Game = (() => {
+  const DATA = { scenes: {}, items: {}, dialogue: [], chapters: [] };
+  const STATE = {
+    chapter: 1,
+    location: 'piso_juan_salon',
+    inventory: [],
+    flags: {},
+    notebook: []
+  };
+  let selectedItem = null;
+
+  // Helpers de estado
+  const hasItem = id => STATE.inventory.includes(id);
+  const addItem = id => { if(!hasItem(id)){ STATE.inventory.push(id); UI.toast(`Has conseguido: ${DATA.items[id]?.name || id}`); renderHUD(); saveLocal(); } };
+  const removeItem = id => { STATE.inventory = STATE.inventory.filter(x=>x!==id); renderHUD(); saveLocal(); };
+  const hasFlag = k => !!STATE.flags[k];
+  const setFlag = (k,v=true) => { STATE.flags[k]=v; saveLocal(); };
+  const note = t => { STATE.notebook.push(t); UI.updateNotebook(STATE.notebook); saveLocal(); };
+  const moveTo = loc => { STATE.location = loc; renderScene(loc); saveLocal(); };
+
+  // Persistencia
+  const saveLocal = () => localStorage.setItem('jc_state', JSON.stringify(STATE));
+  const loadLocal = () => { const s = localStorage.getItem('jc_state'); if(s){ Object.assign(STATE, JSON.parse(s)); } };
+  const saveRemote = async () => {
+    try{
+      await fetch(`${window.JC_CONFIG.apiBase}/save.php`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:window.JC_CONFIG.userId, state:STATE})});
+      UI.toast('Partida guardada');
+    }catch(e){ UI.toast('No se pudo guardar en servidor'); }
+  };
+  const loadRemote = async () => {
+    try{
+      const r = await fetch(`${window.JC_CONFIG.apiBase}/load.php?id=${encodeURIComponent(window.JC_CONFIG.userId)}`);
+      if(!r.ok) throw new Error('404');
+      const data = await r.json();
+      Object.assign(STATE, data);
+      renderAll(); UI.toast('Partida cargada');
+    }catch(e){ UI.toast('No hay partida remota'); }
+  };
+
+  // Carga de datos
+  async function loadData(){
+    const base = window.JC_CONFIG.apiBase;
+    const [scenes, dialogue, items, chapters] = await Promise.all([
+      fetch(`${base}/scenes.json`).then(r=>r.json()),
+      fetch(`${base}/dialogue.json`).then(r=>r.json()),
+      fetch(`${base}/items.json`).then(r=>r.json()),
+      fetch(`${base}/chapters.json`).then(r=>r.json()),
+    ]);
+    DATA.scenes = indexById(scenes);
+    DATA.dialogue = dialogue;
+    DATA.items = indexById(items);
+    DATA.chapters = chapters;
+  }
+  const indexById = arr => arr.reduce((m,o)=> (m[o.id]=o, m), {});
+
+  // Render
+  function renderAll(){ renderScene(STATE.location); renderHUD(); UI.updateNotebook(STATE.notebook); }
+
+  function renderHUD(){
+    const inv = document.querySelector('#inventory');
+    inv.innerHTML = '';
+    STATE.inventory.forEach(id=>{
+      const btn = document.createElement('button');
+      btn.className = 'inv-item' + (selectedItem===id ? ' selected':'');
+      btn.textContent = DATA.items[id]?.name || id;
+      btn.title = DATA.items[id]?.desc || '';
+      btn.onclick = ()=>{ selectedItem = selectedItem===id? null : id; renderHUD(); };
+      inv.appendChild(btn);
+    });
+  }
+
+  function sceneVisibleIf(cond){
+    if(!cond) return true;
+    if(cond.chapterGte && !(STATE.chapter >= cond.chapterGte)) return false;
+    if(cond.requires){
+      return cond.requires.every(req=> {
+        if(req.startsWith('item:')) return hasItem(req.split(':')[1]);
+        if(req.startsWith('flag:')) return hasFlag(req.split(':')[1]);
+        return hasFlag(req);
+      });
+    }
+    return true;
+  }
+
+  function renderScene(id){
+    const scene = DATA.scenes[id];
+    if(!scene){ console.warn('Escena no encontrada', id); return; }
+    const elScene = document.querySelector('#scene');
+    elScene.style.backgroundImage = `url('${scene.bg}')`;
+    const hs = document.querySelector('#hotspots');
+    hs.innerHTML = '';
+    (scene.hotspots||[]).forEach(h=>{
+      if(!sceneVisibleIf(h.visibleIf)) return;
+      const d = document.createElement('button');
+      d.className = 'hotspot';
+      if(scene.debug) d.classList.add('debug');
+      positionHotspot(d, h.shape);
+      d.onclick = (ev)=> handleHotspot(h);
+      d.oncontextmenu = (ev)=>{ ev.preventDefault(); handleHotspotContext(h); };
+      d.title = h.id;
+      hs.appendChild(d);
+    });
+  }
+
+  function positionHotspot(el, shape){
+    if(shape.type==='rect'){
+      el.style.left = shape.x+'px';
+      el.style.top = shape.y+'px';
+      el.style.width = shape.w+'px';
+      el.style.height = shape.h+'px';
+    }
+  }
+
+  function handleHotspot(h){
+    // Prioridad: usar item seleccionado > onPick > onTalk > onLook
+    if(selectedItem && h.onUse){
+      if(canSatisfy(h.onUse.requires||[])){
+        applyEffects(h.onUse.effect||[]);
+        UI.toast('Usado.');
+      } else {
+        UI.toast('No parece servir.');
+      }
+      return;
+    }
+    if(h.onPick && h.onPick.gainItem){ addItem(h.onPick.gainItem); return; }
+    if(h.onTalk){ startDialogue(h.onTalk); return; }
+    if(h.onLook){ UI.toast(h.onLook); return; }
+    UI.toast('Nada que rascar.');
+  }
+
+  function handleHotspotContext(h){
+    // Clic derecho: mirar siempre
+    if(h.onLook){ UI.toast(h.onLook); }
+  }
+
+  function canSatisfy(reqs){
+    return reqs.every(r=>{
+      if(r.startsWith('item:')) return hasItem(r.split(':')[1]);
+      if(r.startsWith('flag:')) return hasFlag(r.split(':')[1]);
+      return hasFlag(r);
+    });
+  }
+
+  function applyEffects(effects){
+    effects.forEach(e=>{
+      if(e.type==='setFlag') setFlag(e.key, e.val);
+      if(e.type==='addItem') addItem(e.id);
+      if(e.type==='removeItem') removeItem(e.id);
+      if(e.type==='moveTo') moveTo(e.id);
+      if(e.type==='appendNotebook') note(e.text);
+      if(e.type==='startCutscene' && e.id){ /* hook futuro */ }
+    });
+  }
+
+  // Diálogo
+  function startDialogue(id){
+    const dlg = DATA.dialogue.find(d=> d.id===id || d.npc===id);
+    if(!dlg){ UI.toast('…'); return; }
+    UI.showDialogue();
+    renderDialogueNode(dlg, 'root');
+  }
+  function renderDialogueNode(dlg, nodeId){
+    const node = (dlg.nodes||[]).find(n=>n.id===nodeId) || dlg.nodes?.[0];
+    if(!node) return UI.hideDialogue();
+    UI.setDialogueText(node.text||'');
+    UI.setDialogueOptions((node.opts||[]).filter(opt=> optionVisible(opt)).map(opt=>({
+      text: opt.txt,
+      onClick: ()=>{
+        if(opt.effect) applyEffects(opt.effect);
+        if(opt.gainItem) addItem(opt.gainItem);
+        if(opt.setFlag) setFlag(opt.setFlag, true);
+        if(opt.end) return UI.hideDialogue();
+        renderDialogueNode(dlg, opt.go);
+      }
+    })));
+  }
+  function optionVisible(opt){
+    if(!opt.req) return true;
+    return Object.entries(opt.req).every(([k,v])=>{
+      if(k==='flag') return hasFlag(v);
+      if(k==='item') return hasItem(v);
+      return true;
+    });
+  }
+
+  // Bootstrap
+  async function init(){
+    loadLocal();
+    await loadData();
+    bindUI();
+    renderAll();
+    // Notas iniciales
+    if(STATE.chapter===1 && STATE.notebook.length===0){
+      note('El piso pide orden. La portera pide la renta. Prioridades.');
+    }
+  }
+
+  function bindUI(){
+    document.getElementById('btn-notebook').onclick = ()=> UI.toggleNotebook();
+    document.querySelector('#notebook .close').onclick = ()=> UI.toggleNotebook(false);
+    document.getElementById('btn-save').onclick = ()=> saveRemote();
+    document.getElementById('btn-load').onclick = ()=> loadRemote();
+  }
+
+  return { init, moveTo };
+})();
+
+window.addEventListener('DOMContentLoaded', Game.init);

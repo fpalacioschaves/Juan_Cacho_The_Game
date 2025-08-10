@@ -1,0 +1,7 @@
+[
+  {"id":"apuntes","name":"Apuntes de fluidos","desc":"Papel, café y garabatos."},
+  {"id":"plumero","name":"Plumero","desc":"Arma social de pelusa."},
+  {"id":"monedas","name":"Monedas","desc":"Para el café o para intentar un soborno barato."},
+  {"id":"vhs","name":"Cinta VHS","desc":"Testigo mudo."},
+  {"id":"tetera","name":"Tetera artesanal","desc":"El crimen también hierve."}
+]

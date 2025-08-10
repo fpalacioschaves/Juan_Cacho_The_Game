@@ -1,0 +1,16 @@
+[
+  {
+    "id": "dlg_portera",
+    "npc": "portera",
+    "nodes": [
+      {"id":"root","text":"¿Y la renta, Juan?","opts":[
+        {"txt":"[Serio] Vengo a hablar de la reunión","go":"reunion"},
+        {"txt":"[Broma] He venido a por tu pluma de oro","go":"broma","req":{"flag":"confianza_portera"}}
+      ]},
+      {"id":"reunion","text":"Será a las seis. Y nada de colarse.","opts":[
+        {"txt":"Entendido","end":true, "effect":[{"type":"appendNotebook","text":"Reunión de vecinos a las 18:00."}]}
+      ]},
+      {"id":"broma","text":"La tendrás cuando pagues.","opts":[{"txt":"Auch","end":true}]}
+    ]
+  }
+]
