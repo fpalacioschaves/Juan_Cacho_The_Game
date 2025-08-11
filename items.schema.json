@@ -1,0 +1,20 @@
+{
+  "$schema": "juan-cacho://v1/items.schema.json",
+  "items": [
+    { "id": "llaves-juan", "name": "Llaves del piso", "type": "persistente", "chapterFirst": "c1" },
+    { "id": "periodico-dia", "name": "Periódico del día", "type": "pista-opcional", "chapterFirst": "c1" },
+    { "id": "ampollas-vitaminas", "name": "Ampollas de vitaminas", "type": "persistente", "chapterFirst": "c2" },
+    { "id": "recibo-farmacia", "name": "Recibo de la farmacia", "type": "pista-opcional", "chapterFirst": "c2" },
+    { "id": "acta-reunion", "name": "Acta de la reunión", "type": "evidencia", "chapterFirst": "c3" },
+    { "id": "contrato-vicente", "name": "Contrato de obra (Vicente)", "type": "llave-progreso", "chapterFirst": "c4" },
+    { "id": "carpeta-cuentas", "name": "Carpeta de cuentas", "type": "evidencia", "chapterFirst": "c5" },
+    { "id": "cintas-video", "name": "Cintas de vídeo", "type": "evidencia", "chapterFirst": "c5" },
+    { "id": "camara-oculta", "name": "Cámara oculta (academia)", "type": "evidencia", "chapterFirst": "c6" },
+    { "id": "doc-sobornos", "name": "Documento de sobornos", "type": "evidencia", "chapterFirst": "c7" },
+    { "id": "foto-comprometedora", "name": "Foto comprometedora", "type": "evidencia", "chapterFirst": "c7" },
+    { "id": "tetera-trucada", "name": "Tetera trucada", "type": "evidencia", "chapterFirst": "c9" },
+    { "id": "dispositivo-asa", "name": "Dispositivo en el asa", "type": "evidencia", "chapterFirst": "c9" },
+    { "id": "dossier-final", "name": "Dossier final", "type": "meta-final", "chapterFirst": "c10" }
+  ]
+}
+

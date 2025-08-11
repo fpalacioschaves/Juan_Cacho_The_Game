@@ -1,0 +1,13 @@
+{
+  "$schema": "juan-cacho://v1/game-state.schema.json",
+  "player": {
+    "inventory": [],
+    "flags": [],
+    "chapter": "c1"
+  },
+  "world": {
+    "visited": [],
+    "unlockedLocations": ["piso-juan", "portal", "bar-dudu", "academia"],
+    "evidence": []
+  }
+}
