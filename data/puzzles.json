@@ -1,0 +1,9 @@
+[
+  {
+    "id": "c1-llaves",
+    "chapter": "c1",
+    "requires": [],
+    "grants": ["inv:llaves-juan"],
+    "unlocks": ["loc:portal"]
+  }
+]

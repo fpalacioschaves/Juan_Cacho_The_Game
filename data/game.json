@@ -1,0 +1,13 @@
+{
+  "title": "Juan Cacho: El Juego",
+  "version": "1.0.0",
+  "chapters": [
+    { "id": "c1", "name": "Rutina de un observador" },
+    { "id": "c2", "name": "Ecos en la escalera" }
+  ],
+  "locations": [
+    { "id": "piso-juan", "name": "Piso de Juan Cacho", "chapterFirst": "c1" },
+    { "id": "portal", "name": "Portal", "chapterFirst": "c1" }
+  ],
+  "start": { "chapter": "c1", "scene": "piso-juan" }
+}

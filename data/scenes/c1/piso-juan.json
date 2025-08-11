@@ -1,0 +1,25 @@
+{
+  "id": "piso-juan",
+  "chapter": "c1",
+  "background": "assets/img/scenes/c1-piso-juan.png",
+  "hotspots": [
+    {
+      "id": "mesa-llaves",
+      "rect": [540, 420, 120, 80],
+      "cursor": "pointer",
+      "onClick": [
+        { "action": "addItem", "item": "llaves-juan", "ifMissing": true },
+        { "action": "showToast", "text": "Has cogido tus llaves." }
+      ]
+    },
+    {
+      "id": "puerta-salir",
+      "rect": [60, 220, 120, 300],
+      "cursor": "exit",
+      "onClick": [
+        { "action": "requireItem", "item": "llaves-juan", "failText": "La puerta está cerrada." },
+        { "action": "gotoScene", "scene": "portal" }
+      ]
+    }
+  ]
+}
