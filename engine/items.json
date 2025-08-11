@@ -1,8 +1,0 @@
-[
-  { "id":"apuntes", "name":"Apuntes de fluidos", "desc":"Papel, café y garabatos." },
-  { "id":"monedas", "name":"Monedas", "desc":"Sueltos para café y favores." },
-  { "id":"plumero", "name":"Plumero", "desc":"A la portera le encanta el brillo." },
-  { "id":"llave_contadores", "name":"Llave del cuarto de contadores", "desc":"Símbolo de confianza de la portera." },
-  { "id":"vhs", "name":"Cinta VHS", "desc":"Testigo mudo." },
-  { "id":"tetera", "name":"Tetera artesanal", "desc":"El crimen también hierve." }
-]
