@@ -57,3 +57,19 @@ html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text);
 }
 #toast.show { background: var(--accent); color: #0b0d0a; }
 #toast.error { background: var(--danger); color: #2b0d0d; }
+
+.inv-chip {
+  background: #2a2e36;
+  color: #e6e6e6;
+  border: 1px solid #3a3f48;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.inv-chip.selected {
+  background: var(--accent);
+  color: #0b0d0a;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(159,215,106,.35);
+}

@@ -1,5 +1,7 @@
 {
     "chapter": "c1",
     "scene": "piso-juan",
-    "inventory": []
+    "inventory": [
+        "llaves-juan"
+    ]
 }

@@ -17,7 +17,7 @@
       "rect": [60, 220, 120, 300],
       "cursor": "exit",
       "onClick": [
-        { "action": "requireItem", "item": "llaves-juan", "failText": "La puerta está cerrada." },
+        { "action": "requireItem", "item": "llaves-juan", "failText": "La puerta está cerrada. Necesitas tus llaves." },
         { "action": "gotoScene", "scene": "portal" }
       ]
     }

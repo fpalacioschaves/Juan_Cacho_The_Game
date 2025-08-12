@@ -1,0 +1,24 @@
+{
+  "id": "portal",
+  "chapter": "c1",
+  "background": "assets/img/scenes/c1-portal.png",
+  "hotspots": [
+    {
+      "id": "subir-a-casa",
+      "rect": [800, 180, 120, 300],
+      "cursor": "pointer",
+      "onClick": [
+        { "action": "showToast", "text": "Subes a casa." },
+        { "action": "gotoScene", "scene": "piso-juan" }
+      ]
+    },
+    {
+      "id": "salir-calle",
+      "rect": [30, 200, 140, 260],
+      "cursor": "exit",
+      "onClick": [
+        { "action": "showToast", "text": "Más adelante conectaré a la calle." }
+      ]
+    }
+  ]
+}

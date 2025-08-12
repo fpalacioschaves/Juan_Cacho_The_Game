@@ -1,22 +1,29 @@
+// public/assets/js/main.js
 import { apiUrl } from './config.js';
 import { State } from './state.js';
 import { Scene } from './scene.js';
+import { InventoryUI } from './inventory.js';
 
 const canvas = document.getElementById('scene-canvas');
 const ctx = canvas.getContext('2d');
 
-let state, scene;
+let state, scene, inventoryUI;
 
 async function boot() {
   state = new State(apiUrl('state-get.php'), apiUrl('state-set.php'));
   await state.load();
 
-  scene = new Scene(canvas, ctx, apiUrl('scene.php'), state);
+  inventoryUI = new InventoryUI(state);
+  inventoryUI.render();
 
-  // Escena inicial (capítulo 1, piso de Juan)
+  scene = new Scene(canvas, ctx, apiUrl('scene.php'), state, {
+    onStateChanged: () => {
+      inventoryUI.render();
+    }
+  });
+
   await scene.loadAndRender({ id: 'piso-juan', chapter: 'c1' });
 
-  // Navegación declarativa
   window.addEventListener('goto-scene', async (e) => {
     try {
       scene?.destroy();
