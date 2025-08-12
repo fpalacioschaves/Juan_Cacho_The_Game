@@ -9,6 +9,11 @@ export class Scene {
     this.hotspots = [];
     this.selectedItem = null;
     this.onStateChanged = opts.onStateChanged || (() => {});
+    this.dialogue = opts.dialogue || null; // 👈 gestor de diálogos
+
+    const params = new URLSearchParams(location.search);
+    this.debug = (params.get('debug') === '1') || (window.GAME_DEBUG === true);
+
     this._bindedOnClick = this._onClick.bind(this);
     this._bindedOnMove = this._onMove.bind(this);
     this._bindedOnUseItem = this._onUseItem.bind(this);
@@ -25,9 +30,10 @@ export class Scene {
     this.ctx.drawImage(bg, 0, 0, this.canvas.width, this.canvas.height);
 
     this.hotspots = Array.isArray(this.data.hotspots) ? this.data.hotspots : [];
+    if (this.debug) this._drawHotspotBounds();
+
     this._installEvents();
 
-    // Guarda escena actual por comodidad
     this.state.set('chapter', this.data.chapter);
     this.state.set('scene', this.data.id);
     await this.state.save({ chapter: this.data.chapter, scene: this.data.id });
@@ -54,40 +60,32 @@ export class Scene {
   }
 
   _onMove(evt) {
+    if (this.dialogue?.isOpen) { this.canvas.style.cursor = 'default'; return; }
     if (!this.hotspots?.length) return;
     const { x, y } = this._canvasCoords(evt);
     const hit = this.hotspots.find(h => this._pointInRect(x, y, h.rect));
-    if (!hit) {
-      this.canvas.style.cursor = 'default';
-      return;
-    }
+    if (!hit) { this.canvas.style.cursor = 'default'; return; }
     this.canvas.style.cursor = (hit.cursor === 'exit') ? 'pointer' : (hit.cursor || 'pointer');
   }
 
   async _onClick(evt) {
+    if (this.dialogue?.isOpen) return; // bloquear interacción mientras hay diálogo
     if (!this.hotspots?.length) return;
     const { x, y } = this._canvasCoords(evt);
     const hit = this.hotspots.find(h => this._pointInRect(x, y, h.rect));
     if (!hit) return;
 
-    // 1) Si hay item seleccionado y el hotspot acepta items, intentar uso
     if (this.selectedItem && Array.isArray(hit.accepts) && hit.accepts.includes(this.selectedItem)) {
       if (Array.isArray(hit.onUseSuccess)) {
-        await this._runActions(hit.onUseSuccess);
-        this._toast('Usado con éxito.');
+        const ok = await this._runActions(hit.onUseSuccess);
+        if (ok) this._clearSelectedItem();
       }
-      // Auto‑deseleccionar tras usar
-      this.selectedItem = null;
-      const ev = new CustomEvent('use-item-selected', { detail: { item: null } });
-      window.dispatchEvent(ev);
       return;
     } else if (this.selectedItem && (Array.isArray(hit.accepts) || hit.onUseFail)) {
-      // Si había selección pero no encaja
       if (hit.onUseFail?.text) this._toast(hit.onUseFail.text, true);
       return;
     }
 
-    // 2) Si no hay item seleccionado, ejecutar onClick
     if (Array.isArray(hit.onClick)) {
       await this._runActions(hit.onClick);
     }
@@ -96,7 +94,21 @@ export class Scene {
   async _runActions(actions) {
     for (const act of actions) {
       const type = act.action;
-      if (type === 'showToast') {
+
+      // Condiciones
+      if (type === 'requireItem') {
+        const inv = this.state.get('inventory', []);
+        if (!inv.includes(act.item)) { this._toast(act.failText || 'Te falta algo…', true); return false; }
+      } else if (type === 'requireFlag') {
+        const val = this.state.getFlag(act.flag, false);
+        if (!val) { if (act.failText) this._toast(act.failText, true); return false; }
+      } else if (type === 'requireNotFlag') {
+        const val = this.state.getFlag(act.flag, false);
+        if (val) { if (act.failText) this._toast(act.failText, true); return false; }
+      }
+
+      // Efectos
+      else if (type === 'showToast') {
         this._toast(act.text || '');
       } else if (type === 'addItem') {
         const inv = this.state.get('inventory', []);
@@ -112,17 +124,27 @@ export class Scene {
         this.state.set('inventory', inv);
         await this.state.save({ inventory: inv });
         this.onStateChanged();
-      } else if (type === 'requireItem') {
-        const inv = this.state.get('inventory', []);
-        if (!inv.includes(act.item)) {
-          this._toast(act.failText || 'Te falta algo…', true);
-          return;
-        }
-      } else if (type === 'gotoScene') {
+      } else if (type === 'setFlag') {
+        this.state.setFlag(act.flag, act.value !== undefined ? !!act.value : true);
+        await this.state.save({ flags: this.state.get('flags') });
+      } else if (type === 'clearFlag') {
+        this.state.setFlag(act.flag, false);
+        await this.state.save({ flags: this.state.get('flags') });
+      } else if (type === 'toggleFlag') {
+        this.state.toggleFlag(act.flag);
+        await this.state.save({ flags: this.state.get('flags') });
+      } else if (type === 'startDialogue') {
+        if (!this.dialogue) { console.warn('DialogueManager no disponible'); continue; }
+        await this.dialogue.open({ id: act.id, chapter: act.chapter || this.data.chapter });
+      }
+
+      // Navegación
+      else if (type === 'gotoScene') {
         const ev = new CustomEvent('goto-scene', { detail: { id: act.scene, chapter: act.chapter || this.data.chapter } });
         window.dispatchEvent(ev);
       }
     }
+    return true;
   }
 
   _pointInRect(x, y, rect) {
@@ -144,6 +166,49 @@ export class Scene {
     el.textContent = text;
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => { el.className = ''; el.textContent = ''; }, 1600);
+  }
+
+  _clearSelectedItem() {
+    this.selectedItem = null;
+    const ev = new CustomEvent('use-item-selected', { detail: { item: null } });
+    window.dispatchEvent(ev);
+  }
+
+  _drawHotspotBounds() {
+    if (!this.hotspots?.length) return;
+    this.ctx.save();
+    this.ctx.strokeStyle = 'rgba(255,0,0,0.65)';
+    this.ctx.lineWidth = 2;
+    this.ctx.fillStyle = 'rgba(255,0,0,0.10)';
+    this.hotspots.forEach(h => {
+      const [x, y, w, hgt] = h.rect;
+      this.ctx.fillRect(x, y, w, hgt);
+      this.ctx.strokeRect(x, y, w, hgt);
+      const idText = h.id || 'hotspot';
+      this.ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      this._labelBox(x, y - 18, idText);
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.font = '12px system-ui, sans-serif';
+      this.ctx.fillText(idText, x + 6, y - 6);
+      this.ctx.fillStyle = 'rgba(255,0,0,0.10)';
+    });
+    this.ctx.restore();
+  }
+
+  _labelBox(x, y, text) {
+    const padX = 6, padY = 4;
+    const metrics = this.ctx.measureText(text);
+    const w = Math.ceil(metrics.width) + padX * 2;
+    const h = 16 + padY * 2;
+    this.ctx.save();
+    this.ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    this.ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    this.ctx.lineWidth = 1;
+    this.ctx.beginPath();
+    this.ctx.rect(x, y - h + padY, w, h);
+    this.ctx.fill();
+    this.ctx.stroke();
+    this.ctx.restore();
   }
 
   _loadImage(src) {

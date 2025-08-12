@@ -1,0 +1,129 @@
+{
+  "id": "portera",
+  "chapter": "c1",
+  "script": [
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Doña María",
+      "text": "¡Don Juan! A ver si este mes no se retrasa en los pagos..."
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Juan",
+      "text": "Buenos días, Doña María. ¿Qué tal va la mañana?",
+      "choices": [
+        {
+          "text": "Echarle flores con arte",
+          "actions": [
+            { "action": "showToast", "text": "Has sido encantador." },
+            { "action": "setFlag", "flag": "portera_amistosa", "value": true }
+          ]
+        },
+        {
+          "text": "Ir al grano (seco)",
+          "actions": [
+            { "action": "showToast", "text": "Doña María te mira de reojo." },
+            { "action": "clearFlag", "flag": "portera_amistosa" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Doña María",
+      "text": "Pues aquí, al pie del cañón. Entre el polvo de los buzones y los repartidores que me llenan el portal de propaganda, una no da abasto."
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Juan",
+      "text": "Si quiere, luego le echo una mano con los papeles. Así hacemos limpieza a lo grande.",
+      "choices": [
+        {
+          "text": "Prometer ayuda de verdad",
+          "actions": [
+            { "action": "setFlag", "flag": "portera_promesa_ayuda", "value": true },
+            { "action": "showToast", "text": "Doña María asiente, complacida." }
+          ]
+        },
+        {
+          "text": "Fue un decir, me pilló el calambre",
+          "actions": [
+            { "action": "clearFlag", "flag": "portera_promesa_ayuda" },
+            { "action": "showToast", "text": "Se te queda mirando... con sospecha." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Doña María",
+      "text": "Y no me empiece con labias, que a mí me prometen mucho y luego ni el tato aparece. Ya me entiende."
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "requireFlag": "portera_amistosa",
+      "speaker": "Doña María",
+      "text": "En fin... Mire, que me cae usted bien. Apúntese esto: el viernes, a las 20:00, reunión de la comunidad en casa del señor Camuñas.",
+      "onShow": [
+        { "action": "setFlag", "flag": "aviso_reunion", "value": true }
+      ]
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "requireFlag": "portera_amistosa",
+      "speaker": "Doña María",
+      "text": "Y no me haga la 13-14, ¿eh? Que luego me dice que no se enteró. Le he visto la cara de despistado."
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "requireNotFlag": "portera_amistosa",
+      "speaker": "Doña María",
+      "text": "Cuando vea yo que cumple con sus cosillas y es formal, ya le contaré lo que hay que contar. Ahora, a las obligaciones..."
+    },
+    {
+      "type": "say",
+      "requireNotFlag": "hablo_portera_intro",
+      "speaker": "Juan",
+      "text": "Tomado nota, Doña María. Gracias por el aviso... o el tirón de orejas.",
+      "onShow": [
+        { "action": "setFlag", "flag": "hablo_portera_intro", "value": true }
+      ]
+    },
+    {
+      "type": "say",
+      "requireFlag": "hablo_portera_intro",
+      "requireFlag_2": "aviso_reunion",
+      "speaker": "Doña María",
+      "text": "Ya le dije lo de la reunión, ¿eh? No me falle, que si no, luego dicen que no avisé."
+    },
+    {
+      "type": "say",
+      "requireFlag": "hablo_portera_intro",
+      "requireFlag_2": "aviso_reunion",
+      "speaker": "Juan",
+      "text": "No se preocupe, allí estaré puntual. ¡Gracias!"
+    },
+    {
+      "type": "say",
+      "requireFlag": "hablo_portera_intro",
+      "requireNotFlag": "aviso_reunion",
+      "speaker": "Doña María",
+      "text": "¿Ve? Si es que al final ni me pregunta... Luego no se entera de nada."
+    },
+    {
+      "type": "say",
+      "requireFlag": "hablo_portera_intro",
+      "requireNotFlag": "aviso_reunion",
+      "speaker": "Juan",
+      "text": "Bueno, bueno... ya me dirá usted."
+    }
+  ]
+}

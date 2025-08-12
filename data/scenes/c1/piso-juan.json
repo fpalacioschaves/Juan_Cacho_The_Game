@@ -13,11 +13,22 @@
       ]
     },
     {
+      "id": "nota-mesa",
+      "rect": [500, 360, 140, 50],
+      "cursor": "pointer",
+      "onClick": [
+        { "action": "requireNotFlag", "flag": "leido-nota", "failText": "Ya leíste la nota." },
+        { "action": "showToast", "text": "La nota: \"Pásate por la academia. Jaime necesita a alguien YA.\""},
+        { "action": "setFlag", "flag": "leido-nota", "value": true }
+      ]
+    },
+    {
       "id": "puerta-salir",
       "rect": [60, 220, 120, 300],
       "cursor": "exit",
       "onClick": [
         { "action": "requireItem", "item": "llaves-juan", "failText": "La puerta está cerrada. Necesitas tus llaves." },
+        { "action": "requireFlag", "flag": "leido-nota", "failText": "Antes echa un vistazo a la nota de la mesa." },
         { "action": "gotoScene", "scene": "portal" }
       ]
     }

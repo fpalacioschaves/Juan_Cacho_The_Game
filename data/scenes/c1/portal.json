@@ -4,6 +4,24 @@
   "background": "assets/img/scenes/c1-portal.png",
   "hotspots": [
     {
+      "id": "panel-anuncios",
+      "rect": [380, 140, 180, 160],
+      "cursor": "pointer",
+      "onClick": [
+        { "action": "requireNotFlag", "flag": "portal_panel_visto" },
+        { "action": "showToast", "text": "Hay un aviso de reunión de comunidad este viernes." },
+        { "action": "setFlag", "flag": "portal_panel_visto", "value": true }
+      ]
+    },
+    {
+      "id": "charlar-portera",
+      "rect": [140, 280, 140, 220],
+      "cursor": "pointer",
+      "onClick": [
+        { "action": "startDialogue", "id": "portera", "chapter": "c1" }
+      ]
+    },
+    {
       "id": "subir-a-casa",
       "rect": [800, 180, 120, 300],
       "cursor": "pointer",
