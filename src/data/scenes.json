@@ -3,9 +3,6 @@
   "defs": {
     "cap1_salon": "src/data/scenes/cap1_salon.json",
     "cap1_recibidor": "src/data/scenes/cap1_recibidor.json",
-    "cap1_portal": "src/data/scenes/cap1_portal.json",
-    "cap1_calle": "src/data/scenes/cap1_calle.json",
-    "cap1_academia_ext": "src/data/scenes/cap1_academia_ext.json",
-    "cap1_portalB_sala": "src/data/scenes/cap1_portalB_sala.json"
+    "cap1_portal": "src/data/scenes/cap1_portal.json"
   }
 }

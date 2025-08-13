@@ -49,7 +49,6 @@ export const Actions = {
 
   setObjective({hud}, {text}){ if(text) hud.setObjective(text) },
   goto({sceneManager}, {to}){ if(to) return sceneManager.change(to) },
-
   setFlag(_,{flag}){ if(flag) State.setFlag(flag) },
 
   dialog({hud, scene}, def){

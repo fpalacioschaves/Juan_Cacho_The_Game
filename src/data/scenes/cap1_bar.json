@@ -1,0 +1,80 @@
+{
+  "bg": "cap1_bar",
+  "objectives": { "default": "Objetivo: Presentar el bar y a sus habituales." },
+  "hotspots": [
+    {
+      "id": "angel",
+      "rect": { "x": 0.45, "y": 0.52, "w": 0.20, "h": 0.26 },
+      "actions": [
+        {
+          "type": "dialog",
+          "title": "Ángel",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "Ángel seca vasos y mira la calle por la puerta.",
+              "options": [
+                { "label": "Pedir un café", "next": "cafe" },
+                { "label": "Preguntar por el vecindario", "next": "vecinos" }
+              ]
+            },
+            {
+              "id": "cafe",
+              "text": "—Hoy invita la casa. Ya pagarás cuando refresque.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_angel" } ],
+              "options": [ { "label": "Gracias", "next": "end" } ]
+            },
+            {
+              "id": "vecinos",
+              "text": "—Hay mal ambiente por las cuotas. A ver si se aclaran pronto.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_angel" } ],
+              "options": [ { "label": "Asentir", "next": "end" } ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dudu",
+      "rect": { "x": 0.70, "y": 0.54, "w": 0.18, "h": 0.24 },
+      "actions": [
+        {
+          "type": "dialog",
+          "title": "Dudu",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "Dudu repasa un crucigrama y sonríe de reojo.",
+              "options": [
+                { "label": "Saludar", "next": "hola" },
+                { "label": "Comentar el ruido", "next": "ruido" }
+              ]
+            },
+            {
+              "id": "hola",
+              "text": "—¿Qué, Juan? El barrio igual de vivo.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_dudu" } ],
+              "options": [ { "label": "Volver a la barra", "next": "end" } ]
+            },
+            {
+              "id": "ruido",
+              "text": "—Los de arriba montaron otra. No sé quién paga, pero todos se quejan.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_dudu" } ],
+              "options": [ { "label": "Terminar", "next": "end" } ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salir",
+      "rect": { "x": 0.05, "y": 0.30, "w": 0.12, "h": 0.40 },
+      "actions": [
+        { "type": "toast", "text": "Sales a la calle." },
+        { "type": "goto", "to": "cap1_calle" }
+      ]
+    }
+  ]
+}

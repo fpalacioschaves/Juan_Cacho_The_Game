@@ -1,27 +1,26 @@
 {
   "bg": "cap1_academia_ext",
-  "objectives": { "default": "Objetivo: La Milagrosa. Echa un vistazo y decide." },
+  "objectives": { "default": "Objetivo: Academia La Milagrosa presentada." },
   "hotspots": [
+    {
+      "id": "cartel",
+      "rect": { "x": 0.62, "y": 0.28, "w": 0.14, "h": 0.18 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Cartel de cursos de verano y matrículas abiertas. El barrio la conoce de sobra.</p>" }
+      ]
+    },
     {
       "id": "puerta",
       "rect": { "x": 0.46, "y": 0.36, "w": 0.18, "h": 0.34 },
       "actions": [
-        { "type": "requireItems", "allOf": ["item_nota"], "onMissing": "La recepción pide una nota o cita." },
-        { "type": "inspect", "html": "<p>Recepción con fluorescentes y promesas en carteles. Mejor volver tras la reunión.</p>" }
-      ]
-    },
-    {
-      "id": "anuncios",
-      "rect": { "x": 0.68, "y": 0.26, "w": 0.16, "h": 0.20 },
-      "actions": [
-        { "type": "inspect", "html": "<p>Clases de mecanografía, inglés con cassette y un torneo de ajedrez con premio humilde.</p>" }
+        { "type": "inspect", "html": "<p>Puerta de cristal, recepción al fondo. Por hoy, basta con situarla en el mapa.</p>" }
       ]
     },
     {
       "id": "volver_calle",
       "rect": { "x": 0.02, "y": 0.30, "w": 0.10, "h": 0.40 },
       "actions": [
-        { "type": "toast", "text": "Vuelves a la calle." },
+        { "type": "toast", "text": "Regresas a la calle." },
         { "type": "goto", "to": "cap1_calle" }
       ]
     }

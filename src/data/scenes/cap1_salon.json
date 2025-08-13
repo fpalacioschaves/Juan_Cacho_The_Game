@@ -1,157 +1,43 @@
 {
   "bg": "cap1_salon",
   "objectives": {
-    "default": "Objetivo: Coge la LLAVE y la NOTA. Luego sal por la puerta.",
+    "default": "Objetivo: Coge la LLAVE y la NOTA de la academia. Luego, sal por la puerta.",
     "rules": [
-      {
-        "whenAll": [
-          "item_nota",
-          "item_llave"
-        ],
-        "text": "Objetivo: Todo listo. Sal por la puerta."
-      },
-      {
-        "whenAll": [
-          "item_nota"
-        ],
-        "text": "Objetivo: Te falta la LLAVE."
-      },
-      {
-        "whenAll": [
-          "item_llave"
-        ],
-        "text": "Objetivo: Te falta la NOTA de La Milagrosa."
-      }
+      { "whenAll": ["item_nota", "item_llave"], "text": "Objetivo: Todo listo. Sal por la puerta." },
+      { "whenAll": ["item_nota"], "text": "Objetivo: Te falta la LLAVE." },
+      { "whenAll": ["item_llave"], "text": "Objetivo: Te falta la NOTA de La Milagrosa." }
     ]
   },
   "hotspots": [
     {
       "id": "mesa",
-      "rect": {
-        "x": 0.52,
-        "y": 0.6,
-        "w": 0.2,
-        "h": 0.16
-      },
+      "rect": { "x": 0.52, "y": 0.60, "w": 0.20, "h": 0.16 },
       "once": true,
       "actions": [
-        {
-          "type": "pickup",
-          "item": "item_llave",
-          "onSuccess": "Has cogido una llave.",
-          "onAlready": "La mesa está ordenada por una vez."
-        }
+        { "type": "pickup", "item": "item_llave", "onSuccess": "Has cogido una llave.", "onAlready": "Ya tienes la llave." }
       ]
     },
     {
       "id": "libreria",
-      "rect": {
-        "x": 0.73,
-        "y": 0.4,
-        "w": 0.12,
-        "h": 0.38
-      },
+      "rect": { "x": 0.73, "y": 0.40, "w": 0.12, "h": 0.38 },
       "once": true,
       "actions": [
-        {
-          "type": "pickup",
-          "item": "item_nota"
-        },
-        {
-          "type": "inspect",
-          "html": "<div data-title>Nota doblada</div><p>Entre un tomo torcido y un helecho cansado aparece una hoja con letra apresurada:</p><p><em>“Academia La Milagrosa — pásate hoy. Importante.”</em></p><p>Juan respira, guarda la nota. Toca salir.</p>"
-        }
+        { "type": "pickup", "item": "item_nota" },
+        { "type": "inspect", "html": "<div data-title>Nota doblada</div><p>Entre lomos torcidos asoma una hoja con letra apresurada:</p><p><em>“Academia La Milagrosa — pásate hoy. Importante.”</em></p><p>Juan guarda la nota.</p>" }
       ]
     },
     {
       "id": "puerta",
-      "rect": {
-        "x": 0.05,
-        "y": 0.32,
-        "w": 0.18,
-        "h": 0.48
-      },
+      "rect": { "x": 0.05, "y": 0.32, "w": 0.18, "h": 0.48 },
       "actions": [
         {
           "type": "requireItems",
-          "allOf": [
-            "item_llave",
-            "item_nota"
-          ],
-          "onMissingMap": {
-            "item_llave": "La puerta no cede. Falta la llave.",
-            "item_nota": "Mejor no salir sin la nota de La Milagrosa."
-          },
+          "allOf": ["item_llave", "item_nota"],
+          "onMissingMap": { "item_llave": "La puerta no cede. Falta la llave.", "item_nota": "Mejor no salir sin la nota de La Milagrosa." },
           "onMissing": "Te falta algo antes de salir."
         },
-        {
-          "type": "toast",
-          "text": "Abres la puerta y asomas al recibidor."
-        },
-        {
-          "type": "goto",
-          "to": "cap1_recibidor"
-        }
-      ]
-    },
-    {
-      "id": "sofa",
-      "rect": {
-        "x": 0.34,
-        "y": 0.49,
-        "w": 0.28,
-        "h": 0.2
-      },
-      "actions": [
-        {
-          "type": "inspect",
-          "html": "<p>El sofá guarda migas de noches largas y siestas a destiempo. Aún huele a café frío.</p>"
-        }
-      ]
-    },
-    {
-      "id": "cuadro",
-      "rect": {
-        "x": 0.43,
-        "y": 0.23,
-        "w": 0.16,
-        "h": 0.14
-      },
-      "actions": [
-        {
-          "type": "inspect",
-          "html": "<p>Un paisaje tranquilo que no se parece en nada al barrio. Quizá por eso está ahí.</p>"
-        }
-      ]
-    },
-    {
-      "id": "ventana",
-      "rect": {
-        "x": 0.83,
-        "y": 0.3,
-        "w": 0.14,
-        "h": 0.28
-      },
-      "actions": [
-        {
-          "type": "inspect",
-          "html": "<p>La calle bosteza luz tibia. Un gato vigila desde el alféizar de enfrente con la paciencia de los que ya lo han visto todo.</p>"
-        }
-      ]
-    },
-    {
-      "id": "perchero",
-      "rect": {
-        "x": 0.26,
-        "y": 0.46,
-        "w": 0.06,
-        "h": 0.28
-      },
-      "actions": [
-        {
-          "type": "inspect",
-          "html": "<p>Perchero flaco. Chaqueta de entretiempo y una bufanda que aún no se ha decidido a irse del todo.</p>"
-        }
+        { "type": "toast", "text": "Abres la puerta y asomas al recibidor." },
+        { "type": "goto", "to": "cap1_recibidor" }
       ]
     }
   ]
