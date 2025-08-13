@@ -1,7 +1,7 @@
 {
   "bg": "cap1_salon",
   "objectives": {
-    "default": "Objetivo: Busca la NOTA de la comunidad y la LLAVE.",
+    "default": "Objetivo: Coge la LLAVE y la NOTA. Luego sal por la puerta.",
     "rules": [
       {
         "whenAll": [
@@ -20,7 +20,7 @@
         "whenAll": [
           "item_llave"
         ],
-        "text": "Objetivo: Te falta la NOTA de la comunidad."
+        "text": "Objetivo: Te falta la NOTA de La Milagrosa."
       }
     ]
   },
@@ -59,7 +59,7 @@
         },
         {
           "type": "inspect",
-          "html": "<div data-title>Nota doblada</div><p>Entre un tomo torcido y un helecho cansado aparece una hoja con letra apresurada:</p><p><em>“Reunión de comunidad — hoy 19:30. Portal B. Llevar último recibo del agua.”</em></p><p>Juan la lee dos veces. Anota mentalmente: llegar a tiempo por una vez.</p>"
+          "html": "<div data-title>Nota doblada</div><p>Entre un tomo torcido y un helecho cansado aparece una hoja con letra apresurada:</p><p><em>“Academia La Milagrosa — pásate hoy. Importante.”</em></p><p>Juan respira, guarda la nota. Toca salir.</p>"
         }
       ]
     },
@@ -80,9 +80,9 @@
           ],
           "onMissingMap": {
             "item_llave": "La puerta no cede. Falta la llave.",
-            "item_nota": "Mejor no salir sin la nota de la reunión."
+            "item_nota": "Mejor no salir sin la nota de La Milagrosa."
           },
-          "onMissing": "Te falta algo para salir."
+          "onMissing": "Te falta algo antes de salir."
         },
         {
           "type": "toast",

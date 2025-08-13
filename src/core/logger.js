@@ -1,6 +1,1 @@
-// src/core/logger.js
-export const log = {
-  info: (...args) => console.log(...args),
-  warn: (...args) => console.warn(...args),
-  error: (...args) => console.error(...args),
-}
+export const log = { info: (...a)=>console.log(...a), warn: (...a)=>console.warn(...a), error: (...a)=>console.error(...a) }

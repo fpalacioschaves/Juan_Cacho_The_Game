@@ -5,7 +5,7 @@ import { Hotspot } from '../engine/hotspot.js'
 export class Cap1Salon extends SceneBase {
   constructor({assets, hud, inventory}){
     super({ id:'cap1_salon', bgKey:'cap1_salon', assets, hud, inventory })
-    this.objective = 'Objetivo: Busca la NOTA de la comunidad y la LLAVE. Luego sal por la puerta.'
+    this.objective = 'Objetivo: Busca la NOTA de la Academia y la LLAVE. Luego sal por la puerta.'
   }
 
   _updateObjective(){
@@ -16,9 +16,9 @@ export class Cap1Salon extends SceneBase {
     } else if (tieneNota){
       this.objective = 'Objetivo: Te falta la LLAVE.'
     } else if (tieneLlave){
-      this.objective = 'Objetivo: Te falta la NOTA de la comunidad.'
+      this.objective = 'Objetivo: Te falta la NOTA de la Academia.'
     } else {
-      this.objective = 'Objetivo: Busca la NOTA de la comunidad y la LLAVE.'
+      this.objective = 'Objetivo: Busca la NOTA de la Academia y la LLAVE.'
     }
     this.hud.setObjective(this.objective)
   }
@@ -52,7 +52,7 @@ export class Cap1Salon extends SceneBase {
             this.hud.inspect(`
               <div data-title>Nota doblada</div>
               <p>Entre un tomo torcido y un helecho cansado aparece una hoja con letra apresurada:</p>
-              <p><em>“Reunión de comunidad — hoy 19:30. Portal B. Llevar último recibo del agua.”</em></p>
+              <p><em>“Academia La Milagrosa. Pasar por alli a ver si tienen algunas clases para mí.”</em></p>
               <p>Juan la lee dos veces. Anota mentalmente: llegar a tiempo por una vez.</p>
             `)
             this._updateObjective()
@@ -73,10 +73,10 @@ export class Cap1Salon extends SceneBase {
             return
           }
           if(!tieneNota){
-            this.hud.toast('Mejor no salir sin la nota de la reunión.')
+            this.hud.toast('Mejor no salir sin la nota de la Academia.')
             return
           }
-          this.hud.toast('Cerradura gira. Rumbo a la reunión… ¡Fin del capítulo 1!')
+          this.hud.toast('Cerradura gira. Rumbo al portal… O al desastre.')
         }
       }),
 

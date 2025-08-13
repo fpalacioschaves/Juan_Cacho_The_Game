@@ -1,56 +1,66 @@
 {
   "bg": "cap1_portal",
-  "objectives": {
-    "default": "Objetivo: Buzón o calle. Decide rápido; empiezan a las 19:30."
-  },
+  "objectives": { "default": "Objetivo: Habla con la portera o sal a la calle." },
   "hotspots": [
     {
       "id": "buzones",
-      "rect": {
-        "x": 0.15,
-        "y": 0.5,
-        "w": 0.2,
-        "h": 0.2
-      },
+      "rect": { "x": 0.15, "y": 0.50, "w": 0.20, "h": 0.20 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Buzones quejicas. El de Juan tiene una pegatina torcida y cartas que no son suyas.</p>" }
+      ]
+    },
+    {
+      "id": "portera",
+      "rect": { "x": 0.58, "y": 0.42, "w": 0.20, "h": 0.30 },
       "actions": [
         {
-          "type": "inspect",
-          "html": "<p>Buzones quejicas. El de Juan tiene una pegatina torcida y cartas que no son suyas.</p>"
+          "type": "dialog",
+          "title": "Portera",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "¿Otra vez tarde, Juan? ¿Qué buscas hoy?",
+              "options": [
+                { "label": "La reunión de la comunidad", "next": "reunion" },
+                { "label": "Saludar y marchar", "next": "end" }
+              ]
+            },
+            {
+              "id": "reunion",
+              "text": "Hoy a las 19:30, Portal B. Y trae el recibo del agua, que luego vienen los dramas.",
+              "enterActions": [
+                { "type": "setFlag", "flag": "pista_reunion_portera" },
+                { "type": "setObjective", "text": "Objetivo: Ve al Portal B (bajo derecha) con el recibo del agua." }
+              ],
+              "options": [
+                { "label": "¿Algo más?", "next": "mas" },
+                { "label": "Gracias, vecina", "next": "end" }
+              ]
+            },
+            {
+              "id": "mas",
+              "text": "Han cambiado la sala: ahora es en el bajo derecha. Al salir, verás el cartel.",
+              "options": [ { "label": "Vale, gracias", "next": "end" } ]
+            }
+          ]
         }
       ]
     },
     {
       "id": "volver_casa",
-      "rect": {
-        "x": 0.02,
-        "y": 0.35,
-        "w": 0.1,
-        "h": 0.4
-      },
+      "rect": { "x": 0.02, "y": 0.35, "w": 0.10, "h": 0.40 },
       "actions": [
-        {
-          "type": "toast",
-          "text": "Vuelves a casa un segundo."
-        },
-        {
-          "type": "goto",
-          "to": "cap1_recibidor"
-        }
+        { "type": "toast", "text": "Vuelves a casa un segundo." },
+        { "type": "goto", "to": "cap1_recibidor" }
       ]
     },
     {
       "id": "salir_calle",
-      "rect": {
-        "x": 0.8,
-        "y": 0.3,
-        "w": 0.18,
-        "h": 0.5
-      },
+      "rect": { "x": 0.80, "y": 0.30, "w": 0.18, "h": 0.50 },
       "actions": [
-        {
-          "type": "toast",
-          "text": "Respiras hondo. Vamos a esa reunión… ¡Fin del Capítulo 1!"
-        }
+        { "type": "toast", "text": "La puerta de la calle respira tarde tibia." },
+        { "type": "goto", "to": "cap1_calle" }
       ]
     }
   ]

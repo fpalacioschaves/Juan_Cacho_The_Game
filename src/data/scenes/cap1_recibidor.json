@@ -112,7 +112,7 @@
           ],
           "onMissingMap": {
             "item_llave": "No sales sin la llave.",
-            "item_recibo_agua": "La nota decía: traer el recibo del agua."
+            "item_recibo_agua": "La portera insistirá con el recibo del agua."
           },
           "onMissing": "Falta algo antes de salir."
         },

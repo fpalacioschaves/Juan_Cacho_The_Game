@@ -1,0 +1,50 @@
+{
+  "bg": "cap1_calle",
+  "objectives": {
+    "default": "Objetivo: Decide — Academia La Milagrosa o Portal B."
+  },
+  "hotspots": [
+    {
+      "id": "academia",
+      "rect": { "x": 0.65, "y": 0.40, "w": 0.22, "h": 0.30 },
+      "actions": [
+        { "type": "requireItems", "allOf": ["item_nota"], "onMissing": "Sin la nota de La Milagrosa no tiene sentido ir." },
+        { "type": "toast", "text": "Cartel azul y puertas de cristal. La Milagrosa." },
+        { "type": "goto", "to": "cap1_academia_ext" }
+      ]
+    },
+    {
+      "id": "portalB",
+      "rect": { "x": 0.20, "y": 0.42, "w": 0.22, "h": 0.34 },
+      "actions": [
+        {
+          "type": "requireFlags",
+          "allOf": ["pista_reunion_portera"],
+          "onMissing": "Antes pregunta a la portera por la reunión."
+        },
+        {
+          "type": "requireItems",
+          "allOf": ["item_recibo_agua"],
+          "onMissing": "Te falta el recibo del agua."
+        },
+        { "type": "toast", "text": "El bajo derecha del Portal B huele a café recalentado." },
+        { "type": "goto", "to": "cap1_portalB_sala" }
+      ]
+    },
+    {
+      "id": "cartel",
+      "rect": { "x": 0.48, "y": 0.28, "w": 0.10, "h": 0.18 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Cartel impreso en casa: <em>“Reunión de comunidad — 19:30 — Portal B — Bajo dcha.”</em></p>" }
+      ]
+    },
+    {
+      "id": "volver_portal",
+      "rect": { "x": 0.02, "y": 0.30, "w": 0.10, "h": 0.40 },
+      "actions": [
+        { "type": "toast", "text": "Das media vuelta al portal." },
+        { "type": "goto", "to": "cap1_portal" }
+      ]
+    }
+  ]
+}
