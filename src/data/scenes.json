@@ -1,0 +1,8 @@
+{
+  "start": "cap1_salon",
+  "defs": {
+    "cap1_salon": "src/data/scenes/cap1_salon.json",
+    "cap1_recibidor": "src/data/scenes/cap1_recibidor.json",
+    "cap1_portal": "src/data/scenes/cap1_portal.json"
+  }
+}

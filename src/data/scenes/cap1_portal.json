@@ -1,0 +1,57 @@
+{
+  "bg": "cap1_portal",
+  "objectives": {
+    "default": "Objetivo: Buzón o calle. Decide rápido; empiezan a las 19:30."
+  },
+  "hotspots": [
+    {
+      "id": "buzones",
+      "rect": {
+        "x": 0.15,
+        "y": 0.5,
+        "w": 0.2,
+        "h": 0.2
+      },
+      "actions": [
+        {
+          "type": "inspect",
+          "html": "<p>Buzones quejicas. El de Juan tiene una pegatina torcida y cartas que no son suyas.</p>"
+        }
+      ]
+    },
+    {
+      "id": "volver_casa",
+      "rect": {
+        "x": 0.02,
+        "y": 0.35,
+        "w": 0.1,
+        "h": 0.4
+      },
+      "actions": [
+        {
+          "type": "toast",
+          "text": "Vuelves a casa un segundo."
+        },
+        {
+          "type": "goto",
+          "to": "cap1_recibidor"
+        }
+      ]
+    },
+    {
+      "id": "salir_calle",
+      "rect": {
+        "x": 0.8,
+        "y": 0.3,
+        "w": 0.18,
+        "h": 0.5
+      },
+      "actions": [
+        {
+          "type": "toast",
+          "text": "Respiras hondo. Vamos a esa reunión… ¡Fin del Capítulo 1!"
+        }
+      ]
+    }
+  ]
+}

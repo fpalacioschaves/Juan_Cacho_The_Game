@@ -1,0 +1,36 @@
+// src/engine/inventory.js
+import { State } from '../core/state.js'
+
+export class Inventory {
+  constructor(hud){
+    this.hud = hud
+    this.render()
+  }
+  add(id){
+    State.addItem(id)
+    this.render()
+  }
+  has(id){ return State.hasItem(id) }
+  select(id){
+    if(State.data.selectedItem === id) State.clearSelection()
+    else State.selectItem(id)
+    this.render()
+  }
+  render(){
+    const root = document.getElementById('inventory')
+    if(!root) return
+    root.innerHTML = ''
+    for(const id of State.data.inventory){
+      const item = document.createElement('button')
+      item.className = 'inv-item' + (State.data.selectedItem===id ? ' selected' : '')
+      item.title = id
+      item.addEventListener('click', ()=> this.select(id))
+      const img = document.createElement('img')
+      img.alt = id
+      img.width = 40; img.height = 40
+      img.src = id.startsWith('item_') ? `./assets/images/items/${id.replace('item_','')}.png` : `./assets/images/items/${id}.png`
+      item.appendChild(img)
+      root.appendChild(item)
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "images": {
+    "cap1_salon": "./assets/images/backgrounds/cap1_salon.png",
+    "item_llave": "./assets/images/items/llave.png",
+    "item_cafe": "./assets/images/items/cafe.png",
+    "item_nota": "./assets/images/items/nota.png",
+    "cap1_recibidor": "./assets/images/backgrounds/cap1_recibidor.png",
+    "cap1_portal": "./assets/images/backgrounds/cap1_portal.png",
+    "item_recibo_agua": "./assets/images/items/recibo_agua.png"
+  }
+}

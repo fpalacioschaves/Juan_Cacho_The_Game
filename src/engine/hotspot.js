@@ -1,0 +1,12 @@
+// src/engine/hotspot.js
+export class Hotspot {
+  constructor({x,y,w,h,onClick,requires=null,once=false, debug=false}){
+    this.x=x; this.y=y; this.w=w; this.h=h
+    this.onClick=onClick
+    this.requires=requires
+    this.once = once
+    this.hit = false
+    this.debug = debug
+  }
+  contains(px,py){ return px>=this.x && py>=this.y && px<=this.x+this.w && py<=this.y+this.h }
+}

@@ -1,0 +1,130 @@
+{
+  "bg": "cap1_recibidor",
+  "objectives": {
+    "default": "Objetivo: Encuentra el RECIBO DEL AGUA y sal de casa.",
+    "rules": [
+      {
+        "whenAll": [
+          "item_llave",
+          "item_recibo_agua"
+        ],
+        "text": "Objetivo: Todo listo. Baja al portal."
+      },
+      {
+        "whenAll": [
+          "item_recibo_agua"
+        ],
+        "text": "Objetivo: Ya tienes el recibo. Ve a la puerta."
+      },
+      {
+        "whenAll": [
+          "item_llave"
+        ],
+        "text": "Objetivo: Te falta el recibo del agua."
+      }
+    ]
+  },
+  "hotspots": [
+    {
+      "id": "volver_salon",
+      "rect": {
+        "x": 0.0,
+        "y": 0.35,
+        "w": 0.1,
+        "h": 0.4
+      },
+      "actions": [
+        {
+          "type": "toast",
+          "text": "Vuelves al salón."
+        },
+        {
+          "type": "goto",
+          "to": "cap1_salon"
+        }
+      ]
+    },
+    {
+      "id": "cajonera",
+      "rect": {
+        "x": 0.4,
+        "y": 0.6,
+        "w": 0.18,
+        "h": 0.18
+      },
+      "once": true,
+      "actions": [
+        {
+          "type": "pickup",
+          "item": "item_recibo_agua",
+          "onSuccess": "Has guardado el recibo del agua."
+        },
+        {
+          "type": "inspect",
+          "html": "<p>Abres el cajón con ese gesto de todos los meses. Papel doblado, sello azul, cifra que pica un poco.</p>"
+        }
+      ]
+    },
+    {
+      "id": "espejo",
+      "rect": {
+        "x": 0.68,
+        "y": 0.2,
+        "w": 0.16,
+        "h": 0.28
+      },
+      "actions": [
+        {
+          "type": "inspect",
+          "html": "<p>Te miras lo justo. El espejo sabe demasiado y no cobra por consejo.</p>"
+        }
+      ]
+    },
+    {
+      "id": "zapatero",
+      "rect": {
+        "x": 0.2,
+        "y": 0.72,
+        "w": 0.18,
+        "h": 0.14
+      },
+      "actions": [
+        {
+          "type": "inspect",
+          "html": "<p>Un desfile de suelas con historias. Las deportivas piden tregua.</p>"
+        }
+      ]
+    },
+    {
+      "id": "puerta_calle",
+      "rect": {
+        "x": 0.88,
+        "y": 0.3,
+        "w": 0.1,
+        "h": 0.5
+      },
+      "actions": [
+        {
+          "type": "requireItems",
+          "allOf": [
+            "item_llave",
+            "item_recibo_agua"
+          ],
+          "onMissingMap": {
+            "item_llave": "No sales sin la llave.",
+            "item_recibo_agua": "La nota decía: traer el recibo del agua."
+          },
+          "onMissing": "Falta algo antes de salir."
+        },
+        {
+          "type": "toast",
+          "text": "Cierra el pestillo. Huele a escalera."
+        },
+        {
+          "type": "goto",
+          "to": "cap1_portal"
+        }
+      ]
+    }
+  ]
+}

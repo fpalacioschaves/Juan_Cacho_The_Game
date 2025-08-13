@@ -1,0 +1,80 @@
+// src/scenes/SceneFromData.js
+import { SceneBase } from './SceneBase.js'
+import { Hotspot } from '../engine/hotspot.js'
+import { Actions } from '../engine/actions.js'
+
+async function loadJSON(url){
+  if(!url || typeof url !== 'string'){
+    throw new Error('No se pudo cargar ' + String(url))
+  }
+  const res = await fetch(url, {cache:'no-store'})
+  if(!res.ok){
+    throw new Error('No se pudo cargar ' + url + ' · HTTP ' + res.status)
+  }
+  return await res.json()
+}
+
+export class SceneFromData extends SceneBase {
+  constructor({id, jsonUrl, assets, hud, inventory}){
+    super({ id, bgKey:null, assets, hud, inventory })
+    this.jsonUrl = jsonUrl
+    this.def = null
+  }
+
+  async _loadDef(){
+    if(this.def) return
+    this.def = await loadJSON(this.jsonUrl)
+    this.bgKey = this.def.bg || null
+    this.objective = this.def.objectives?.default || ''
+  }
+
+  _applyObjectiveRules(){
+    if(!this.def?.objectives) return
+    const inv = this.inventory
+    const rules = this.def.objectives.rules || []
+    for(const r of rules){
+      const all = r.whenAll || []
+      const ok = all.every(id => inv.has(id))
+      if(ok){ this.hud.setObjective(r.text); return }
+    }
+    const def = this.def.objectives.default
+    if(def) this.hud.setObjective(def)
+  }
+
+  async onEnter(renderer){
+    await this._loadDef()
+    await super.onEnter(renderer)
+
+    const W = renderer.canvas.width, H = renderer.canvas.height
+    this.hotspots = (this.def.hotspots || []).map(h => {
+      const r = h.rect || {x:0,y:0,w:0,h:0}
+      const rect = { x: W*(r.x||0), y: H*(r.y||0), w: W*(r.w||0), h: H*(r.h||0) }
+      return new Hotspot({
+        x: rect.x, y: rect.y, w: rect.w, h: rect.h,
+        once: !!h.once,
+        onClick: async () => {
+          for(const act of (h.actions || [])){
+            if(act.type === 'requireItems'){
+              const ok = Actions.requireItems(this._ctx(), act)
+              if(!ok) return
+              continue
+            }
+            await Actions.run(this._ctx(), act)
+          }
+          this._applyObjectiveRules()
+        }
+      })
+    })
+
+    this._applyObjectiveRules()
+  }
+
+  _ctx(){
+    return {
+      scene:this,
+      hud:this.hud,
+      inventory:this.inventory,
+      sceneManager:this._sceneManager,
+    }
+  }
+}
