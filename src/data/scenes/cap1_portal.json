@@ -45,6 +45,14 @@
       ]
     },
     {
+      "id": "salir_calle",
+      "rect": { "x": 0.85, "y": 0.30, "w": 0.12, "h": 0.40 },
+      "actions": [
+        { "type": "toast", "text": "Sales a la calle." },
+        { "type": "goto", "to": "cap1_calle" }
+      ]
+    },
+    {
       "id": "volver_casa",
       "rect": { "x": 0.02, "y": 0.35, "w": 0.10, "h": 0.40 },
       "actions": [

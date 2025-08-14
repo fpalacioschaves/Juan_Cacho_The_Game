@@ -6,6 +6,9 @@
     "item_llave": "./assets/images/items/llave.png",
     "item_cafe": "./assets/images/items/cafe.png",
     "item_nota": "./assets/images/items/nota.png",
-    "item_recibo_agua": "./assets/images/items/recibo_agua.png"
+    "item_recibo_agua": "./assets/images/items/recibo_agua.png",
+    "cap1_calle": "./assets/images/backgrounds/cap1_calle.png",
+    "cap1_bar_dostercios": "./assets/images/backgrounds/cap1_bar_dostercios.png",
+    "cap1_academia_ext": "./assets/images/backgrounds/cap1_academia_ext.png"
   }
 }

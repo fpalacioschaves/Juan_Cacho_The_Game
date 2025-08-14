@@ -1,18 +1,51 @@
 {
   "bg": "cap1_calle",
-  "objectives": { "default": "Objetivo: Explora el bar y la academia." },
+  "objectives": { "default": "Objetivo: Explora. Bar y Academia están cerca." },
   "hotspots": [
     {
-      "id": "bar",
-      "rect": { "x": 0.22, "y": 0.48, "w": 0.22, "h": 0.30 },
+      "id": "vecino",
+      "rect": { "x": 0.28, "y": 0.56, "w": 0.16, "h": 0.22 },
       "actions": [
-        { "type": "toast", "text": "Te acercas al bar de la esquina." },
-        { "type": "goto", "to": "cap1_bar" }
+        {
+          "type": "dialog",
+          "title": "Vecino",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "Un vecino fuma con paciencia mirando al portal.",
+              "options": [
+                { "label": "Comentar el barrio", "next": "barrio" },
+                { "label": "Despedirse", "next": "end" }
+              ]
+            },
+            {
+              "id": "barrio",
+              "text": "—El bar abre en un rato. La academia lleva días con papeles nuevos en el escaparate.",
+              "options": [ { "label": "Asentir", "next": "end" } ]
+            }
+          ]
+        }
       ]
     },
     {
-      "id": "academia",
-      "rect": { "x": 0.64, "y": 0.42, "w": 0.22, "h": 0.32 },
+      "id": "cartel_academia",
+      "rect": { "x": 0.62, "y": 0.28, "w": 0.14, "h": 0.18 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Cartel de la Academia La Milagrosa: <em>Matrícula abierta. Cursos de verano.</em></p>" }
+      ]
+    },
+    {
+      "id": "ir_bar_dostercios",
+      "rect": { "x": 0.18, "y": 0.46, "w": 0.18, "h": 0.30 },
+      "actions": [
+        { "type": "toast", "text": "Te acercas al Bar Dos Tercios del Quinto." },
+        { "type": "goto", "to": "cap1_bar_dostercios" }
+      ]
+    },
+    {
+      "id": "ir_academia",
+      "rect": { "x": 0.70, "y": 0.42, "w": 0.18, "h": 0.32 },
       "actions": [
         { "type": "toast", "text": "Frente a la Academia La Milagrosa." },
         { "type": "goto", "to": "cap1_academia_ext" }
