@@ -15,7 +15,7 @@ async function boot(){
   const hudEl = document.getElementById('hud')
   if(!canvas || !hudEl){ alert('Faltan elementos base'); return }
 
-  // Cargar assets
+  // Assets
   let manifest = null
   try{
     const res = await fetch('src/data/assets.json', {cache:'no-store'})
@@ -26,7 +26,16 @@ async function boot(){
   }
   await Assets.loadManifest(manifest)
 
-  // Cargar escenas JSON
+  // Items meta (opcional, tolerante a fallo)
+  let itemsMeta = {}
+  try{
+    const r = await fetch('src/data/items.json', {cache:'no-store'})
+    if(r.ok) itemsMeta = await r.json()
+  }catch(e){
+    console.warn('items.json no disponible; continúo sin metadatos.')
+  }
+
+  // Scenes
   let sceneDefs = null
   try{
     const res = await fetch('src/data/scenes.json', {cache:'no-store'})
@@ -38,10 +47,9 @@ async function boot(){
 
   const renderer = new Renderer(canvas, Assets, overlay)
   const hud = new HUD()
-  const inventory = new Inventory(hud)
+  const inventory = new Inventory(hud, itemsMeta)
   const sceneManager = new SceneManager(renderer, hud, inventory)
 
-  // Registrar escenas data-driven
   const map = sceneDefs?.defs || {}
   const ids = new Set()
   for (const [id, url] of Object.entries(map)){
@@ -49,12 +57,10 @@ async function boot(){
     ids.add(id)
   }
 
-  // Estado + reset por query
   const params = new URLSearchParams(location.search)
   State.load()
   if (params.has('reset')) State.reset()
 
-  // Elegir escena de arranque con validación
   let target = State.data.currentScene
   const defaultStart = sceneDefs?.start || Object.keys(map)[0] || null
   if (!ids.has(target)) {
@@ -65,7 +71,7 @@ async function boot(){
 
   await sceneManager.change(target)
 
-  // Controles
+  // UX
   window.addEventListener('resize', () => { renderer.fitToContainer(); sceneManager.render() })
   if (params.has('debug')) Config.debug.hotspots = true
   window.addEventListener('keydown', e => {

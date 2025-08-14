@@ -27,3 +27,4 @@ body{background:#121317;color:#e8e8f0}
 .inspector-card{width:min(820px,92vw);background:#141722;border:1px solid #2a2f3a;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:16px;display:grid;gap:12px}
 .inspector-body{max-height:48vh;overflow:auto;line-height:1.45}
 .btn.close{justify-self:end}
+.inv-info p { margin:.25rem 0 .25rem 0; line-height:1.35 }

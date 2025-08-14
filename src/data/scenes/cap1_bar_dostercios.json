@@ -1,38 +1,16 @@
 {
   "bg": "cap1_bar_dostercios",
-  "objectives": { "default": "Objetivo: Presentar el Bar Dos Tercios del Quinto." },
+  "objectives": {
+    "default": "Objetivo: Ojea el bar. La pizarra, Dudu y El Gollina tienen algo que decir."
+  },
   "hotspots": [
     {
-      "id": "angel",
-      "rect": { "x": 0.45, "y": 0.52, "w": 0.20, "h": 0.26 },
+      "id": "pizarra",
+      "rect": { "x": 0.68, "y": 0.16, "w": 0.24, "h": 0.20 },
       "actions": [
-        {
-          "type": "dialog",
-          "title": "Ángel",
-          "start": "start",
-          "nodes": [
-            {
-              "id": "start",
-              "text": "Ángel seca vasos y mira la calle por la puerta.",
-              "options": [
-                { "label": "Pedir un café", "next": "cafe" },
-                { "label": "Preguntar por el vecindario", "next": "vecinos" }
-              ]
-            },
-            {
-              "id": "cafe",
-              "text": "—Hoy invita la casa. Ya pagarás cuando refresque.",
-              "enterActions": [ { "type": "setFlag", "flag": "met_angel" } ],
-              "options": [ { "label": "Gracias", "next": "end" } ]
-            },
-            {
-              "id": "vecinos",
-              "text": "—Hay mal ambiente por las cuotas. A ver si se aclaran pronto.",
-              "enterActions": [ { "type": "setFlag", "flag": "met_angel" } ],
-              "options": [ { "label": "Asentir", "next": "end" } ]
-            }
-          ]
-        }
+        { "type": "inspect", "html": "<p>Tiza fresca: <em>Palabra del día: TERTULIA</em>.</p>" },
+        { "type": "setFlag", "flag": "bar_visto_pizarra" },
+        { "type": "toast", "text": "Apuntado: ‘TERTULIA’." }
       ]
     },
     {
@@ -49,20 +27,91 @@
               "text": "Dudu repasa un crucigrama y sonríe de reojo.",
               "options": [
                 { "label": "Saludar", "next": "hola" },
-                { "label": "Comentar el ruido", "next": "ruido" }
+                { "label": "Ayudar con el crucigrama", "next": "cruci" },
+                { "label": "Volver a la barra", "next": "end" }
               ]
             },
             {
               "id": "hola",
               "text": "—¿Qué, Juan? El barrio igual de vivo.",
               "enterActions": [ { "type": "setFlag", "flag": "met_dudu" } ],
-              "options": [ { "label": "Volver a la barra", "next": "end" } ]
+              "options": [ { "label": "Seguir", "next": "start" } ]
             },
             {
-              "id": "ruido",
-              "text": "—Los de arriba montaron otra. No sé quién paga, pero todos se quejan.",
-              "enterActions": [ { "type": "setFlag", "flag": "met_dudu" } ],
-              "options": [ { "label": "Terminar", "next": "end" } ]
+              "id": "cruci",
+              "text": "—Ocho letras: ‘charla entre amigos’, típica del bar.",
+              "options": [
+                {
+                  "label": "Sugerir ‘TERTULIA’",
+                  "actions": [
+                    { "type": "setFlag", "flag": "bar_crucigrama_resuelto" },
+                    { "type": "toast", "text": "¡Bingo! Dudu te guiña un ojo." }
+                  ],
+                  "next": "cruci_ok",
+                  "requiresFlags": ["bar_visto_pizarra"]
+                },
+                { "label": "Probar ‘CAFÉ’", "next": "cruci_ko1" },
+                { "label": "Probar ‘CUOTA’", "next": "cruci_ko2" }
+              ]
+            },
+            {
+              "id": "cruci_ok",
+              "text": "—Tú sí que estás al día. Se oye que habrá reunión de vecinos en nada.",
+              "options": [ { "label": "Gracias", "next": "end" } ]
+            },
+            {
+              "id": "cruci_ko1",
+              "text": "—Cerca del bar, sí, pero… no cuadra.",
+              "options": [ { "label": "Volver", "next": "cruci" } ]
+            },
+            {
+              "id": "cruci_ko2",
+              "text": "—Eso huele a reunión, pero tampoco es.",
+              "options": [ { "label": "Volver", "next": "cruci" } ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gollina",
+      "rect": { "x": 0.45, "y": 0.52, "w": 0.20, "h": 0.26 },
+      "actions": [
+        {
+          "type": "dialog",
+          "title": "El Gollina",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "El Gollina remueve el vaso y mira de reojo el televisor sin sonido.",
+              "options": [
+                { "label": "Comentar el ambiente del bar", "next": "ambiente" },
+                {
+                  "label": "Comentar lo del crucigrama de Dudu",
+                  "next": "tip",
+                  "requiresFlags": ["bar_crucigrama_resuelto"]
+                },
+                { "label": "Nada, luego paso", "next": "end" }
+              ]
+            },
+            {
+              "id": "ambiente",
+              "text": "—Aquí se entera uno de todo. Últimamente, mucho runrún con las cuotas.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_gollina" } ],
+              "options": [ { "label": "Asentir", "next": "start" } ]
+            },
+            {
+              "id": "tip",
+              "text": "—Si vas a la reunión, afina la oreja. Dicen que la convocan en breve.",
+              "enterActions": [
+                { "type": "setFlag", "flag": "bar_info_reunion" },
+                {
+                  "type": "setObjective",
+                  "text": "Objetivo: Tienes un rumor sólido sobre la reunión. Puedes volver al portal cuando quieras."
+                }
+              ],
+              "options": [ { "label": "Gracias", "next": "end" } ]
             }
           ]
         }

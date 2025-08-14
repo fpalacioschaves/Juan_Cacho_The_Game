@@ -1,6 +1,8 @@
 {
   "bg": "cap1_portal",
-  "objectives": { "default": "Objetivo: Habla con la portera." },
+  "objectives": {
+    "default": "Objetivo: Habla con la portera y conoce a los vecinos clave."
+  },
   "hotspots": [
     {
       "id": "portera",
@@ -16,7 +18,8 @@
               "text": "La portera ordena papeles junto al tablón.",
               "options": [
                 { "label": "Preguntar por el ambiente", "next": "ambiente" },
-                { "label": "Preguntar por avisos", "next": "avisos" }
+                { "label": "Preguntar por avisos", "next": "avisos" },
+                { "label": "Nada, gracias", "next": "end" }
               ]
             },
             {
@@ -37,9 +40,145 @@
         }
       ]
     },
+
+    {
+      "id": "remedios_odon",
+      "rect": { "x": 0.36, "y": 0.44, "w": 0.22, "h": 0.28 },
+      "actions": [
+        {
+          "type": "dialog",
+          "title": "Remedios y Odón",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "Remedios del Valle charla en voz baja. Odón Camuñas consulta papeles.",
+              "options": [
+                { "label": "Saludar a Remedios", "next": "remedios" },
+                { "label": "Saludar a Odón", "next": "odon" },
+                { "label": "Volver a mirar el portal", "next": "end" }
+              ]
+            },
+            {
+              "id": "remedios",
+              "text": "—Hola, Juan. A ver si hoy el ascensor no se estropea…",
+              "enterActions": [ { "type": "setFlag", "flag": "met_remedios" } ],
+              "options": [
+                { "label": "Comentar el calor", "next": "remedios_smalltalk" },
+                {
+                  "label": "Despedirse",
+                  "actions": [
+                    { "type": "requireFlags", "allOf": ["met_remedios","met_odon","met_nieves","met_angel"] },
+                    { "type": "setObjective", "text": "Objetivo: Ya has charlado con los vecinos clave. Puedes salir a la calle cuando quieras." }
+                  ],
+                  "next": "end"
+                }
+              ]
+            },
+            {
+              "id": "remedios_smalltalk",
+              "text": "—Verano eterno… y reuniones a la vista. Ya nos veremos abajo.",
+              "options": [ { "label": "Volver", "next": "start" } ]
+            },
+            {
+              "id": "odon",
+              "text": "—Buenas, Juan. Disculpa, estoy cerrando unas cuentas…",
+              "enterActions": [ { "type": "setFlag", "flag": "met_odon" } ],
+              "options": [
+                { "label": "Preguntar por las cuotas", "next": "odon_cuotas" },
+                {
+                  "label": "Despedirse",
+                  "actions": [
+                    { "type": "requireFlags", "allOf": ["met_remedios","met_odon","met_nieves","met_angel"] },
+                    { "type": "setObjective", "text": "Objetivo: Ya has charlado con los vecinos clave. Puedes salir a la calle cuando quieras." }
+                  ],
+                  "next": "end"
+                }
+              ]
+            },
+            {
+              "id": "odon_cuotas",
+              "text": "—Todo en orden, ya tendrás noticias en la próxima convocatoria.",
+              "options": [ { "label": "Asentir", "next": "start" } ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "nieves_angel",
+      "rect": { "x": 0.18, "y": 0.46, "w": 0.18, "h": 0.24 },
+      "actions": [
+        {
+          "type": "dialog",
+          "title": "Nieves y Ángel",
+          "start": "start",
+          "nodes": [
+            {
+              "id": "start",
+              "text": "Nieves espera apoyada en la barandilla. Su hermano Ángel mira el móvil.",
+              "options": [
+                { "label": "Saludar a Nieves", "next": "nieves" },
+                { "label": "Hablar con Ángel", "next": "angel" },
+                { "label": "Comentar el rumor del bar", "next": "rumor", "requiresFlags": ["bar_info_reunion"] },
+                { "label": "Dejarlo por ahora", "next": "end" }
+              ]
+            },
+            {
+              "id": "nieves",
+              "text": "—Hola, Juan. Estos días se oyen cosas… ya te contaré.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_nieves" } ],
+              "options": [
+                { "label": "Asentir", "next": "start" },
+                {
+                  "label": "Despedirse",
+                  "actions": [
+                    { "type": "requireFlags", "allOf": ["met_remedios","met_odon","met_nieves","met_angel"] },
+                    { "type": "setObjective", "text": "Objetivo: Ya has charlado con los vecinos clave. Puedes salir a la calle cuando quieras." }
+                  ],
+                  "next": "end"
+                }
+              ]
+            },
+            {
+              "id": "angel",
+              "text": "—Qué tal, Juan. Si necesitas algo, estamos en el quinto.",
+              "enterActions": [ { "type": "setFlag", "flag": "met_angel" } ],
+              "options": [
+                { "label": "Comentar el calor", "next": "angel_smalltalk" },
+                {
+                  "label": "Despedirse",
+                  "actions": [
+                    { "type": "requireFlags", "allOf": ["met_remedios","met_odon","met_nieves","met_angel"] },
+                    { "type": "setObjective", "text": "Objetivo: Ya has charlado con los vecinos clave. Puedes salir a la calle cuando quieras." }
+                  ],
+                  "next": "end"
+                }
+              ]
+            },
+            {
+              "id": "angel_smalltalk",
+              "text": "—Bah, esto se arregla con una brisa del puerto… o con cerrar las ventanas.",
+              "options": [ { "label": "Volver", "next": "start" } ]
+            },
+            {
+              "id": "rumor",
+              "text": "—Si en el bar ya lo dicen, será cuestión de días. Estate atento al tablón.",
+              "enterActions": [
+                { "type": "setFlag", "flag": "portal_confirma_rumor" },
+                { "type": "setObjective", "text": "Objetivo: Rumor confirmado. Puedes ir avanzando por el barrio." }
+              ],
+              "options": [ { "label": "Gracias", "next": "end" } ]
+            }
+          ]
+        }
+      ]
+    },
+
     {
       "id": "buzones",
-      "rect": { "x": 0.15, "y": 0.50, "w": 0.20, "h": 0.20 },
+      "rect": { "x": 0.10, "y": 0.56, "w": 0.12, "h": 0.18 },
       "actions": [
         { "type": "inspect", "html": "<p>Buzones viejos; el de Juan tiene una pegatina torcida.</p>" }
       ]
