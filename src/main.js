@@ -9,6 +9,9 @@ import { State } from './core/state.js'
 import { Config } from './game/config.js'
 import { SceneFromData } from './scenes/SceneFromData.js'
 
+// Overlay de hotspots (SIEMPRE activo)
+import initHotspotOverlay from './plugins/plugin.hotspotOverlay.js'
+
 async function boot(){
   const canvas = document.getElementById('gameCanvas')
   const overlay = document.getElementById('overlayCanvas')
@@ -50,6 +53,44 @@ async function boot(){
   const inventory = new Inventory(hud, itemsMeta)
   const sceneManager = new SceneManager(renderer, hud, inventory)
 
+  // === INTEGRACIÓN DEL OVERLAY (siempre activo) ============================
+  // Compatibilidad con tu Inventory: sus add(...) esperan STRING id.
+  // Evita el error: id.replace is not a function (getMeta en inventory.js).
+  function addToInventoryCompat(_state, item){
+    try{
+      const id = item?.id ?? item
+      if (!id) throw new Error('item.id no definido')
+
+      if (inventory && typeof inventory.addById === 'function') {
+        // addById(id, meta?) — si la tienes disponible
+        inventory.addById(id, item)
+      } else if (inventory && typeof inventory.add === 'function') {
+        // add(stringId)
+        inventory.add(id)
+      } else if (inventory && typeof inventory.addItem === 'function') {
+        // addItem(stringId)
+        inventory.addItem(id)
+      } else {
+        // Fallback inofensivo: solo muta State.data
+        if (!Array.isArray(State.data.inventory)) State.data.inventory = []
+        if (!State.data.inventory.find(it => it.id === id)) {
+          State.data.inventory.push({ id, name: item?.name, icon: item?.icon })
+        }
+      }
+      hud?.toast?.(`Has cogido: ${item?.name || id}`)
+    }catch(e){
+      console.warn('addToInventoryCompat falló; el HUD/Inventory puede no reflejar el cambio', e)
+    }
+  }
+
+  // Inicializa el plugin (abre overlay al clicar .hotspot o al invocarlo)
+  const hotspotOverlay = initHotspotOverlay({
+    state: State.data,
+    sceneManager,                 // si no implementa .emit, el plugin usa modo DOM
+    addToInventory: addToInventoryCompat
+  })
+  // ========================================================================
+
   const map = sceneDefs?.defs || {}
   const ids = new Set()
   for (const [id, url] of Object.entries(map)){
@@ -68,6 +109,22 @@ async function boot(){
     target = ids.has(defaultStart) ? defaultStart : (ids.values().next().value || null)
   }
   if (!target) return alert('No hay escenas registradas.')
+
+  // Modo debug: helpers a mano (no afectan producción)
+  if (params.has('debug')){
+    window.sceneManager = sceneManager
+    window.hud = hud
+    window.state = State.data
+    window.hotspotOverlay = hotspotOverlay
+    // Helper para probar el overlay sin DOM
+    window.emitHotspot = (data) => {
+      if (window.hotspotOverlay && typeof window.hotspotOverlay.show === 'function'){
+        window.hotspotOverlay.show(data)
+      } else {
+        console.warn('hotspotOverlay no disponible.')
+      }
+    }
+  }
 
   await sceneManager.change(target)
 
