@@ -1,6 +1,6 @@
 {
   "id": "cap2_casa",
-  "bg": "assets/bg/cap2/casa.png",
+  "bg": "assets/backgrounds/casa.png",
   "objectives": {
     "default": "Te notas flojo. Baja a la farmacia y consigue unas vitaminas.",
     "rules": [
