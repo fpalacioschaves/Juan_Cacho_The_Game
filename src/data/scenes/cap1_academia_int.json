@@ -1,141 +1,45 @@
 {
   "bg": "cap1_academia_int",
   "objectives": {
-    "default": "Objetivo: Habla en recepción para conseguir un puesto de verano.",
-    "rules": [
-      { "whenAll": ["item_formulario"], "text": "Objetivo: Rellena la SOLICITUD y consigue HORARIO y BOLÍGRAFO." },
-      { "whenAll": ["item_formulario", "item_horario", "item_boli"], "text": "Objetivo: Entrega todo en recepción." }
-    ]
+    "default": "Objetivo: Reunirte en recepción y cerrar la matrícula. Cuando termines, vuelve a casa (comienza el Capítulo 2)."
   },
   "hotspots": [
     {
       "id": "recepcion",
-      "rect": { "x": 0.46, "y": 0.38, "w": 0.22, "h": 0.30 },
+      "rect": { "x": 0.62, "y": 0.32, "w": 0.20, "h": 0.30 },
       "actions": [
-        {
-          "type": "dialog",
-          "title": "Recepción (Alicia)",
-          "start": "hola",
-          "nodes": [
-            {
-              "id": "hola",
-              "text": "—Buenos días.\n¿Vienes por los cursillos de verano?",
-              "options": [
-                { "label": "Sí. ¿Qué necesito?", "next": "requisitos" },
-                { "label": "Entregar documentación", "next": "entregar" },
-                { "label": "Nada, gracias", "next": "end" }
-              ]
-            },
-            {
-              "id": "requisitos",
-              "text": "—Formulario, tu disponibilidad horaria y firma.\nTe doy el formulario y un boli si hace falta.",
-              "enterActions": [
-                { "type": "pickup", "item": "item_formulario", "onSuccess": "Alicia te entrega un formulario." }
-              ],
-              "options": [
-                { "label": "¿Me prestas un bolígrafo?", "next": "boli" },
-                { "label": "Entendido", "next": "hola" }
-              ]
-            },
-            {
-              "id": "boli",
-              "text": "—Claro.\nDevuélvelo al salir.",
-              "enterActions": [
-                { "type": "pickup", "item": "item_boli", "onSuccess": "Has cogido un bolígrafo prestado." }
-              ],
-              "options": [
-                { "label": "Gracias", "next": "hola" }
-              ]
-            },
-            {
-              "id": "entregar",
-              "text": "—Veamos…",
-              "options": [
-                {
-                  "label": "Entregar formulario, horario y boli",
-                  "actions": [
-                    {
-                      "type": "requireItems",
-                      "allOf": ["item_formulario", "item_horario", "item_boli"],
-                      "onMissingMap": {
-                        "item_formulario": "Falta el formulario.",
-                        "item_horario": "Necesito tu disponibilidad.",
-                        "item_boli": "Firma aquí, por favor."
-                      },
-                      "onMissing": "Te falta algo para cerrar el trámite."
-                    },
-                    { "type": "setFlag", "flag": "academy_precontrato" },
-                    { "type": "toast", "text": "Alicia te apunta para los cursillos.\n¡Pre-contrato hecho!" },
-                    { "type": "setObjective", "text": "Objetivo: Puesto de verano conseguido. Puedes seguir explorando el barrio." }
-                  ],
-                  "next": "end"
-                },
-                { "label": "Volver", "next": "hola" }
-              ]
-            }
-          ]
-        }
+        { "type": "inspect", "html": "<p>Recepcionista de La Milagrosa: <em>“Te esperaban. Todo listo.”</em></p>" },
+        { "type": "toast", "text": "Trámite hecho. Puedes volver a casa." }
       ]
     },
     {
-      "id": "tablon",
-      "rect": { "x": 0.18, "y": 0.36, "w": 0.20, "h": 0.28 },
+      "id": "tablondeanuncios",
+      "rect": { "x": 0.10, "y": 0.25, "w": 0.18, "h": 0.28 },
       "actions": [
-        { "type": "inspect", "html": "Tareas, turnos y huecos libres.\n\n" },
-        { "type": "pickup", "item": "item_horario", "onSuccess": "Apuntas un horario compatible." }
+        { "type": "inspect", "html": "<p>Convocatorias y cursos. Nada urgente ahora.</p>" }
       ]
     },
     {
-      "id": "pizarra_aula",
-      "rect": { "x": 0.70, "y": 0.36, "w": 0.20, "h": 0.30 },
+      "id": "pasillo_aulas",
+      "rect": { "x": 0.36, "y": 0.50, "w": 0.18, "h": 0.30 },
       "actions": [
-        { "type": "inspect", "html": "\n\nPizarra limpia. Apetece dar clase. Pronto, quizá…\n\n" }
+        { "type": "toast", "text": "Las aulas están vacías a esta hora." }
       ]
     },
     {
-      "id": "salir",
-      "rect": { "x": 0.02, "y": 0.30, "w": 0.10, "h": 0.40 },
+      "id": "salir_a_exterior",
+      "rect": { "x": 0.02, "y": 0.40, "w": 0.10, "h": 0.40 },
       "actions": [
-        { "type": "toast", "text": "Vuelves a la calle." },
+        { "type": "toast", "text": "Sales al exterior de la academia." },
         { "type": "goto", "to": "cap1_academia_ext" }
       ]
     },
     {
-      "id": "convocatoria",
-      "rect": { "x": 0.78, "y": 0.12, "w": 0.18, "h": 0.18 },
+      "id": "fin_capitulo_1",
+      "rect": { "x": 0.84, "y": 0.44, "w": 0.12, "h": 0.34 },
       "actions": [
-        {
-          "type": "requireItems",
-          "allOf": ["item_formulario", "item_horario", "item_boli"],
-          "onMissingMap": {
-            "item_formulario": "Falta el formulario.",
-            "item_horario": "Necesito tu disponibilidad.",
-            "item_boli": "Firma aquí, por favor."
-          },
-          "onMissing": "Te falta algo antes de poder marcharte."
-        },
-        {
-          "type": "dialog",
-          "title": "Convocatoria",
-          "start": "llega",
-          "nodes": [
-            {
-              "id": "llega",
-              "text": "Te llega la convocatoria oficial de la reunión.\nTe notas algo flojo… quizá unas vitaminas te vendrían bien.",
-              "options": [
-                {
-                  "label": "Pasar al Capítulo 2",
-                  "actions": [
-                    { "type": "toast", "text": "Capítulo 2: te encuentras indispuesto. Tal vez la farmacia..." },
-                    { "type": "goto", "to": "cap2_casa" }
-                  ],
-                  "next": "end"
-                },
-                { "label": "Aún no", "next": "end" }
-              ]
-            }
-          ]
-        }
+        { "type": "toast", "text": "Tras la reunión, vuelves a casa para seguir el día." },
+        { "type": "goto", "to": "cap2_bano" }
       ]
     }
   ]

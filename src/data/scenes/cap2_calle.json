@@ -1,0 +1,21 @@
+{
+  "bg": "cap2_calle",
+  "objectives": { "default": "Objetivo: comprar vitaminas en la farmacia." },
+  "hotspots": [
+    {
+      "id": "ir_farmacia",
+      "rect": { "x": 0.18, "y": 0.70, "w": 0.22, "h": 0.22 },
+      "actions": [
+        { "type": "toast", "text": "Pones rumbo a la farmacia." },
+        { "type": "goto", "to": "cap2_farmacia" }
+      ]
+    },
+    {
+      "id": "volver_portal",
+      "rect": { "x": 0.02, "y": 0.60, "w": 0.14, "h": 0.30 },
+      "actions": [
+        { "type": "goto", "to": "cap2_portal" }
+      ]
+    }
+  ]
+}

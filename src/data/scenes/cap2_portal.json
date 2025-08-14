@@ -1,0 +1,20 @@
+{
+  "bg": "cap2_portal",
+  "objectives": { "default": "Objetivo: llegar a la calle." },
+  "hotspots": [
+    {
+      "id": "salir_calle",
+      "rect": { "x": 0.85, "y": 0.45, "w": 0.12, "h": 0.40 },
+      "actions": [
+        { "type": "goto", "to": "cap2_calle" }
+      ]
+    },
+    {
+      "id": "volver_recibidor",
+      "rect": { "x": 0.02, "y": 0.52, "w": 0.14, "h": 0.35 },
+      "actions": [
+        { "type": "goto", "to": "cap2_recibidor" }
+      ]
+    }
+  ]
+}
