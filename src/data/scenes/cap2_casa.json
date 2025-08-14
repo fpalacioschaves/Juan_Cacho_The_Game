@@ -1,0 +1,51 @@
+{
+  "id": "cap2_casa",
+  "bg": "assets/bg/cap2/casa.png",
+  "objectives": {
+    "default": "Te notas flojo. Baja a la farmacia y consigue unas vitaminas.",
+    "rules": [
+      { "whenAll": ["vitaminas"], "text": "Vuelve a casa y espera la convocatoria de la reunión." }
+    ]
+  },
+  "hotspots": [
+    {
+      "id": "espejo",
+      "rect": { "x": 0.76, "y": 0.22, "w": 0.12, "h": 0.28 },
+      "actions": [
+        {
+          "type": "overlay",
+          "title": "Espejo",
+          "description": "Te ves pálido. El mareo no es grave, pero necesitas algo para recuperarte.",
+          "buttons": [ { "label": "Cerrar" } ]
+        }
+      ]
+    },
+    {
+      "id": "mesa",
+      "rect": { "x": 0.44, "y": 0.52, "w": 0.18, "h": 0.16 },
+      "actions": [
+        {
+          "type": "overlay",
+          "title": "Mesa del salón",
+          "description": "Papeles, llaves y poco más. No parece haber nada útil ahora.",
+          "buttons": [ { "label": "Cerrar" } ]
+        }
+      ]
+    },
+    {
+      "id": "salir",
+      "rect": { "x": 0.02, "y": 0.88, "w": 0.12, "h": 0.09 },
+      "actions": [
+        {
+          "type": "overlay",
+          "title": "Puerta",
+          "description": "El portal está abajo. La farmacia está a dos portales.",
+          "buttons": [
+            { "label": "Bajar a la escalera", "variant": "primary", "actions": [ { "type": "goto", "scene": "cap2_escalera" } ] },
+            { "label": "Cancelar" }
+          ]
+        }
+      ]
+    }
+  ]
+}
