@@ -7,6 +7,12 @@
     "cap1_calle": "src/data/scenes/cap1_calle.json",
     "cap1_bar_dostercios": "src/data/scenes/cap1_bar_dostercios.json",
     "cap1_academia_ext": "src/data/scenes/cap1_academia_ext.json",
-    "cap1_academia_int": "src/data/scenes/cap1_academia_int.json"
+    "cap1_academia_int": "src/data/scenes/cap1_academia_int.json",
+
+    "cap2_bano": "src/data/scenes/cap2_bano.json",
+    "cap2_recibidor": "src/data/scenes/cap2_recibidor.json",
+    "cap2_portal": "src/data/scenes/cap2_portal.json",
+    "cap2_calle": "src/data/scenes/cap2_calle.json",
+    "cap2_farmacia": "src/data/scenes/cap2_farmacia.json"
   }
 }

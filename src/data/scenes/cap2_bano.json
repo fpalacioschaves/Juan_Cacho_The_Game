@@ -1,0 +1,37 @@
+{
+  "bg": "cap2_bano",
+  "objectives": {
+    "default": "Objetivo: prepararte y salir. Pista: faltan vitaminas en el botiquín → habrá que ir a la farmacia."
+  },
+  "hotspots": [
+    {
+      "id": "espejo",
+      "rect": { "x": 0.55, "y": 0.19, "w": 0.18, "h": 0.24 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Buena cara para una mañana de recados…</p>" }
+      ]
+    },
+    {
+      "id": "botiquin",
+      "rect": { "x": 0.74, "y": 0.20, "w": 0.12, "h": 0.24 },
+      "actions": [
+        { "type": "inspect", "html": "<p>Gasas, tiritas… y <strong>una caja vacía de vitaminas</strong>.</p>" },
+        { "type": "toast", "text": "Anotado mentalmente: comprar vitaminas en la farmacia." }
+      ]
+    },
+    {
+      "id": "ducha",
+      "rect": { "x": 0.12, "y": 0.24, "w": 0.22, "h": 0.30 },
+      "actions": [
+        { "type": "toast", "text": "No hay tiempo para ópera de ducha." }
+      ]
+    },
+    {
+      "id": "puerta",
+      "rect": { "x": 0.90, "y": 0.42, "w": 0.10, "h": 0.36 },
+      "actions": [
+        { "type": "goto", "to": "cap2_recibidor" }
+      ]
+    }
+  ]
+}

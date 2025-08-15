@@ -1,0 +1,24 @@
+{
+  "id": "cap2_vecino2",
+  "bg": "assets/bg/cap2/vecino2.png",
+  "objectives": { "default": "Habla con los vecinos." },
+  "hotspots": [
+    {
+      "id": "llamar",
+      "rect": { "x": 0.44, "y": 0.35, "w": 0.12, "h": 0.30 },
+      "actions": [
+        {
+          "type": "overlay",
+          "title": "Puerta 2B",
+          "description": "Mencionan un 'tema delicado' que nadie nombra en voz alta.",
+          "buttons": [ { "label": "Cerrar" } ]
+        }
+      ]
+    },
+    {
+      "id": "volver",
+      "rect": { "x": 0.02, "y": 0.88, "w": 0.12, "h": 0.09 },
+      "actions": [ { "type": "goto", "scene": "cap2_escalera" } ]
+    }
+  ]
+}

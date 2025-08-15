@@ -1,0 +1,110 @@
+/* styles/overlay.css
+   Modal/overlay genérico para hotspots.
+   No colisiona con ui.css; puedes ajustar variables si quieres. */
+
+:root{
+  --ov-backdrop: rgba(0,0,0,.65);
+  --ov-bg: #111826;            /* oscuro neutro */
+  --ov-fg: #e9edf1;            /* texto claro */
+  --ov-muted: #a9b3c5;
+  --ov-accent: #9ec1ff;
+  --ov-radius: 14px;
+  --ov-shadow: 0 20px 60px rgba(0,0,0,.45);
+}
+
+#overlay-root{ all: initial; } /* evitar herencias molestas */
+
+.ov-wrap{
+  all: revert;
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: var(--ov-backdrop);
+  z-index: 3000; /* por encima del HUD (1000) */
+}
+
+.ov-wrap.show{ display: flex; }
+
+.ov-dialog{
+  width: min(92vw, 760px);
+  max-height: 88vh;
+  background: var(--ov-bg);
+  color: var(--ov-fg);
+  border-radius: var(--ov-radius);
+  box-shadow: var(--ov-shadow);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.ov-header{
+  padding: 14px 18px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.ov-body{
+  padding: 16px 18px 6px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 14px;
+}
+.ov-body.noimg{ grid-template-columns: 1fr; }
+
+.ov-img{
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #0b1020;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.ov-desc{
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ov-muted);
+  white-space: pre-wrap;
+}
+
+.ov-footer{
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ov-btn{
+  appearance: none;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #232a3a;
+  color: var(--ov-fg);
+}
+.ov-btn:hover{ filter: brightness(1.05); }
+.ov-btn:active{ transform: translateY(1px); }
+
+.ov-btn.primary{ background: #2d5bff; }
+.ov-btn.destructive{ background: #9d2d2d; }
+.ov-btn.muted{ background: #1b2232; color: #c5cfde; }
+
+.ov-note{
+  margin-right: auto;
+  align-self: center;
+  font-size: 13px;
+  color: #c9a47a;
+  opacity: .95;
+}
+
+@media (max-width: 720px){
+  .ov-body{ grid-template-columns: 1fr; }
+  .ov-img{ height: 160px; }
+}

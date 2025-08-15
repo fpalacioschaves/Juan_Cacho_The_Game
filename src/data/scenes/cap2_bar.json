@@ -1,0 +1,36 @@
+{
+  "id": "cap2_bar",
+  "bg": "assets/bg/cap2/bar.png",
+  "objectives": { "default": "Opcional: consigue un folleto de obra." },
+  "hotspots": [
+    {
+      "id": "mostrador",
+      "rect": { "x": 0.36, "y": 0.40, "w": 0.28, "h": 0.24 },
+      "actions": [
+        {
+          "type": "overlay",
+          "title": "Mostrador",
+          "description": "— ¿Buscabas un folleto de obra?",
+          "buttons": [
+            {
+              "label": "Sí, dame uno",
+              "variant": "primary",
+              "actions": [
+                { "type": "addItem", "id": "folleto_obra", "name": "Folleto de obra", "icon": "assets/item_folleto.png" },
+                { "type": "toast", "text": "Te entregan un folleto con obras y reformas." }
+              ]
+            },
+            { "label": "No, gracias" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salir",
+      "rect": { "x": 0.02, "y": 0.88, "w": 0.12, "h": 0.09 },
+      "actions": [
+        { "type": "goto", "scene": "cap2_escalera" }
+      ]
+    }
+  ]
+}
