@@ -1,1 +1,0 @@
-export const Config={title:'Juan Cacho · The Game',debug:{hotspots:true}}
