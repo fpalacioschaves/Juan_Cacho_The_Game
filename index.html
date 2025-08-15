@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Juan Cacho — Capítulo 0 (Intro)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preload" href="data/items.json" as="fetch" crossorigin="anonymous">
+  <link rel="preload" href="data/scenes.json" as="fetch" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="game">
+    <canvas id="scene" width="1280" height="720"></canvas>
+    <div id="hud">
+      <div id="verb-bar" aria-label="Barra de verbos"></div>
+      <div id="inventory" aria-label="Inventario" role="list"></div>
+      <div id="tooltip" aria-live="polite"></div>
+    </div>
+    <div id="dialog" role="dialog" aria-modal="true" hidden>
+      <div id="dialog-text"></div>
+      <button id="dialog-next">Continuar</button>
+    </div>
+  </div>
+
+  <script src="js/state.js"></script>
+  <script src="js/sceneManager.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/actions.js"></script>
+  <script src="js/engine.js"></script>
+</body>
+</html>

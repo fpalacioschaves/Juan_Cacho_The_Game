@@ -1,0 +1,336 @@
+{
+  "$schema": "scenes.schema.v1",
+  "initialScene": "dormitorio_juan",
+  "scenes": [
+    {
+      "id": "dormitorio_juan",
+      "background": "images/backgrounds/dormitorio_juan.jpg",
+      "hotspots": [
+        {
+          "id": "ropa_suelo",
+          "shape": { "type": "rect", "x": 500, "y": 600, "w": 220, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:ropa_desc] Montones de ropa por el suelo. ::: Ropa tirada." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:ropa_buscar] Remueves camisetas y calcetines. Nada útil. ::: Nada nuevo." }
+          ]
+        },
+        {
+          "id": "mesilla",
+          "shape": { "type": "rect", "x": 620, "y": 520, "w": 120, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:mesilla_desc] Mesilla con polvo y un vaso de agua a medias. ::: La mesilla." }
+          ],
+          "onUse": [
+            { "type": "if", "condition": { "hasItem": "llaves_casa" }, "then": [
+              { "type": "showText", "text": "[gl:ya_tienes_llaves] Ya cogiste las llaves. ::: Llaves ya cogidas." }
+            ], "else": [
+              { "type": "showText", "text": "[gl:encuentra_llaves] Abres el cajón y encuentras las llaves. ::: Llaves cogidas." },
+              { "type": "giveItem", "itemId": "llaves_casa" }
+            ] }
+          ]
+        },
+        {
+          "id": "poster_escher",
+          "shape": { "type": "rect", "x": 80, "y": 80, "w": 260, "h": 180 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:poster_escher] Un póster de Escher. Escaleras imposibles, como la vida de Juan. ::: Póster de Escher." }
+          ]
+        },
+        {
+          "id": "retrato_madre",
+          "shape": { "type": "rect", "x": 980, "y": 80, "w": 220, "h": 180 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:retrato_madre] Su madre, seria pero cálida. ::: El retrato." }
+          ]
+        },
+        {
+          "id": "puerta_salon",
+          "shape": { "type": "rect", "x": 1040, "y": 260, "w": 180, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:puerta_salon] La puerta al salón. ::: Al salón." } ],
+          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+        },
+        {
+          "id": "puerta_bano",
+          "shape": { "type": "rect", "x": 60, "y": 300, "w": 160, "h": 220 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:puerta_bano] La puerta del baño. ::: Al baño." } ],
+          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+        },
+        {
+          "id": "puerta_cocina",
+          "shape": { "type": "rect", "x": 560, "y": 60, "w": 160, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:puerta_cocina] Huele a café viejo. ::: A la cocina." } ],
+          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
+        }
+      ]
+    },
+    {
+      "id": "salon_juan",
+      "background": "images/backgrounds/salon_juan.jpg",
+      "hotspots": [
+        {
+          "id": "libros_matematicas",
+          "shape": { "type": "rect", "x": 220, "y": 420, "w": 200, "h": 100 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:libros_mates] Libros de matemáticas, subrayados y con post-its. ::: Libros de mates." }
+          ]
+        },
+        {
+          "id": "puzzle_medio",
+          "shape": { "type": "rect", "x": 520, "y": 560, "w": 200, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:puzzle] Un puzzle a medio hacer en la mesa. ::: El puzzle." }
+          ]
+        },
+        {
+          "id": "cenicero_colillas",
+          "shape": { "type": "rect", "x": 860, "y": 540, "w": 120, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:cenicero] Cenicero hasta arriba de colillas. ::: Cenicero." }
+          ]
+        },
+        {
+          "id": "nota_comunidad",
+          "shape": { "type": "rect", "x": 640, "y": 420, "w": 160, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:nota_comunidad_desc] Un papel con membrete de la comunidad. ::: Nota de la comunidad." } ],
+          "onUse": [
+            { "type": "if", "condition": { "hasItem": "nota_comunidad" }, "then": [
+              { "type": "showText", "text": "[gl:nota_comunidad_ya] Ya guardaste la nota. ::: Ya la tienes." }
+            ], "else": [
+              { "type": "showText", "text": "[gl:nota_comunidad_coge] Coges la nota de la reunión de vecinos. ::: Nota recogida." },
+              { "type": "giveItem", "itemId": "nota_comunidad" },
+              { "type": "disableHotspot", "id": "nota_comunidad" }
+            ] }
+          ]
+        },
+        {
+          "id": "puerta_dormitorio",
+          "shape": { "type": "rect", "x": 80, "y": 260, "w": 160, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:a_dormitorio] De vuelta al dormitorio. ::: Dormitorio." } ],
+          "onUse": [ { "type": "gotoScene", "id": "dormitorio_juan" } ]
+        },
+        {
+          "id": "puerta_bano",
+          "shape": { "type": "rect", "x": 340, "y": 200, "w": 140, "h": 200 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:a_bano] Al baño. ::: Baño." } ],
+          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+        },
+        {
+          "id": "puerta_cocina",
+          "shape": { "type": "rect", "x": 980, "y": 200, "w": 160, "h": 220 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:a_cocina] A la cocina. ::: Cocina." } ],
+          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
+        },
+        {
+          "id": "salir_piso",
+          "shape": { "type": "rect", "x": 1120, "y": 520, "w": 140, "h": 160 },
+          "verb": ["look","use"],
+          "conditions": [ { "hasItem": "llaves_casa" } ],
+          "onLook": [ { "type": "showText", "text": "[gl:puerta_salida] La puerta de salida. ::: Salida." } ],
+          "onUse": [ { "type": "gotoScene", "id": "portal" } ],
+          "onUseFail": [ { "type": "showText", "text": "[gl:sin_llaves] No puedes salir sin las llaves. ::: Falta la llave." } ]
+        }
+      ]
+    },
+    {
+      "id": "bano_juan",
+      "background": "images/backgrounds/bano_juan.jpg",
+      "hotspots": [
+        {
+          "id": "espejo",
+          "shape": { "type": "rect", "x": 520, "y": 120, "w": 240, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:espejo] Te ves con ojeras pero decidido. ::: El espejo." } ]
+        },
+        {
+          "id": "toallas",
+          "shape": { "type": "rect", "x": 200, "y": 420, "w": 160, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:toallas] Toallas húmedas amontonadas. ::: Toallas." } ]
+        },
+        {
+          "id": "puerta_salon",
+          "shape": { "type": "rect", "x": 40, "y": 260, "w": 160, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:volver_salon] Vuelves al salón. ::: Salón." } ],
+          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+        }
+      ]
+    },
+    {
+      "id": "cocina_juan",
+      "background": "images/backgrounds/cocina_juan.jpg",
+      "hotspots": [
+        {
+          "id": "platos_sucios",
+          "shape": { "type": "rect", "x": 880, "y": 520, "w": 180, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:platos] Montaña de platos por fregar. ::: Platos sucios." } ]
+        },
+        {
+          "id": "nota_academia",
+          "shape": { "type": "rect", "x": 260, "y": 240, "w": 160, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:nota_academia_desc] Post-it en la nevera: 'Pasar por la Academia'. ::: Nota de la academia." } ],
+          "onUse": [
+            { "type": "if", "condition": { "hasItem": "nota_academia" }, "then": [
+              { "type": "showText", "text": "[gl:nota_academia_ya] Ya cogiste la nota. ::: Ya la tienes." }
+            ], "else": [
+              { "type": "showText", "text": "[gl:nota_academia_coge] Coges la nota para no olvidarlo. ::: Nota recogida." },
+              { "type": "giveItem", "itemId": "nota_academia" },
+              { "type": "disableHotspot", "id": "nota_academia" }
+            ] }
+          ]
+        },
+        {
+          "id": "puerta_salon",
+          "shape": { "type": "rect", "x": 40, "y": 260, "w": 160, "h": 220 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:volver_salon2] Al salón. ::: Salón." } ],
+          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+        }
+      ]
+    },
+    {
+      "id": "portal",
+      "background": "images/backgrounds/portal.jpg",
+      "hotspots": [
+        {
+          "id": "portera",
+          "shape": { "type": "rect", "x": 920, "y": 440, "w": 200, "h": 220 },
+          "verb": ["look","use"],
+          "onUse": [
+            { "type": "if", "condition": { "hasItem": "nota_comunidad" }, "then": [
+              { "type": "showText", "text": "[gl:portera_info] La portera te recuerda pagar el alquiler y confirma la reunión de vecinos a las 19:00. ::: Te recuerda el alquiler y la reunión." }
+            ], "else": [
+              { "type": "showText", "text": "[gl:portera_sin_nota] La portera te pide el alquiler. No sabe si te llegó el aviso de la reunión. ::: Te pide el alquiler." }
+            ] }
+          ]
+        },
+        {
+          "id": "vecinos_odon",
+          "shape": { "type": "rect", "x": 140, "y": 500, "w": 200, "h": 160 },
+          "verb": ["look","use"],
+          "onUse": [ { "type": "showText", "text": "[gl:odon] Odón y su mujer te saludan con prisa. ::: Saludo rápido." } ]
+        },
+        {
+          "id": "vecinos_nieves_angel",
+          "shape": { "type": "rect", "x": 380, "y": 520, "w": 220, "h": 140 },
+          "verb": ["look","use"],
+          "onUse": [ { "type": "showText", "text": "[gl:nieves_angel] Nieves te presenta a su hermano Ángel, que no suelta el móvil. ::: Charla breve." } ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." } ],
+          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+        },
+        {
+          "id": "subir_casa",
+          "shape": { "type": "rect", "x": 40, "y": 300, "w": 140, "h": 200 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:volver_casa] Subes al piso. ::: Casa." } ],
+          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+        }
+      ]
+    },
+    {
+      "id": "calle",
+      "background": "images/backgrounds/calle.jpg",
+      "hotspots": [
+        {
+          "id": "ir_bar",
+          "shape": { "type": "rect", "x": 220, "y": 420, "w": 240, "h": 200 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'. ::: Al bar." } ],
+          "onUse": [ { "type": "gotoScene", "id": "bar_dostercios" } ]
+        },
+        {
+          "id": "ir_academia",
+          "shape": { "type": "rect", "x": 820, "y": 420, "w": 240, "h": 200 },
+          "verb": ["look","use"],
+          "conditions": [ { "hasItem": "nota_academia" } ],
+          "onLook": [ { "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa. ::: Academia." } ],
+          "onUse": [ { "type": "gotoScene", "id": "academia" } ],
+          "onUseFail": [ { "type": "showText", "text": "[gl:academia_bloqueada] Recuerdas que debías pasar por la Academia... ¿Dónde estaba la nota? ::: Te falta la nota." } ]
+        },
+        {
+          "id": "volver_portal",
+          "shape": { "type": "rect", "x": 40, "y": 360, "w": 160, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." } ],
+          "onUse": [ { "type": "gotoScene", "id": "portal" } ]
+        }
+      ]
+    },
+    {
+      "id": "bar_dostercios",
+      "background": "images/backgrounds/bar_dostercios.jpg",
+      "hotspots": [
+        {
+          "id": "dudu",
+          "shape": { "type": "rect", "x": 260, "y": 420, "w": 180, "h": 200 },
+          "verb": ["look","use"],
+          "onUse": [ { "type": "showText", "text": "[gl:dudu] Dudu bromea: 'Hoy invitas tú, profe'. ::: Dudu te vacila." } ]
+        },
+        {
+          "id": "moro",
+          "shape": { "type": "rect", "x": 540, "y": 420, "w": 180, "h": 200 },
+          "verb": ["look","use"],
+          "onUse": [ { "type": "showText", "text": "[gl:moro] El Moro te cuenta que anda buscando horario de verano. ::: Charlas con el Moro." } ]
+        },
+        {
+          "id": "gollina",
+          "shape": { "type": "rect", "x": 820, "y": 420, "w": 180, "h": 200 },
+          "verb": ["look","use"],
+          "onUse": [ { "type": "showText", "text": "[gl:gollina] Gollina asiente desde la barra, ocupado con pedidos. ::: Gollina asiente." } ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:bar_salir] Sales a la calle. ::: Calle." } ],
+          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+        }
+      ]
+    },
+    {
+      "id": "academia",
+      "background": "images/backgrounds/academia.jpg",
+      "hotspots": [
+        {
+          "id": "jefe_academia",
+          "shape": { "type": "rect", "x": 760, "y": 400, "w": 240, "h": 220 },
+          "verb": ["look","use"],
+          "onUse": [
+            { "type": "showText", "text": "[gl:jefe_oferta] El jefe escucha y te propone dar clases durante el verano. ::: Te ofrece un trabajo." },
+            { "type": "setFlag", "name": "oferta_trabajo", "value": true }
+          ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 40, "y": 360, "w": 160, "h": 240 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." } ],
+          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+        }
+      ]
+    }
+  ]
+}

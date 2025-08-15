@@ -1,0 +1,23 @@
+{
+  "$schema": "items.schema.v1",
+  "items": [
+    {
+      "id": "llaves_casa",
+      "name": "Llaves de casa",
+      "icon": "images/items/llaves_casa.png",
+      "description": "Un llavero con las llaves del piso."
+    },
+    {
+      "id": "nota_academia",
+      "name": "Nota de la academia",
+      "icon": "images/items/nota_academia.png",
+      "description": "Recordatorio: pasar por la Academia La Milagrosa."
+    },
+    {
+      "id": "nota_comunidad",
+      "name": "Nota de la comunidad",
+      "icon": "images/items/nota_comunidad.png",
+      "description": "Aviso: próxima reunión de la comunidad de vecinos."
+    }
+  ]
+}
