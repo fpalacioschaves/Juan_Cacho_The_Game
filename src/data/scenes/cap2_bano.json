@@ -16,14 +16,7 @@
       "rect": { "x": 0.74, "y": 0.20, "w": 0.12, "h": 0.24 },
       "actions": [
         { "type": "inspect", "html": "<p>Gasas, tiritas… y <strong>una caja vacía de vitaminas</strong>.</p>" },
-        { "type": "toast", "text": "Anotado mentalmente: comprar vitaminas en la farmacia." }
-      ]
-    },
-    {
-      "id": "ducha",
-      "rect": { "x": 0.12, "y": 0.24, "w": 0.22, "h": 0.30 },
-      "actions": [
-        { "type": "toast", "text": "No hay tiempo para ópera de ducha." }
+        { "type": "toast", "text": "Anotado: comprar vitaminas en la farmacia." }
       ]
     },
     {
