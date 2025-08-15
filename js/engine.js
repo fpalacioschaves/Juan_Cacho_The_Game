@@ -17,49 +17,6 @@
   let isTransitioning = false;
   let fadeAlpha = 0; // 0..1 (0 = sin overlay, 1 = negro completo)
 
-  // -------- Banner diagnóstico --------
-  function drawBanner(title, detail) {
-    if (!ctx) return;
-    ctx.save();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // marco
-    ctx.strokeStyle = "#6ea8ff";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-    // título
-    ctx.fillStyle = "#e6f0ff";
-    ctx.font = "32px system-ui, sans-serif";
-    ctx.fillText(String(title || "").toUpperCase(), 24, 48);
-
-    // detalle (multilínea)
-    ctx.fillStyle = "#cbd7ff";
-    ctx.font = "18px system-ui, sans-serif";
-    const lines = String(detail || "").split(/\n/);
-    let y = 88;
-    for (const ln of lines) {
-      ctx.fillText(ln, 24, y);
-      y += 26;
-    }
-    ctx.restore();
-  }
-
-  // Pinta algo INMEDIATO al cargar el script
-  drawBanner("BOOT", "Cargando JS… (si ves esto, engine.js se está ejecutando)");
-
-  // Captura de errores no gestionados para mostrarlos en el canvas
-  window.addEventListener("error", (e) => {
-    drawBanner("ERROR JS", e?.message || "Error desconocido");
-  });
-  window.addEventListener("unhandledrejection", (e) => {
-    const msg = (e && e.reason && e.reason.message) ? e.reason.message : String(e.reason || e);
-    drawBanner("ERROR PROMESA", msg);
-  });
-  // ------------------------------------
-
   function setVerb(v) {
     currentVerb = v;
     UI.setVerb(v);
@@ -135,13 +92,13 @@
         } else if (Array.isArray(hs.onPickup) && hs.onPickup.length) {
           await Actions.run(hs.onPickup);
         } else {
-          await Actions.run([{ type: "showText", text: "No puedes usar eso ahora." }]);
+          // Sin fallback genérico: si no hay onUse/onPickup, no decimos nada.
         }
       } else {
         if (Array.isArray(hs.onUseFail) && hs.onUseFail.length) {
           await Actions.run(hs.onUseFail);
         } else {
-          await Actions.run([{ type: "showText", text: "Está bloqueado por ahora." }]);
+          // Sin fallback genérico cuando falla condición y no hay onUseFail.
         }
       }
     } else if (verb === "look") {
@@ -237,6 +194,10 @@
       const enabled = SceneManager.isHotspotEnabled(scId, hs.id);
       const conds = SceneManager.evaluateConditions(hs.conditions || []);
 
+      // Colores:
+      // - Verde: habilitado y condiciones OK
+      // - Naranja: habilitado pero condiciones NO OK (fallará onUse)
+      // - Gris: deshabilitado
       let stroke, fill, labelColor;
       if (!enabled) {
         stroke = "rgba(160,160,160,0.9)";
@@ -254,6 +215,7 @@
 
       drawHotspotShape(hs, stroke, fill);
 
+      // Etiqueta
       const c = centroidOf(hs);
       const tag = `${hs.id}`;
       const pad = 4;
@@ -322,21 +284,27 @@
 
   function renderAll() {
     drawBackground();
-    drawHotspotsOverlay(); // overlay de depuración
-    drawFadeOverlay();     // overlay de transición
+    drawHotspotsOverlay(); // <- overlay de depuración
+    drawFadeOverlay();     // <- overlay de transición
     UI.renderHUD(State.get(), SceneManager.getScene(State.get().currentSceneId));
   }
 
   async function init() {
     try {
-      drawBanner("BOOT", "Inicializando… (DOMContentLoaded)");
       await SceneManager.loadAll("data/items.json", "data/scenes.json");
-      drawBanner("CARGA OK", "items.json y scenes.json listos");
 
-      // Inicializar escena
+      // --- FIX: si la escena guardada no existe en el JSON actual, usa initialScene ---
+      const saved = State.get().currentSceneId;
+      const exists = saved && SceneManager.getScene(saved);
+      if (!exists) {
+        console.warn(`Engine: escena guardada inválida '${saved}', reseteo a initialScene.`);
+        State.setScene(SceneManager.initialSceneId());
+      }
+      // Si no había nada guardado, inicializa a initialScene
       if (!State.get().currentSceneId) {
         State.setScene(SceneManager.initialSceneId());
       }
+      // -------------------------------------------------------------------------------
 
       UI.mountVerbBar({
         verbs: ["look", "use"],
@@ -354,7 +322,7 @@
         if (e.key === "Escape") UI.clickDialogNext();
       });
 
-      // Toggle overlay con F2
+      // Toggle overlay con F2 (no interfiere con juego)
       document.addEventListener("keydown", (e) => {
         if (e.key === "F2") {
           DEBUG_SHOW_HOTSPOTS = !DEBUG_SHOW_HOTSPOTS;
@@ -365,9 +333,7 @@
       renderAll();
     } catch (err) {
       console.error(err);
-      drawBanner("ERROR INICIO", err.message || String(err));
-      // Además, intento el fatal por si prefieres el modal sobre el canvas
-      try { UI.fatal(err.message || String(err)); } catch {}
+      UI.fatal(err.message || String(err));
     }
   }
 

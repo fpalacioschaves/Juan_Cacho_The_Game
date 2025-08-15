@@ -39,6 +39,9 @@
           "verb": ["look","use"],
           "onLook": [
             { "type": "showText", "text": "[gl:poster_escher] Un póster de Escher. Escaleras imposibles, como la vida de Juan. ::: Póster de Escher." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_poster_escher] Intentas girar las escaleras... siguen siendo un póster. ::: Sigue siendo papel." }
           ]
         },
         {
@@ -47,7 +50,50 @@
           "verb": ["look","use"],
           "onLook": [
             { "type": "showText", "text": "[gl:retrato_madre] Su madre, seria pero cálida. ::: El retrato." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_retrato_madre] No necesita arreglos; tú sí. ::: Mejor no." }
           ]
+        },
+        {
+          "id": "poster_matematicos",
+          "shape": { "type": "rect", "x": 360, "y": 90, "w": 220, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:poster_mates] Póster con matemáticos ilustres garabateados con chistes internos. ::: Póster de matemáticos." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_poster_mates] Les pides ayuda; responden en silencio académico. ::: No contestan." }
+          ]
+        },
+        {
+          "id": "estanteria",
+          "shape": { "type": "rect", "x": 220, "y": 420, "w": 200, "h": 140 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:estanteria] Libros apilados de cualquier manera. Algunos de mates, otros novelas baratas. ::: Estantería caótica." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_estanteria] Recolocar libros no te da XP hoy. ::: Otro día." }
+          ]
+        },
+        {
+          "id": "ventana_dormitorio",
+          "shape": { "type": "rect", "x": 860, "y": 120, "w": 100, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:ventana_dorm] La ventana da a un patio silencioso. ::: La ventana." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_ventana_dorm] Abrirla no arregla el resto. ::: Luego." }
+          ]
+        },
+        {
+          "id": "alfombra",
+          "shape": { "type": "rect", "x": 460, "y": 520, "w": 120, "h": 60 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:alfombra] Alfombra vieja, áspera, pero cubre lo necesario. ::: La alfombra." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_alfombra] La levantas: polvo y derrotas. ::: Nada útil." }]
         },
         {
           "id": "puerta_salon",
@@ -82,6 +128,9 @@
           "verb": ["look","use"],
           "onLook": [
             { "type": "showText", "text": "[gl:libros_mates] Libros de matemáticas, subrayados y con post-its. ::: Libros de mates." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:use_libros_mates] Hoy no toca fotocopiar demostraciones. ::: Pasa." }
           ]
         },
         {
@@ -90,7 +139,8 @@
           "verb": ["look","use"],
           "onLook": [
             { "type": "showText", "text": "[gl:puzzle] Un puzzle a medio hacer en la mesa. ::: El puzzle." }
-          ]
+          ],
+          "onUse": [{ "type": "showText", "text": "[gl:use_puzzle] Te faltan piezas y paciencia. ::: Otro momento." }]
         },
         {
           "id": "cenicero_colillas",
@@ -98,7 +148,36 @@
           "verb": ["look","use"],
           "onLook": [
             { "type": "showText", "text": "[gl:cenicero] Cenicero hasta arriba de colillas. ::: Cenicero." }
-          ]
+          ],
+          "onUse": [{ "type": "showText", "text": "[gl:use_cenicero] El médico diría que ni tocarlo. ::: Puaj." }]
+        },
+        {
+          "id": "revistas",
+          "shape": { "type": "rect", "x": 420, "y": 460, "w": 140, "h": 60 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:revistas] Revistas viejas, crucigramas empezados y abandonados. ::: Revistas." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_revistas] Pasas páginas a la velocidad de la culpa. ::: Meh." }]
+        },
+        {
+          "id": "sofa",
+          "shape": { "type": "rect", "x": 740, "y": 520, "w": 200, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:sofa] Sofá hundido que conoce demasiadas siestas. ::: Sofá." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_sofa] Si te sientas, no te levantas. ::: Mejor no." }]
+        },
+        {
+          "id": "television",
+          "shape": { "type": "rect", "x": 980, "y": 320, "w": 140, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:tv] La tele parpadea aún apagada. ::: Televisión." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_tv] No hay mando, ni ganas. ::: Apagada." }]
+        },
+        {
+          "id": "planta",
+          "shape": { "type": "rect", "x": 160, "y": 560, "w": 100, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:planta] Una planta que sobrevive a base de milagros. ::: Planta." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_planta] La riegas con promesas. ::: Sobrevive." }]
         },
         {
           "id": "nota_comunidad",
@@ -155,13 +234,36 @@
           "id": "espejo",
           "shape": { "type": "rect", "x": 520, "y": 120, "w": 240, "h": 160 },
           "verb": ["look","use"],
-          "onLook": [ { "type": "showText", "text": "[gl:espejo] Te ves con ojeras pero decidido. ::: El espejo." } ]
+          "onLook": [ { "type": "showText", "text": "[gl:espejo] Te ves con ojeras pero decidido. ::: El espejo." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_espejo] Practicas cara de adulto funcional. ::: Funciona regular." } ]
         },
         {
           "id": "toallas",
           "shape": { "type": "rect", "x": 200, "y": 420, "w": 160, "h": 160 },
           "verb": ["look","use"],
-          "onLook": [ { "type": "showText", "text": "[gl:toallas] Toallas húmedas amontonadas. ::: Toallas." } ]
+          "onLook": [ { "type": "showText", "text": "[gl:toallas] Toallas húmedas amontonadas. ::: Toallas." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_toallas] No secan egos. ::: Húmedas." } ]
+        },
+        {
+          "id": "ducha",
+          "shape": { "type": "rect", "x": 860, "y": 240, "w": 200, "h": 220 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:ducha] La ducha gotea rítmicamente. ::: Ducha." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_ducha] Ahora no, que hay prisa. ::: Después." } ]
+        },
+        {
+          "id": "botiquin",
+          "shape": { "type": "rect", "x": 680, "y": 140, "w": 120, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:botiquin] Un botiquín medio vacío: tiritas y ibuprofeno. ::: Botiquín." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_botiquin] Paracetamor tampoco venden. ::: Nada." } ]
+        },
+        {
+          "id": "alfombrilla_bano",
+          "shape": { "type": "rect", "x": 540, "y": 520, "w": 200, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:alfombrilla] Alfombrilla que no se seca desde 2008. ::: Alfombrilla." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_alfombrilla_bano] Se pega a los pies y al pasado. ::: Pegajosa." } ]
         },
         {
           "id": "puerta_salon",
@@ -180,7 +282,8 @@
           "id": "platos_sucios",
           "shape": { "type": "rect", "x": 880, "y": 520, "w": 180, "h": 120 },
           "verb": ["look","use"],
-          "onLook": [ { "type": "showText", "text": "[gl:platos] Montaña de platos por fregar. ::: Platos sucios." } ]
+          "onLook": [ { "type": "showText", "text": "[gl:platos] Montaña de platos por fregar. ::: Platos sucios." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_platos] Fregar es side quest opcional. ::: Lo dejas." } ]
         },
         {
           "id": "nota_academia",
@@ -196,6 +299,34 @@
               { "type": "disableHotspot", "id": "nota_academia" }
             ] }
           ]
+        },
+        {
+          "id": "nevera",
+          "shape": { "type": "rect", "x": 180, "y": 220, "w": 120, "h": 220 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:nevera] La nevera suena como un tractor, pero enfría. ::: Nevera." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_nevera] Abres y miras por deporte. ::: Cierra." }]
+        },
+        {
+          "id": "cafe",
+          "shape": { "type": "rect", "x": 560, "y": 420, "w": 100, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:cafe] Cafetera pegajosa. Huele a lunes. ::: Cafetera." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_cafe] Café de ayer: arqueología líquida. ::: Paso." }]
+        },
+        {
+          "id": "microondas",
+          "shape": { "type": "rect", "x": 720, "y": 340, "w": 120, "h": 80 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:microondas] Un microondas con reloj adelantado cinco minutos. ::: Microondas." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_microondas] Taca taca taca—vacío por dentro, como tú antes del café. ::: Sin uso." }]
+        },
+        {
+          "id": "ventana_cocina",
+          "shape": { "type": "rect", "x": 980, "y": 160, "w": 120, "h": 100 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:ventana_cocina] Entra una luz que perdona. ::: Ventana." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_ventana_cocina] Se abre; la vida no tanto. ::: Aire fresco." }]
         },
         {
           "id": "puerta_salon",
@@ -216,9 +347,16 @@
           "verb": ["look","use"],
           "onUse": [
             { "type": "if", "condition": { "hasItem": "nota_comunidad" }, "then": [
-              { "type": "showText", "text": "[gl:portera_info] La portera te recuerda pagar el alquiler y confirma la reunión de vecinos a las 19:00. ::: Te recuerda el alquiler y la reunión." }
+              { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+                { "type": "showText", "text": "[gl:portera_reunion_trabajo] La portera asiente: 'Bien lo de la academia. Y no faltes a la reunión a las 19:00'. ::: Te recuerda reunión y te felicita por el trabajo." }
+              ], "else": [
+                { "type": "showText", "text": "[gl:portera_info] La portera te recuerda pagar el alquiler y confirma la reunión de vecinos a las 19:00. ::: Te recuerda el alquiler y la reunión." }
+              ] },
+              { "type": "setFlag", "name": "hablo_con_portera", "value": true }
             ], "else": [
-              { "type": "showText", "text": "[gl:portera_sin_nota] La portera te pide el alquiler. No sabe si te llegó el aviso de la reunión. ::: Te pide el alquiler." }
+              { "type": "showText", "text": "[gl:portera_sin_nota] La portera te pide el alquiler. No sabe si te llegó el aviso de la reunión. ::: Te pide el alquiler." },
+              { "type": "setFlag", "name": "necesita_aviso", "value": true },
+              { "type": "setFlag", "name": "hablo_con_portera", "value": true }
             ] }
           ]
         },
@@ -235,11 +373,28 @@
           "onUse": [ { "type": "showText", "text": "[gl:nieves_angel] Nieves te presenta a su hermano Ángel, que no suelta el móvil. ::: Charla breve." } ]
         },
         {
+          "id": "tablon_anuncios",
+          "shape": { "type": "rect", "x": 640, "y": 220, "w": 180, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [ { "type": "showText", "text": "[gl:tablon] Tablón con papeletas de clases particulares, vecindad y un perro perdido. ::: Tablón de anuncios." } ],
+          "onUse": [ { "type": "showText", "text": "[gl:use_tablon] Arrancas un número que jamás llamarás. ::: Ya." } ]
+        },
+        {
           "id": "salir_calle",
           "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
           "verb": ["look","use"],
           "onLook": [ { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." } ],
-          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+          "onUse": [
+            { "type": "gotoScene", "id": "calle" },
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "if", "condition": { "flag": "cap0_fin_shown", "equals": true }, "then": [ ],
+                "else": [
+                  { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
+                  { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                ]
+              }
+            ] }
+          ]
         },
         {
           "id": "subir_casa",
@@ -287,26 +442,83 @@
           "id": "dudu",
           "shape": { "type": "rect", "x": 260, "y": 420, "w": 180, "h": 200 },
           "verb": ["look","use"],
-          "onUse": [ { "type": "showText", "text": "[gl:dudu] Dudu bromea: 'Hoy invitas tú, profe'. ::: Dudu te vacila." } ]
+          "onUse": [
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "showText", "text": "[gl:dudu_trabajo] Dudu sonríe: '¿Primeras clases? Ánimo, profe.' ::: Dudu te anima." }
+            ], "else": [
+              { "type": "if", "condition": { "flag": "oferta_trabajo", "equals": true }, "then": [
+                { "type": "showText", "text": "[gl:dudu_oferta] 'Entonces, ¿vas a aceptar lo de la academia o qué?' ::: Te pincha con la oferta." }
+              ], "else": [
+                { "type": "showText", "text": "[gl:dudu] Dudu bromea: 'Hoy invitas tú, profe'. ::: Dudu te vacila." }
+              ] }
+            ] },
+            { "type": "setFlag", "name": "visita_bar", "value": true }
+          ]
         },
         {
           "id": "moro",
           "shape": { "type": "rect", "x": 540, "y": 420, "w": 180, "h": 200 },
           "verb": ["look","use"],
-          "onUse": [ { "type": "showText", "text": "[gl:moro] El Moro te cuenta que anda buscando horario de verano. ::: Charlas con el Moro." } ]
+          "onUse": [
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "showText", "text": "[gl:moro_trabajo] El Moro pregunta por horarios: 'Hazte un hueco para el torneo'. ::: El Moro comenta el curro." }
+            ], "else": [
+              { "type": "if", "condition": { "flag": "oferta_trabajo", "equals": true }, "then": [
+                { "type": "showText", "text": "[gl:moro_oferta] 'Si te ofrecen curro, coge experiencia. Luego ya verás.' ::: Consejo del Moro." }
+              ], "else": [
+                { "type": "showText", "text": "[gl:moro] El Moro te cuenta que anda buscando horario de verano. ::: Charlas con el Moro." }
+              ] }
+            ] },
+            { "type": "setFlag", "name": "visita_bar", "value": true }
+          ]
         },
         {
           "id": "gollina",
           "shape": { "type": "rect", "x": 820, "y": 420, "w": 180, "h": 200 },
           "verb": ["look","use"],
-          "onUse": [ { "type": "showText", "text": "[gl:gollina] Gollina asiente desde la barra, ocupado con pedidos. ::: Gollina asiente." } ]
+          "onUse": [
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "showText", "text": "[gl:gollina_trabajo] Gollina alza el pulgar sin dejar de tirar cañas. ::: Gollina aprueba." }
+            ], "else": [
+              { "type": "if", "condition": { "flag": "oferta_trabajo", "equals": true }, "then": [
+                { "type": "showText", "text": "[gl:gollina_oferta] 'Mientras te paguen a fin de mes…' dice, práctico. ::: Gollina opina." }
+              ], "else": [
+                { "type": "showText", "text": "[gl:gollina] Gollina asiente desde la barra, ocupado con pedidos. ::: Gollina asiente." }
+              ] }
+            ] },
+            { "type": "setFlag", "name": "visita_bar", "value": true }
+          ]
+        },
+        {
+          "id": "tele_deportes",
+          "shape": { "type": "rect", "x": 100, "y": 140, "w": 200, "h": 120 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:tele_bar] Un partido sin sonido. Todo el bar sabe cómo va sin mirar. ::: Tele encendida." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_tele_bar] Tocas la pantalla; el bar te juzga. ::: No es táctil." }]
+        },
+        {
+          "id": "maquina_traga",
+          "shape": { "type": "rect", "x": 1080, "y": 460, "w": 160, "h": 200 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:tragaperras] Lucecitas hipnóticas. Mejor ni acercarse. ::: Máquina." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_traga] La casa siempre gana. Tú, casi nunca. ::: Mejor no." }]
         },
         {
           "id": "salir_calle",
           "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
           "verb": ["look","use"],
           "onLook": [ { "type": "showText", "text": "[gl:bar_salir] Sales a la calle. ::: Calle." } ],
-          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+          "onUse": [
+            { "type": "gotoScene", "id": "calle" },
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "if", "condition": { "flag": "cap0_fin_shown", "equals": true }, "then": [ ],
+                "else": [
+                  { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
+                  { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                ]
+              }
+            ] }
+          ]
         }
       ]
     },
@@ -315,12 +527,35 @@
       "background": "images/backgrounds/academia.jpg",
       "hotspots": [
         {
+          "id": "tablones",
+          "shape": { "type": "rect", "x": 220, "y": 200, "w": 220, "h": 160 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:tablones] Anuncios de clases, exámenes y horarios de verano. ::: Tablones." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_tablones] Clavas un anuncio mental: 'Se dan clases de intentarlo'. ::: Otro día." }]
+        },
+        {
+          "id": "folletos",
+          "shape": { "type": "rect", "x": 420, "y": 420, "w": 160, "h": 100 },
+          "verb": ["look","use"],
+          "onLook": [{ "type": "showText", "text": "[gl:folletos] Folletos de cursos intensivos y descuentos. ::: Folletos." }],
+          "onUse": [{ "type": "showText", "text": "[gl:use_folletos] Coges uno. Lo olvidarás en el bolsillo. ::: Hecho." }]
+        },
+        {
           "id": "jefe_academia",
           "shape": { "type": "rect", "x": 760, "y": 400, "w": 240, "h": 220 },
           "verb": ["look","use"],
           "onUse": [
-            { "type": "showText", "text": "[gl:jefe_oferta] El jefe escucha y te propone dar clases durante el verano. ::: Te ofrece un trabajo." },
-            { "type": "setFlag", "name": "oferta_trabajo", "value": true }
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "showText", "text": "[gl:jefe_ya_en_plantilla] 'Perfecto, Juan. Empiezas la semana que viene.' ::: Ya tienes el trabajo." }
+            ], "else": [
+              { "type": "if", "condition": { "flag": "oferta_trabajo", "equals": true }, "then": [
+                { "type": "showText", "text": "[gl:jefe_aceptar] El jefe te pregunta si aceptas. Asientes: 'Hecho'. ::: Aceptas el trabajo." },
+                { "type": "setFlag", "name": "acepta_trabajo", "value": true }
+              ], "else": [
+                { "type": "showText", "text": "[gl:jefe_oferta] El jefe escucha y te propone dar clases durante el verano. ::: Te ofrece un trabajo." },
+                { "type": "setFlag", "name": "oferta_trabajo", "value": true }
+              ] }
+            ] }
           ]
         },
         {
@@ -328,7 +563,17 @@
           "shape": { "type": "rect", "x": 40, "y": 360, "w": 160, "h": 240 },
           "verb": ["look","use"],
           "onLook": [ { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." } ],
-          "onUse": [ { "type": "gotoScene", "id": "calle" } ]
+          "onUse": [
+            { "type": "gotoScene", "id": "calle" },
+            { "type": "if", "condition": { "flag": "acepta_trabajo", "equals": true }, "then": [
+              { "type": "if", "condition": { "flag": "cap0_fin_shown", "equals": true }, "then": [ ],
+                "else": [
+                  { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
+                  { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                ]
+              }
+            ] }
+          ]
         }
       ]
     }
