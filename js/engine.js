@@ -27,23 +27,113 @@
   function setVerb(v) { currentVerb = v; UI.setVerb(v); }
   function getVerb() { return currentVerb; }
 
-  // ------- Geometría -------
-  function pointInRect(px, py, r) { return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h; }
-  function pointInCircle(px, py, c) { const dx = px - c.x, dy = py - c.y; return dx*dx + dy*dy <= c.r*c.r; }
+  // ====== MODO EDITOR (F8) ======
+  let EDIT_MODE = false;
+  let EDIT_SNAP = 8;               // tamaño de rejilla (0 = sin snap). Toggle con G.
+  let EDIT_VERBOSE = true;         // muestra datos numéricos
+  let editSelected = { id: null, polyIndex: -1 }; // hotspot seleccionado, y vértice si es polígono
+  let isMouseDown = false;
+  let dragStart = { x: 0, y: 0 };
+  let originalShape = null;
+
+  function isEdit() { return EDIT_MODE; }
+  function getCurrentScene() { return SceneManager.getScene(State.get().currentSceneId); }
+
+  function snap(v) {
+    if (!EDIT_SNAP || EDIT_SNAP <= 1) return Math.round(v);
+    return Math.round(v / EDIT_SNAP) * EDIT_SNAP;
+  }
+
+  function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+        UI.flashTooltip("Copiado al portapapeles.");
+      } else {
+        // fallback
+        window.prompt("Copia con Ctrl+C y Enter:", text);
+      }
+    } catch {
+      window.prompt("Copia con Ctrl+C y Enter:", text);
+    }
+  }
+
+  function selectHotspotAt(x, y) {
+    const sc = getCurrentScene();
+    if (!sc) return null;
+    // Prioridad: vértice de polígono cercano, si no, primer hotspot bajo el cursor
+    const enabled = sc.hotspots.filter(h => SceneManager.isHotspotEnabled(sc.id, h.id));
+
+    // ¿clic sobre un vértice?
+    for (const h of enabled) {
+      if (h.shape.type === "polygon") {
+        for (let i = 0; i < h.shape.points.length; i++) {
+          const p = h.shape.points[i];
+          const dx = p[0] - x, dy = p[1] - y;
+          if (dx*dx + dy*dy <= 12*12) {
+            editSelected = { id: h.id, polyIndex: i };
+            return h;
+          }
+        }
+      }
+    }
+
+    // ¿sobre el shape?
+    for (const h of enabled) {
+      if (hitTest(h, x, y)) {
+        editSelected = { id: h.id, polyIndex: -1 };
+        return h;
+      }
+    }
+    editSelected = { id: null, polyIndex: -1 };
+    return null;
+  }
+
+  function getSelected() {
+    const sc = getCurrentScene();
+    if (!sc || !editSelected.id) return null;
+    return sc.hotspots.find(h => h.id === editSelected.id) || null;
+  }
+
+  function serializeSelectedShape() {
+    const h = getSelected();
+    if (!h) return "";
+    const payload = { id: h.id, shape: h.shape };
+    return JSON.stringify(payload, null, 2);
+  }
+
+  function serializeAllShapes() {
+    const sc = getCurrentScene();
+    if (!sc) return "";
+    const out = sc.hotspots.map(h => ({ id: h.id, shape: h.shape }));
+    return JSON.stringify(out, null, 2);
+  }
+
+  // ===== Geometría =====
+  function pointInRect(px, py, r) {
+    return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+  }
+  function pointInCircle(px, py, c) {
+    const dx = px - c.x, dy = py - c.y;
+    return dx * dx + dy * dy <= c.r * c.r;
+  }
   function pointInPolygon(px, py, poly) {
-    const pts = poly.points; let inside = false;
-    for (let i=0, j=pts.length-1; i<pts.length; j=i++) {
-      const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
-      const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi + 1e-7) + xi);
+    const pts = poly.points;
+    let inside = false;
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const xi = pts[i][0], yi = pts[i][1];
+      const xj = pts[j][0], yj = pts[j][1];
+      const intersect = ((yi > py) !== (yj > py)) &&
+        (px < (xj - xi) * (py - yi) / (yj - yi + 1e-7) + xi);
       if (intersect) inside = !inside;
     }
     return inside;
   }
   function hitTest(hs, x, y) {
-    const s = hs.shape;
-    if (s.type === "rect") return pointInRect(x, y, s);
-    if (s.type === "circle") return pointInCircle(x, y, s);
-    if (s.type === "polygon") return pointInPolygon(x, y, s);
+    const shape = hs.shape;
+    if (shape.type === "rect") return pointInRect(x, y, shape);
+    if (shape.type === "circle") return pointInCircle(x, y, shape);
+    if (shape.type === "polygon") return pointInPolygon(x, y, shape);
     return false;
   }
 
@@ -51,20 +141,31 @@
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    return { x: (evt.clientX - rect.left) * scaleX, y: (evt.clientY - rect.top) * scaleY };
+    return {
+      x: (evt.clientX - rect.left) * scaleX,
+      y: (evt.clientY - rect.top) * scaleY
+    };
   }
 
   function allHotspotsUnderCursor(x, y) {
-    const sc = SceneManager.getScene(State.get().currentSceneId);
+    const sc = getCurrentScene();
     if (!sc) return [];
     const enabledHotspots = sc.hotspots.filter(h => SceneManager.isHotspotEnabled(sc.id, h.id));
     return enabledHotspots.filter(h => hitTest(h, x, y));
   }
 
-  // ------- Input -------
+  // ===== Input =====
   async function onClick(evt) {
     if (isTransitioning) return;
     const { x, y } = getMousePos(evt);
+
+    if (isEdit()) {
+      const h = selectHotspotAt(x, y);
+      originalShape = h ? JSON.parse(JSON.stringify(h.shape)) : null;
+      renderAll();
+      return;
+    }
+
     const matches = allHotspotsUnderCursor(x, y);
     if (matches.length === 0) return;
 
@@ -101,12 +202,82 @@
     renderAll();
   }
 
+  function onMouseDown(evt) {
+    if (!isEdit()) return;
+    const { x, y } = getMousePos(evt);
+    const h = getSelected();
+    if (!h) return;
+
+    // Solo “agarra” si clicas dentro del shape (o punto en polígono)
+    if (h.shape.type === "polygon" && editSelected.polyIndex >= 0) {
+      isMouseDown = true;
+      dragStart = { x, y };
+      originalShape = JSON.parse(JSON.stringify(h.shape));
+      return;
+    }
+    if (hitTest(h, x, y)) {
+      isMouseDown = true;
+      dragStart = { x, y };
+      originalShape = JSON.parse(JSON.stringify(h.shape));
+    }
+  }
+
+  function onMouseUp() {
+    if (!isEdit()) return;
+    isMouseDown = false;
+  }
+
   function onMouseMove(evt) {
     if (isTransitioning) return;
     const { x, y } = getMousePos(evt);
+
+    if (isEdit()) {
+      if (isMouseDown) {
+        const h = getSelected();
+        if (!h) return;
+        const dx = x - dragStart.x;
+        const dy = y - dragStart.y;
+
+        if (h.shape.type === "rect") {
+          h.shape.x = snap(originalShape.x + dx);
+          h.shape.y = snap(originalShape.y + dy);
+        } else if (h.shape.type === "circle") {
+          h.shape.x = snap(originalShape.x + dx);
+          h.shape.y = snap(originalShape.y + dy);
+        } else if (h.shape.type === "polygon") {
+          if (editSelected.polyIndex >= 0) {
+            const p = h.shape.points[editSelected.polyIndex];
+            p[0] = snap(originalShape.points[editSelected.polyIndex][0] + dx);
+            p[1] = snap(originalShape.points[editSelected.polyIndex][1] + dy);
+          } else {
+            for (let i = 0; i < h.shape.points.length; i++) {
+              h.shape.points[i][0] = snap(originalShape.points[i][0] + dx);
+              h.shape.points[i][1] = snap(originalShape.points[i][1] + dy);
+            }
+          }
+        }
+        renderAll();
+        return;
+      }
+
+      // Hover/tooltip en editor
+      const sc = getCurrentScene();
+      const matches = allHotspotsUnderCursor(x, y);
+      const newId = matches.length ? matches[0].id : null;
+      if (newId !== hoveredHotspotId) {
+        hoveredHotspotId = newId;
+        if (hoveredHotspotId) {
+          UI.setTooltip(`Editar: ${hoveredHotspotId}  (clic para seleccionar)`);
+        } else {
+          UI.setTooltip("");
+        }
+      }
+      return;
+    }
+
+    // modo normal
     const matches = allHotspotsUnderCursor(x, y);
     const newId = matches.length ? matches[0].id : null;
-
     if (newId !== hoveredHotspotId) {
       hoveredHotspotId = newId;
       if (hoveredHotspotId) {
@@ -119,7 +290,7 @@
     }
   }
 
-  // ------- Render -------
+  // ===== Render =====
   function drawBackground() {
     const scId = State.get().currentSceneId;
     const img = SceneManager.getBackgroundImage(scId);
@@ -144,10 +315,10 @@
     }
   }
 
-  // Halo suave para el hotspot bajo el cursor (siempre visible, salvo modo foto)
+  // Halo suave (solo modo normal)
   function drawHoverHalo() {
-    if (PHOTO_MODE) return;
-    const sc = SceneManager.getScene(State.get().currentSceneId);
+    if (PHOTO_MODE || isEdit()) return;
+    const sc = getCurrentScene();
     if (!sc || !hoveredHotspotId) return;
     const hs = sc.hotspots.find(h => h.id === hoveredHotspotId);
     if (!hs) return;
@@ -159,7 +330,6 @@
     pathFromShape(hs);
     ctx.stroke();
 
-    // leve relleno transparente
     ctx.fillStyle = "rgba(150,220,255,0.12)";
     pathFromShape(hs);
     ctx.fill();
@@ -201,7 +371,6 @@
     ctx.font = "14px system-ui, sans-serif";
     ctx.textBaseline = "top";
 
-    // Shapes
     for (const hs of sc.hotspots) {
       const enabled = SceneManager.isHotspotEnabled(scId, hs.id);
       const conds = SceneManager.evaluateConditions(hs.conditions || []);
@@ -223,7 +392,6 @@
 
       drawHotspotShape(hs, stroke, fill);
 
-      // Etiqueta
       const c = centroidOf(hs);
       const tag = `${hs.id}`;
       const pad = 4;
@@ -247,7 +415,8 @@
       ["F1: ayuda", "rgba(200,220,255,0.95)"],
       ["F2: overlay hotspots", "rgba(200,220,255,0.95)"],
       ["F3: leyenda izq/dcha", "rgba(200,255,200,0.95)"],
-      ["F6: modo foto", "rgba(255,220,220,0.95)"]
+      ["F6: modo foto", "rgba(255,220,220,0.95)"],
+      ["F8: editor hotspots", "rgba(200,255,255,0.95)"]
     ];
 
     // medir ancho máximo
@@ -267,6 +436,65 @@
     }
 
     ctx.restore();
+  }
+
+  // ===== Editor overlay =====
+  function drawEditorOverlay() {
+    if (!isEdit()) return;
+    const sc = getCurrentScene();
+    if (!sc) return;
+
+    // Rejilla
+    if (EDIT_SNAP && EDIT_SNAP > 1) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += EDIT_SNAP) {
+        ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += EDIT_SNAP) {
+        ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(canvas.width, y + 0.5); ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Bounding de selección + vértices
+    const sel = getSelected();
+    if (sel) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(80,200,255,0.9)";
+      ctx.lineWidth = 2;
+      pathFromShape(sel);
+      ctx.stroke();
+
+      // vértices para polígono
+      if (sel.shape.type === "polygon") {
+        for (let i = 0; i < sel.shape.points.length; i++) {
+          const p = sel.shape.points[i];
+          ctx.fillStyle = (i === editSelected.polyIndex) ? "rgba(80,200,255,0.95)" : "rgba(80,200,255,0.6)";
+          ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      // datos
+      if (EDIT_VERBOSE) {
+        ctx.font = "12px system-ui, sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(16, canvas.height - 64, 520, 48);
+        ctx.fillStyle = "rgba(220,245,255,0.95)";
+        const sh = sel.shape;
+        let text = `${sel.id} · `;
+        if (sh.type === "rect") text += `rect x:${sh.x} y:${sh.y} w:${sh.w} h:${sh.h}`;
+        if (sh.type === "circle") text += `circle cx:${sh.x} cy:${sh.y} r:${sh.r}`;
+        if (sh.type === "polygon") text += `polygon pts:${sh.points.length} (Tab cambia vértice)`;
+        ctx.fillText(text, 24, canvas.height - 56);
+        ctx.fillText("Arrows mover · Shift×10 · Ctrl ajustar tamaño/radio · G rejilla · C copiar shape · A copiar todos", 24, canvas.height - 38);
+        ctx.fillText("Tab vértice (polígono) · Esc salir editor", 24, canvas.height - 20);
+      }
+
+      ctx.restore();
+    }
   }
 
   // -------- Fade overlay --------
@@ -298,13 +526,14 @@
 
   function renderAll() {
     drawBackground();
-    drawHoverHalo();     // <- halo del hotspot
-    drawHotspotsOverlay(); // <- overlay de depuración (si activo)
-    drawFadeOverlay();     // <- overlay de transición
-    UI.renderHUD(State.get(), SceneManager.getScene(State.get().currentSceneId));
+    drawHoverHalo();       // halo del hotspot (modo normal)
+    drawHotspotsOverlay(); // overlay de depuración
+    drawEditorOverlay();   // overlay del editor
+    drawFadeOverlay();     // transición
+    UI.renderHUD(State.get(), getCurrentScene());
   }
 
-  // ------- Init -------
+  // ===== Init =====
   async function init() {
     try {
       await SceneManager.loadAll("data/items.json", "data/scenes.json");
@@ -318,8 +547,10 @@
 
       canvas.addEventListener("click", onClick);
       canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("mousedown", onMouseDown);
+      canvas.addEventListener("mouseup", onMouseUp);
 
-      // Teclado: Enter/Esc para diálogos (delegado a UI)
+      // Diálogo: Enter/Esc (solo si el diálogo está abierto)
       document.addEventListener("keydown", (e) => {
         if (!UI.isDialogOpen()) return;
         if (e.key === "Enter" || e.key === "Escape") UI.clickDialogNext();
@@ -329,7 +560,7 @@
       document.addEventListener("keydown", (e) => {
         // Ayuda rápida
         if (e.key === "F1") {
-          UI.flashTooltip("F1 Ayuda · F2 Overlay · F3 Leyenda izq/dcha · F6 Modo foto · Enter/Esc avanzar diálogo");
+          UI.flashTooltip("F1 Ayuda · F2 Overlay · F3 Leyenda · F6 Foto · F8 Editor · Enter/Esc diálogo");
           e.preventDefault();
           return;
         }
@@ -353,6 +584,145 @@
           document.body.classList.toggle("photo", PHOTO_MODE);
           UI.flashTooltip(`Modo foto ${PHOTO_MODE ? "activado" : "desactivado"}`);
           renderAll();
+          return;
+        }
+        // Editor
+        if (e.key === "F8") {
+          EDIT_MODE = !EDIT_MODE;
+          editSelected = { id: null, polyIndex: -1 };
+          UI.flashTooltip(EDIT_MODE
+            ? "EDITOR ON · Clic para seleccionar · Arrows mover · Ctrl para tamaño/radio · G rejilla · C/A copiar"
+            : "EDITOR OFF");
+          renderAll();
+          return;
+        }
+
+        // A partir de aquí, si no estamos en editor, salir
+        if (!isEdit()) return;
+
+        const sel = getSelected();
+        const sc = getCurrentScene();
+        if (!sc) return;
+
+        // Editor: controles de teclado
+        const step = e.shiftKey ? 10 : 1;
+        const ctrl = e.ctrlKey || e.metaKey;
+
+        if (e.key === "Escape") {
+          EDIT_MODE = false;
+          UI.flashTooltip("EDITOR OFF");
+          renderAll();
+          return;
+        }
+
+        // Selección ciclada de vértices (polígono)
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const h = getSelected();
+          if (h && h.shape.type === "polygon") {
+            editSelected.polyIndex = (editSelected.polyIndex + 1) % h.shape.points.length;
+            renderAll();
+          }
+          return;
+        }
+
+        // Cambiar rejilla
+        if (e.key.toLowerCase() === "g") {
+          // ciclos: 0 → 8 → 16 → 0
+          if (!EDIT_SNAP) EDIT_SNAP = 8;
+          else if (EDIT_SNAP === 8) EDIT_SNAP = 16;
+          else EDIT_SNAP = 0;
+          UI.flashTooltip(`Rejilla: ${EDIT_SNAP ? EDIT_SNAP + "px" : "off"}`);
+          renderAll();
+          return;
+        }
+
+        // Copiar shape seleccionado
+        if (e.key.toLowerCase() === "c") {
+          const txt = serializeSelectedShape();
+          if (txt) copyToClipboard(txt);
+          return;
+        }
+        // Copiar todos
+        if (e.key.toLowerCase() === "a") {
+          copyToClipboard(serializeAllShapes());
+          return;
+        }
+
+        // Si no hay selección, intenta seleccionar el primero bajo el cursor
+        if (!sel) return;
+
+        // MOVIMIENTO / RESIZE
+        const sh = sel.shape;
+
+        // Arrows sin Ctrl: mover shape (o vértice activo en polígono)
+        if (!ctrl) {
+          if (sh.type === "rect") {
+            if (e.key === "ArrowLeft") sh.x = snap(sh.x - step);
+            if (e.key === "ArrowRight") sh.x = snap(sh.x + step);
+            if (e.key === "ArrowUp") sh.y = snap(sh.y - step);
+            if (e.key === "ArrowDown") sh.y = snap(sh.y + step);
+          } else if (sh.type === "circle") {
+            if (e.key === "ArrowLeft") sh.x = snap(sh.x - step);
+            if (e.key === "ArrowRight") sh.x = snap(sh.x + step);
+            if (e.key === "ArrowUp") sh.y = snap(sh.y - step);
+            if (e.key === "ArrowDown") sh.y = snap(sh.y + step);
+          } else if (sh.type === "polygon") {
+            if (editSelected.polyIndex >= 0) {
+              const p = sh.points[editSelected.polyIndex];
+              if (e.key === "ArrowLeft") p[0] = snap(p[0] - step);
+              if (e.key === "ArrowRight") p[0] = snap(p[0] + step);
+              if (e.key === "ArrowUp") p[1] = snap(p[1] - step);
+              if (e.key === "ArrowDown") p[1] = snap(p[1] + step);
+            } else {
+              // mover todo el polígono
+              if (e.key.startsWith("Arrow")) {
+                const dx = (e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0);
+                const dy = (e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0);
+                for (let i = 0; i < sh.points.length; i++) {
+                  sh.points[i][0] = snap(sh.points[i][0] + dx);
+                  sh.points[i][1] = snap(sh.points[i][1] + dy);
+                }
+              }
+            }
+          }
+          renderAll();
+          e.preventDefault();
+          return;
+        }
+
+        // Ctrl + Arrows: cambiar tamaño (rect), radio (circle), mover vértice (polygon)
+        if (ctrl) {
+          if (sh.type === "rect") {
+            if (e.key === "ArrowLeft")  sh.w = Math.max(1, snap(sh.w - step));
+            if (e.key === "ArrowRight") sh.w = Math.max(1, snap(sh.w + step));
+            if (e.key === "ArrowUp")    sh.h = Math.max(1, snap(sh.h - step));
+            if (e.key === "ArrowDown")  sh.h = Math.max(1, snap(sh.h + step));
+          } else if (sh.type === "circle") {
+            if (e.key === "ArrowUp")    sh.r = Math.max(1, snap(sh.r + step));
+            if (e.key === "ArrowDown")  sh.r = Math.max(1, snap(sh.r - step));
+          } else if (sh.type === "polygon") {
+            // Ctrl+arrows: mueve vértice (si no hay, mueve todo)
+            const idx = editSelected.polyIndex >= 0 ? editSelected.polyIndex : -1;
+            if (idx >= 0) {
+              const p = sh.points[idx];
+              if (e.key === "ArrowLeft")  p[0] = snap(p[0] - step);
+              if (e.key === "ArrowRight") p[0] = snap(p[0] + step);
+              if (e.key === "ArrowUp")    p[1] = snap(p[1] - step);
+              if (e.key === "ArrowDown")  p[1] = snap(p[1] + step);
+            } else {
+              if (e.key.startsWith("Arrow")) {
+                const dx = (e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0);
+                const dy = (e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0);
+                for (let i = 0; i < sh.points.length; i++) {
+                  sh.points[i][0] = snap(sh.points[i][0] + dx);
+                  sh.points[i][1] = snap(sh.points[i][1] + dy);
+                }
+              }
+            }
+          }
+          renderAll();
+          e.preventDefault();
           return;
         }
       });
