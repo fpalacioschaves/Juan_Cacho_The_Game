@@ -2,136 +2,145 @@
 
 /* global SceneManager, State */
 
-(function () {
-  const $verbBar = document.getElementById("verb-bar");
-  const $inventory = document.getElementById("inventory");
-  const $tooltip = document.getElementById("tooltip");
-  const $dialog = document.getElementById("dialog");
-  const $dialogText = document.getElementById("dialog-text");
-  const $dialogNext = document.getElementById("dialog-next");
+const UI = (function(){
+  const divTooltip = document.getElementById("tooltip");
+  const divInventory = document.getElementById("inventory");
+  const verbBar = document.getElementById("verb-bar");
 
-  let currentVerb = "use";
+  // Diálogo
+  const dlg = document.getElementById("dialog");
+  const dlgText = document.getElementById("dialog-text");
+  const dlgNext = document.getElementById("dialog-next");
+
+  let tooltipTimer = null;
   let dialogResolver = null;
+  let dialogAutoTimer = null;
 
-  function setVerb(v) {
-    currentVerb = v;
-    [...$verbBar.querySelectorAll("button")].forEach(b => {
-      b.classList.toggle("active", b.dataset.verb === v);
+  // ===== Verbos =====
+  function setVerb(v){
+    [...verbBar.querySelectorAll("button[data-verb]")].forEach(b => {
+      b.setAttribute("aria-pressed", b.getAttribute("data-verb") === v ? "true" : "false");
     });
-    setTooltip("");
   }
 
-  function mountVerbBar({ verbs, onSelect }) {
-    $verbBar.innerHTML = "";
+  function mountVerbBar({ verbs, onSelect }){
+    verbBar.textContent = "";
     verbs.forEach(v => {
       const btn = document.createElement("button");
-      btn.type = "button";
-      btn.dataset.verb = v;
       btn.textContent = v === "look" ? "Mirar" : "Usar";
+      btn.setAttribute("data-verb", v);
+      btn.setAttribute("aria-pressed", v === "use" ? "true" : "false");
       btn.addEventListener("click", () => onSelect(v));
-      $verbBar.appendChild(btn);
-    });
-    setVerb(currentVerb);
-  }
-
-  function renderInventory(state, scene) {
-    $inventory.innerHTML = "";
-    state.inventory.forEach((itemId, idx) => {
-      const it = SceneManager.getItem(itemId);
-      if (!it) return;
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.setAttribute("role", "listitem");
-      btn.setAttribute("aria-label", `${it.name}: ${it.description}`);
-      btn.tabIndex = 0;
-
-      // Tooltip nativo con el nombre del ítem
-      btn.title = it.name;
-
-      const img = document.createElement("img");
-      img.src = it.icon;
-      img.alt = it.name;
-      btn.appendChild(img);
-
-      btn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          showDialog(`${it.name}\n\n${it.description}`);
-        }
-      });
-
-      btn.addEventListener("click", () => showDialog(`${it.name}\n\n${it.description}`));
-
-      $inventory.appendChild(btn);
-
-      if (idx === 0) btn.focus({ preventScroll: true });
+      verbBar.appendChild(btn);
     });
   }
 
-  function setTooltip(msg) {
-    $tooltip.textContent = msg || "";
+  // ===== Tooltip & cursor =====
+  function setTooltip(text){
+    divTooltip.textContent = text || "";
   }
 
-  function setHotCursor(on) {
+  function flashTooltip(text, ms = 2600){
+    clearTimeout(tooltipTimer);
+    setTooltip(text);
+    tooltipTimer = setTimeout(() => setTooltip(""), ms);
+  }
+
+  function setHotCursor(on){
     document.body.classList.toggle("hot", !!on);
   }
 
-  function showDialog(text) {
-    $dialogText.textContent = String(text || "");
-    $dialog.hidden = false;
-    $dialogNext.focus({ preventScroll: true });
+  // ===== Diálogo =====
+  function isDialogOpen(){ return !dlg.hasAttribute("hidden"); }
+  function clickDialogNext(){ if (!isDialogOpen()) return; dlgNext.click(); }
+  function showDialog(){ dlg.removeAttribute("hidden"); }
+  function hideDialog(){ dlg.setAttribute("hidden", ""); }
+
+  /**
+   * UI.showText admite:
+   *  - string
+   *  - { text: string, autoCloseMs?: number }
+   */
+  function showText(input){
+    const opts = (typeof input === "object" && input) ? input : { text: String(input || "") };
+    const text = String(opts.text || "");
+    const autoCloseMs = Number(opts.autoCloseMs || 0);
 
     return new Promise((resolve) => {
       dialogResolver = resolve;
+      dlgText.textContent = text;
+      showDialog();
+
+      // Cerrar con click en cualquier parte del cuadro
+      const handler = () => {
+        dlgNext.removeEventListener("click", handler);
+        dlg.removeEventListener("click", handler);
+        if (dialogAutoTimer) { clearTimeout(dialogAutoTimer); dialogAutoTimer = null; }
+        hideDialog();
+        dialogResolver = null;
+        resolve(true);
+      };
+      dlgNext.addEventListener("click", handler);
+      dlg.addEventListener("click", handler);
+
+      // Autocierre opcional (para [gl:...] versión corta)
+      if (autoCloseMs > 0) {
+        dialogAutoTimer = setTimeout(() => {
+          if (isDialogOpen()) handler();
+        }, autoCloseMs);
+      }
     });
   }
 
-  function clickDialogNext() {
-    if ($dialog.hidden) return;
-    $dialog.hidden = true;
-    const res = dialogResolver;
-    dialogResolver = null;
-    if (typeof res === "function") res(true);
-  }
+  function fatal(msg){ showText(`Error: ${msg}`); }
 
-  function isDialogOpen() { return !$dialog.hidden; }
-
-  function renderHUD(state, scene) {
-    renderInventory(state, scene);
-  }
-
-  function fatal(message) {
-    const c = document.getElementById("scene");
-    const ctx = c.getContext("2d");
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, c.width, c.height);
-    ctx.fillStyle = "#ff4d4f";
-    ctx.font = "20px system-ui, sans-serif";
-    ctx.fillText("Error crítico:", 20, 40);
-    ctx.fillStyle = "#ffdede";
-    wrapText(ctx, message, 20, 70, c.width - 40, 22);
-  }
-
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = String(text).split(/\s+/);
-    let line = "";
-    for (const w of words) {
-      const test = line ? line + " " + w : w;
-      if (ctx.measureText(test).width > maxWidth) {
-        ctx.fillText(line, x, y);
-        line = w;
-        y += lineHeight;
-      } else {
-        line = test;
-      }
+  // ===== HUD / Inventario =====
+  function renderHUD(state){
+    divInventory.textContent = "";
+    for (const id of state.inventory) {
+      const it = SceneManager.getItem(id);
+      const btn = document.createElement("button");
+      btn.dataset.itemId = id;
+      const img = document.createElement("img");
+      img.src = it ? it.icon : "";
+      img.alt = it ? it.name : id;
+      img.width = 32; img.height = 32;
+      btn.appendChild(img);
+      btn.title = it ? it.name : id; // tooltip de QA
+      divInventory.appendChild(btn);
     }
-    if (line) ctx.fillText(line, x, y);
   }
 
-  document.getElementById("dialog-next").addEventListener("click", clickDialogNext);
+  function refreshInventoryTitles(){
+    const inv = (window.State && State.get().inventory) || [];
+    [...divInventory.querySelectorAll("button")].forEach((btn, idx) => {
+      const id = inv[idx] || "";
+      const it = SceneManager.getItem(id);
+      btn.title = it ? it.name : id;
+    });
+  }
 
-  window.UI = {
-    setVerb, mountVerbBar, renderHUD, setTooltip, setHotCursor,
-    showDialog, clickDialogNext, isDialogOpen, fatal
+  // Mini-animación visual al recibir un ítem
+  function bumpInventory(itemId){
+    const btn = divInventory.querySelector(`button[data-item-id="${itemId}"], button[data-itemid="${itemId}"], button[data-item-id]`);
+    // fallback: último botón
+    const target = btn || divInventory.querySelector("button:last-of-type");
+    if (!target) return;
+    target.classList.remove("bump");
+    // forzar reflow para reiniciar animación
+    // eslint-disable-next-line no-unused-expressions
+    target.offsetWidth;
+    target.classList.add("bump");
+  }
+
+  return {
+    // verbos
+    setVerb, mountVerbBar,
+    // tooltip & cursor
+    setTooltip, flashTooltip, setHotCursor,
+    // diálogo
+    isDialogOpen, clickDialogNext, showText, fatal,
+    // HUD
+    renderHUD, refreshInventoryTitles, bumpInventory
   };
 })();

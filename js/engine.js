@@ -13,45 +13,37 @@
   // Debug overlay de hotspots (ON por defecto). Toggle con F2.
   let DEBUG_SHOW_HOTSPOTS = true;
 
+  // Leyenda del overlay: posición (izq / dcha), se recuerda
+  let LEGEND_RIGHT = false;
+  try { LEGEND_RIGHT = localStorage.getItem("LEGEND_POS_RIGHT") === "1"; } catch(_) {}
+
+  // Modo foto: oculta HUD y overlay (F6)
+  let PHOTO_MODE = false;
+
   // Transiciones
   let isTransitioning = false;
   let fadeAlpha = 0; // 0..1 (0 = sin overlay, 1 = negro completo)
 
-  function setVerb(v) {
-    currentVerb = v;
-    UI.setVerb(v);
-  }
+  function setVerb(v) { currentVerb = v; UI.setVerb(v); }
+  function getVerb() { return currentVerb; }
 
-  function getVerb() {
-    return currentVerb;
-  }
-
-  // Utilidades de geometría
-  function pointInRect(px, py, r) {
-    return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
-  }
-  function pointInCircle(px, py, c) {
-    const dx = px - c.x, dy = py - c.y;
-    return dx * dx + dy * dy <= c.r * c.r;
-  }
+  // ------- Geometría -------
+  function pointInRect(px, py, r) { return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h; }
+  function pointInCircle(px, py, c) { const dx = px - c.x, dy = py - c.y; return dx*dx + dy*dy <= c.r*c.r; }
   function pointInPolygon(px, py, poly) {
-    // Ray casting
-    const pts = poly.points;
-    let inside = false;
-    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-      const xi = pts[i][0], yi = pts[i][1];
-      const xj = pts[j][0], yj = pts[j][1];
-      const intersect = ((yi > py) !== (yj > py)) &&
-        (px < (xj - xi) * (py - yi) / (yj - yi + 0.0000001) + xi);
+    const pts = poly.points; let inside = false;
+    for (let i=0, j=pts.length-1; i<pts.length; j=i++) {
+      const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
+      const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi + 1e-7) + xi);
       if (intersect) inside = !inside;
     }
     return inside;
   }
   function hitTest(hs, x, y) {
-    const shape = hs.shape;
-    if (shape.type === "rect") return pointInRect(x, y, shape);
-    if (shape.type === "circle") return pointInCircle(x, y, shape);
-    if (shape.type === "polygon") return pointInPolygon(x, y, shape);
+    const s = hs.shape;
+    if (s.type === "rect") return pointInRect(x, y, s);
+    if (s.type === "circle") return pointInCircle(x, y, s);
+    if (s.type === "polygon") return pointInPolygon(x, y, s);
     return false;
   }
 
@@ -59,10 +51,7 @@
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    return {
-      x: (evt.clientX - rect.left) * scaleX,
-      y: (evt.clientY - rect.top) * scaleY
-    };
+    return { x: (evt.clientX - rect.left) * scaleX, y: (evt.clientY - rect.top) * scaleY };
   }
 
   function allHotspotsUnderCursor(x, y) {
@@ -72,8 +61,9 @@
     return enabledHotspots.filter(h => hitTest(h, x, y));
   }
 
+  // ------- Input -------
   async function onClick(evt) {
-    if (isTransitioning) return; // bloquear input durante fade
+    if (isTransitioning) return;
     const { x, y } = getMousePos(evt);
     const matches = allHotspotsUnderCursor(x, y);
     if (matches.length === 0) return;
@@ -81,7 +71,6 @@
     const hs = matches[0];
     const verb = getVerb();
 
-    // Si está deshabilitado, no responde
     if (!SceneManager.isHotspotEnabled(SceneManager.currentSceneId(), hs.id)) return;
 
     if (verb === "use") {
@@ -92,13 +81,13 @@
         } else if (Array.isArray(hs.onPickup) && hs.onPickup.length) {
           await Actions.run(hs.onPickup);
         } else {
-          // Sin fallback genérico: si no hay onUse/onPickup, no decimos nada.
+          await Actions.run([{ type: "showText", text: "No puedes usar eso ahora." }]);
         }
       } else {
         if (Array.isArray(hs.onUseFail) && hs.onUseFail.length) {
           await Actions.run(hs.onUseFail);
         } else {
-          // Sin fallback genérico cuando falla condición y no hay onUseFail.
+          await Actions.run([{ type: "showText", text: "Está bloqueado por ahora." }]);
         }
       }
     } else if (verb === "look") {
@@ -109,11 +98,11 @@
       }
     }
 
-    renderAll(); // re-render tras acciones que cambien el estado
+    renderAll();
   }
 
   function onMouseMove(evt) {
-    if (isTransitioning) return; // sin hover durante fade
+    if (isTransitioning) return;
     const { x, y } = getMousePos(evt);
     const matches = allHotspotsUnderCursor(x, y);
     const newId = matches.length ? matches[0].id : null;
@@ -130,40 +119,62 @@
     }
   }
 
+  // ------- Render -------
   function drawBackground() {
     const scId = State.get().currentSceneId;
     const img = SceneManager.getBackgroundImage(scId);
     if (!img) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
   }
 
-  // -------- Overlay de hotspots (debug) --------
+  function pathFromShape(hs) {
+    const sh = hs.shape;
+    ctx.beginPath();
+    if (sh.type === "rect") {
+      ctx.rect(sh.x, sh.y, sh.w, sh.h);
+    } else if (sh.type === "circle") {
+      ctx.arc(sh.x, sh.y, sh.r, 0, Math.PI * 2);
+    } else if (sh.type === "polygon") {
+      const pts = sh.points;
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+    }
+  }
+
+  // Halo suave para el hotspot bajo el cursor (siempre visible, salvo modo foto)
+  function drawHoverHalo() {
+    if (PHOTO_MODE) return;
+    const sc = SceneManager.getScene(State.get().currentSceneId);
+    if (!sc || !hoveredHotspotId) return;
+    const hs = sc.hotspots.find(h => h.id === hoveredHotspotId);
+    if (!hs) return;
+
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(150,220,255,0.85)";
+    ctx.lineWidth = 6;
+    pathFromShape(hs);
+    ctx.stroke();
+
+    // leve relleno transparente
+    ctx.fillStyle = "rgba(150,220,255,0.12)";
+    pathFromShape(hs);
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawHotspotShape(hs, stroke, fill) {
     ctx.save();
     ctx.lineWidth = 2;
     ctx.strokeStyle = stroke;
     ctx.fillStyle = fill;
-
-    const sh = hs.shape;
-    if (sh.type === "rect") {
-      ctx.fillRect(sh.x, sh.y, sh.w, sh.h);
-      ctx.strokeRect(sh.x, sh.y, sh.w, sh.h);
-    } else if (sh.type === "circle") {
-      ctx.beginPath();
-      ctx.arc(sh.x, sh.y, sh.r, 0, Math.PI * 2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-    } else if (sh.type === "polygon") {
-      const pts = sh.points;
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-    }
+    pathFromShape(hs);
+    ctx.fill();
+    pathFromShape(hs);
+    ctx.stroke();
     ctx.restore();
   }
 
@@ -180,7 +191,7 @@
   }
 
   function drawHotspotsOverlay() {
-    if (!DEBUG_SHOW_HOTSPOTS) return;
+    if (!DEBUG_SHOW_HOTSPOTS || PHOTO_MODE) return;
 
     const scId = State.get().currentSceneId;
     const sc = SceneManager.getScene(scId);
@@ -190,14 +201,11 @@
     ctx.font = "14px system-ui, sans-serif";
     ctx.textBaseline = "top";
 
+    // Shapes
     for (const hs of sc.hotspots) {
       const enabled = SceneManager.isHotspotEnabled(scId, hs.id);
       const conds = SceneManager.evaluateConditions(hs.conditions || []);
 
-      // Colores:
-      // - Verde: habilitado y condiciones OK
-      // - Naranja: habilitado pero condiciones NO OK (fallará onUse)
-      // - Gris: deshabilitado
       let stroke, fill, labelColor;
       if (!enabled) {
         stroke = "rgba(160,160,160,0.9)";
@@ -231,15 +239,25 @@
       ctx.fillText(tag, c.x - tw / 2, c.y - th / 2);
     }
 
-    // Leyenda
-    const legendX = 16, legendY = 16;
+    // Leyenda (móvil izq/dcha)
     const lines = [
       ["Habilitado + OK", "rgba(50,220,130,0.95)"],
       ["Habilitado + condiciones NO", "rgba(255,165,0,0.95)"],
       ["Deshabilitado", "rgba(160,160,160,0.9)"],
-      ["F2: mostrar/ocultar overlay", "rgba(200,220,255,0.95)"]
+      ["F1: ayuda", "rgba(200,220,255,0.95)"],
+      ["F2: overlay hotspots", "rgba(200,220,255,0.95)"],
+      ["F3: leyenda izq/dcha", "rgba(200,255,200,0.95)"],
+      ["F6: modo foto", "rgba(255,220,220,0.95)"]
     ];
-    let y = legendY;
+
+    // medir ancho máximo
+    let maxTw = 0;
+    for (const [txt] of lines) { maxTw = Math.max(maxTw, ctx.measureText(txt).width); }
+    const P = 16; // padding lateral
+    const legendWidth = 22 + maxTw + 10; // cuadrito + gap + texto + margen
+    const legendX = LEGEND_RIGHT ? (canvas.width - legendWidth - P) : P;
+    let y = P;
+
     for (const [txt, col] of lines) {
       ctx.fillStyle = col;
       ctx.fillRect(legendX, y + 3, 14, 14);
@@ -250,7 +268,6 @@
 
     ctx.restore();
   }
-  // --------------------------------------------
 
   // -------- Fade overlay --------
   function drawFadeOverlay() {
@@ -262,9 +279,7 @@
     ctx.restore();
   }
 
-  function easeInOut(t) { // t: 0..1
-    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-  }
+  function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
   function animateFade(toAlpha, durationMs) {
     return new Promise((resolve) => {
@@ -280,53 +295,65 @@
       requestAnimationFrame(step);
     });
   }
-  // --------------------------------------------
 
   function renderAll() {
     drawBackground();
-    drawHotspotsOverlay(); // <- overlay de depuración
+    drawHoverHalo();     // <- halo del hotspot
+    drawHotspotsOverlay(); // <- overlay de depuración (si activo)
     drawFadeOverlay();     // <- overlay de transición
     UI.renderHUD(State.get(), SceneManager.getScene(State.get().currentSceneId));
   }
 
+  // ------- Init -------
   async function init() {
     try {
       await SceneManager.loadAll("data/items.json", "data/scenes.json");
 
-      // --- FIX: si la escena guardada no existe en el JSON actual, usa initialScene ---
-      const saved = State.get().currentSceneId;
-      const exists = saved && SceneManager.getScene(saved);
-      if (!exists) {
-        console.warn(`Engine: escena guardada inválida '${saved}', reseteo a initialScene.`);
-        State.setScene(SceneManager.initialSceneId());
-      }
-      // Si no había nada guardado, inicializa a initialScene
       if (!State.get().currentSceneId) {
         State.setScene(SceneManager.initialSceneId());
       }
-      // -------------------------------------------------------------------------------
 
-      UI.mountVerbBar({
-        verbs: ["look", "use"],
-        onSelect: setVerb
-      });
-      setVerb("use"); // por defecto
+      UI.mountVerbBar({ verbs: ["look", "use"], onSelect: setVerb });
+      setVerb("use");
 
       canvas.addEventListener("click", onClick);
       canvas.addEventListener("mousemove", onMouseMove);
 
-      // Teclado: Enter/Esc para diálogos
+      // Teclado: Enter/Esc para diálogos (delegado a UI)
       document.addEventListener("keydown", (e) => {
         if (!UI.isDialogOpen()) return;
-        if (e.key === "Enter") UI.clickDialogNext();
-        if (e.key === "Escape") UI.clickDialogNext();
+        if (e.key === "Enter" || e.key === "Escape") UI.clickDialogNext();
       });
 
-      // Toggle overlay con F2 (no interfiere con juego)
+      // Teclas globales
       document.addEventListener("keydown", (e) => {
+        // Ayuda rápida
+        if (e.key === "F1") {
+          UI.flashTooltip("F1 Ayuda · F2 Overlay · F3 Leyenda izq/dcha · F6 Modo foto · Enter/Esc avanzar diálogo");
+          e.preventDefault();
+          return;
+        }
+        // Overlay on/off
         if (e.key === "F2") {
           DEBUG_SHOW_HOTSPOTS = !DEBUG_SHOW_HOTSPOTS;
           renderAll();
+          return;
+        }
+        // Mover leyenda
+        if (e.key === "F3") {
+          LEGEND_RIGHT = !LEGEND_RIGHT;
+          try { localStorage.setItem("LEGEND_POS_RIGHT", LEGEND_RIGHT ? "1" : "0"); } catch(_){}
+          UI.flashTooltip(`Leyenda: ${LEGEND_RIGHT ? "derecha" : "izquierda"}`);
+          renderAll();
+          return;
+        }
+        // Modo foto
+        if (e.key === "F6") {
+          PHOTO_MODE = !PHOTO_MODE;
+          document.body.classList.toggle("photo", PHOTO_MODE);
+          UI.flashTooltip(`Modo foto ${PHOTO_MODE ? "activado" : "desactivado"}`);
+          renderAll();
+          return;
         }
       });
 
@@ -343,11 +370,10 @@
       const sc = SceneManager.getScene(sceneId);
       if (!sc) throw new Error(`actions.gotoScene: escena inexistente '${sceneId}'`);
 
-      // Fade-out → cambio de escena → Fade-in
       isTransitioning = true;
       await animateFade(1, 280);
       State.setScene(sceneId);
-      renderAll(); // mostrar nueva escena con overlay al 100%
+      renderAll();
       await animateFade(0, 320);
       isTransitioning = false;
       return true;
@@ -356,7 +382,6 @@
   };
   window.Engine = Engine;
 
-  // Arranque
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {

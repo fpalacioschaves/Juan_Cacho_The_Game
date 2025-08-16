@@ -1,73 +1,72 @@
 "use strict";
 
-(function () {
-  const STORAGE_KEY = "STATE_V1";
-  const VERSION = 1;
+const State = (function(){
+  const KEY = "STATE_V1";
+  let data = null;
 
-  function defaultState() {
+  function defaultState(){
     return {
-      version: VERSION,
-      currentSceneId: "",
+      currentSceneId: null,
       inventory: [],
       flags: {}
     };
   }
 
-  function load() {
+  function load(){
+    if (data) return data;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return defaultState();
-      const data = JSON.parse(raw);
-      if (data.version !== VERSION) {
-        console.warn("STATE_V1: versión incompatible. Reset.");
-        return defaultState();
-      }
-      if (!Array.isArray(data.inventory)) data.inventory = [];
-      if (typeof data.flags !== "object" || !data.flags) data.flags = {};
-      if (typeof data.currentSceneId !== "string") data.currentSceneId = "";
-      return data;
-    } catch {
-      return defaultState();
+      const raw = localStorage.getItem(KEY);
+      if (!raw) data = defaultState();
+      else data = JSON.parse(raw);
+    } catch (_) {
+      data = defaultState();
     }
+    save();
+    return data;
   }
 
-  let state = load();
-
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(_){}
   }
 
-  const api = {
-    get() { return state; },
-    setScene(id) { state.currentSceneId = id; save(); },
-    addItem(id) {
-      if (!state.inventory.includes(id)) {
-        state.inventory.push(id);
-        save();
-      }
-    },
-    removeItem(id) {
-      const idx = state.inventory.indexOf(id);
-      if (idx >= 0) {
-        state.inventory.splice(idx, 1);
-        save();
-      }
-    },
-    hasItem(id) { return state.inventory.includes(id); },
-    setFlag(name, value) { state.flags[name] = value; save(); },
-    getFlag(name) { return state.flags[name]; },
+  function setScene(id){
+    load();
+    data.currentSceneId = id;
+    save();
+  }
 
-    isHotspotEnabled(sceneId, hsId) {
-      const key = `hs_disabled:${sceneId}:${hsId}`;
-      return state.flags[key] !== true;
-    },
-    setHotspotEnabled(sceneId, hsId, enabled) {
-      const key = `hs_disabled:${sceneId}:${hsId}`;
-      if (enabled) delete state.flags[key];
-      else state.flags[key] = true;
-      save();
-    }
+  function addItem(itemId){
+    load();
+    if (!data.inventory.includes(itemId)) data.inventory.push(itemId);
+    save();
+  }
+
+  function removeItem(itemId){
+    load();
+    data.inventory = data.inventory.filter(x => x !== itemId);
+    save();
+  }
+
+  function hasItem(itemId){
+    load();
+    return data.inventory.includes(itemId);
+  }
+
+  function setFlag(name, value){
+    load();
+    data.flags[name] = value;
+    save();
+  }
+
+  function getFlag(name){
+    load();
+    return data.flags[name];
+  }
+
+  return {
+    get: load,
+    setScene,
+    addItem, removeItem, hasItem,
+    setFlag, getFlag
   };
-
-  window.State = api;
 })();

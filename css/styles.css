@@ -1,71 +1,173 @@
-:root {
-  --bg: #0e0f12;
-  --panel: #171a21;
-  --text: #e8ecf1;
-  --muted: #9aa3ad;
-  --accent: #3aa0ff;
-  --hot: #ffd166;
-  --danger: #ff4d4f;
-}
-
+/* Reset mínimo y layout base */
 * { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+html, body { margin:0; padding:0; height:100%; }
 
-#game { width: 1280px; margin: 16px auto; position: relative; }
-#scene { display: block; width: 1280px; height: 720px; background: #111; border: 1px solid #222; }
+/* Altura de la barra inferior (estilo SCUMM) */
+:root { --hud-h: 160px; }
 
+#game {
+  position: relative;
+  width: 1280px;
+  margin: 0 auto;
+  /* Alto automático: canvas (720px) + HUD en flujo */
+}
+
+/* Zona jugable fija (no se tapa) */
+#scene {
+  position: relative;            /* para la viñeta/grano en ::after */
+  display: block;
+  width: 100%;
+  height: 720px;
+  background: #000;
+}
+
+/* --- Tokens base (se sobreescriben por tema) --- */
+:root,
+body[class^="theme-"] {
+  --bg: #0b0b0b; --fg: #ececec; --muted: #999; --accent: #e94444; --accent-2: #aaa;
+  --panel: rgba(0,0,0,.75); --panel-border: rgba(255,255,255,.08);
+  --btn: #1b1b1b; --btn-fg: #ececec; --btn-hover: #242424;
+  --tooltip-bg: #000; --tooltip-fg: #fff; --tooltip-border: #555;
+}
+body { background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+
+/* ===== HUD (en flujo, debajo del canvas) ===== */
 #hud {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 8px 12px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6));
-  display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end;
-  pointer-events: none;
+  position: relative;
+  height: var(--hud-h);
+  display: grid;
+  grid-template-columns: 220px 1fr; /* Columna verbos | Inventario */
+  align-items: start;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-top: 2px solid var(--panel-border);
+  backdrop-filter: saturate(120%) blur(2px);
 }
 
-#verb-bar { pointer-events: auto; display: inline-flex; gap: 8px; }
+/* Verbos en columna */
+#verb-bar { display: grid; grid-auto-rows: 40px; align-content: start; gap: 8px; }
 #verb-bar button {
-  background: var(--panel); color: var(--text); border: 1px solid #2a2f3a; padding: 6px 10px; border-radius: 10px;
-  cursor: pointer; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  background: var(--btn); color: var(--btn-fg);
+  border:1px solid var(--panel-border);
+  padding:8px 12px; border-radius:8px; cursor:pointer;
+  text-transform: uppercase; letter-spacing: .02em;
 }
-#verb-bar button.active { outline: 2px solid var(--accent); border-color: var(--accent); }
+#verb-bar button:hover { background: var(--btn-hover); }
+#verb-bar button[aria-pressed="true"] { outline:2px solid var(--accent); outline-offset:2px; }
 
+/* Inventario en rejilla, con scroll si crece */
 #inventory {
-  pointer-events: auto;
-  display: flex;
-  gap: 8px;
-  justify-self: end;
-
-  /* Scroll horizontal cuando crezca */
-  max-width: 50vw;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  grid-auto-rows: 56px;
+  align-content: start;
+  gap: 10px;
+  overflow: auto;
+  height: calc(var(--hud-h) - 24px); /* resta padding vertical del HUD */
+  padding-right: 8px;
 }
+#inventory::-webkit-scrollbar { height:8px; width:8px; }
+#inventory::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius:8px; }
+
 #inventory button {
-  width: 48px; height: 48px; border-radius: 10px; overflow: hidden; border: 1px solid #2a2f3a; background: var(--panel);
-  display: grid; place-items: center; cursor: pointer;
+  background: var(--btn);
+  border:1px solid var(--panel-border);
+  border-radius:10px;
+  padding:6px; width:100%; height:100%;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transform: translateZ(0);
 }
-#inventory button img { max-width: 42px; max-height: 42px; display: block; }
-#inventory button:focus { outline: 2px solid var(--accent); }
+#inventory button:focus { outline:2px solid var(--accent-2); outline-offset:2px; }
+#inventory img { display:block; width:32px; height:32px; image-rendering: -webkit-optimize-contrast; }
 
+/* Pop al añadir ítem */
+@keyframes inv-bump { 0%{transform:scale(1)} 40%{transform:scale(1.15)} 100%{transform:scale(1)} }
+#inventory button.bump { animation: inv-bump 220ms ease-out; }
+
+/* Tooltip (ayuda breve), discreto dentro del HUD */
 #tooltip {
-  position: absolute; left: 12px; bottom: 68px; min-height: 22px; padding: 2px 8px;
-  background: rgba(0,0,0,0.55); border: 1px solid #2a2f3a; border-radius: 8px;
-  color: var(--muted); font-size: 13px; pointer-events: none;
+  align-self: end;
+  grid-column: 1 / span 2;
+  margin-top: 4px;
+  padding:4px 8px; border-radius:8px;
+  background: var(--tooltip-bg); color: var(--tooltip-fg);
+  border:1px solid var(--tooltip-border);
+  min-height: 24px; max-width: 100%;
 }
 
-#dialog[hidden] { display: none; }
+/* ===== Línea de mensaje (#dialog) — flotando sobre el canvas ===== */
 #dialog {
-  position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.45);
+  position:absolute; left:16px; right:16px;
+  bottom: calc(var(--hud-h) + 12px);
+  background: var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:10px; padding:10px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
 }
-#dialog > div {
-  background: var(--panel); border: 1px solid #2a2f3a; border-radius: 14px; padding: 16px; max-width: 70ch;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-#dialog-text { margin-bottom: 12px; line-height: 1.4; }
+#dialog[hidden] { display:none; }
+#dialog-text { font-family: Georgia, "Times New Roman", serif; line-height:1.35; color: var(--fg); }
 #dialog-next {
-  background: var(--accent); color: #001426; border: none; border-radius: 10px; padding: 8px 14px; cursor: pointer; font-weight: 700;
+  float: right;
+  margin-top: 6px; margin-left: 10px;
+  background: var(--btn); color: var(--btn-fg);
+  border:1px solid var(--panel-border);
+  padding:6px 10px; border-radius:8px; cursor:pointer;
+}
+#dialog-next:hover { background: var(--btn-hover); }
+
+/* Cursor activo sobre hotspot (lo activa UI.setHotCursor) */
+body.hot #scene { cursor: pointer; }
+
+/* ===== Modo foto (F6): oculta HUD y diálogo ===== */
+body.photo #hud { display: none; }
+body.photo #dialog { display: none; }
+
+/* ===== TEMAS ===== */
+
+/* A: Noir de barrio */
+body.theme-noir {
+  --bg: #111; --fg: #eaeaea; --muted: #6c757d; --accent: #d7263d; --accent-2: #9a1f2c;
+  --panel: rgba(20,20,20,.85); --panel-border: rgba(255,255,255,.08);
+  --btn: #1e1e1e; --btn-fg: #eaeaea; --btn-hover: #2a2a2a;
+  --tooltip-bg: #000; --tooltip-fg: #fff; --tooltip-border: #d7263d;
 }
 
-body.hot, body.hot * { cursor: pointer !important; }
+/* Viñeta + grano SOLO sobre la escena */
+body.theme-noir #scene::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(120% 80% at 50% 60%, rgba(0,0,0,.35), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, repeat;
+  background-size: 100% 100%, 64px 64px;
+  mix-blend-mode: overlay;
+  opacity: .22;
+}
 
-button { color: inherit; }
-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* B: Cartel academia 90s */
+body.theme-academia {
+  --bg: #0b0e14; --fg: #f2f2f2; --muted: #a8b2c1; --accent: #16a085; --accent-2: #ffd166;
+  --panel: rgba(15,18,26,.82); --panel-border: rgba(22,160,133,.25);
+  --btn: #13202c; --btn-fg: #e8ffff; --btn-hover: #173042;
+  --tooltip-bg: #09131b; --tooltip-fg: #eafff7; --tooltip-border: #16a085;
+}
+
+/* C: Minimal matemático */
+body.theme-minimal {
+  --bg: #f7f7f5; --fg: #0f172a; --muted: #5f6c7b; --accent: #3a86ff; --accent-2: #89c2ff;
+  --panel: rgba(255,255,255,.92); --panel-border: rgba(0,32,96,.10);
+  --btn: #e9eef7; --btn-fg: #0f172a; --btn-hover: #dde6f6;
+  --tooltip-bg: #0f172a; --tooltip-fg: #e6f0ff; --tooltip-border: #3a86ff;
+}
+
+/* D: Bar castizo */
+body.theme-castizo {
+  --bg: #12100e; --fg: #f1e9da; --muted: #c4b8a6; --accent: #a58d5f; --accent-2: #1c6b4a;
+  --panel: rgba(18,16,14,.86); --panel-border: rgba(165,141,95,.28);
+  --btn: #2a241c; --btn-fg: #f1e9da; --btn-hover: #3a3125;
+  --tooltip-bg: #0e0c0a; --tooltip-fg: #fff7e6; --tooltip-border: #a58d5f;
+}

@@ -2,212 +2,163 @@
 
 /* global State */
 
-(function () {
-  const allowedVerbs = new Set(["look", "use"]);
-  const allowedActionTypes = new Set([
-    "showText", "giveItem", "removeItem", "setFlag",
-    "gotoScene", "disableHotspot", "enableHotspot",
-    "if"
-  ]);
+const SceneManager = (function(){
+  let itemsCatalog = null;
+  let scenes = [];
+  let initialScene = null;
 
-  let itemsById = new Map();
-  let scenesById = new Map();
-  let backgrounds = new Map();
-  let initialScene = "";
+  const bgImages = new Map();               // sceneId -> Image
+  const disabledByScene = new Map();        // sceneId -> Set(hotspotId)
 
-  function currentSceneId() { return State.get().currentSceneId; }
+  function initialSceneId(){ return initialScene; }
 
-  function assert(cond, message) {
-    if (!cond) throw new Error(message);
+  function getScene(id){
+    return scenes.find(s => s.id === id) || null;
   }
 
-  function loadImageOrFail(src, kind, id) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error(`Recurso faltante (${kind}): '${src}' (id: ${id})`));
-      img.src = src;
-    });
+  function currentSceneId(){
+    return State.get().currentSceneId;
   }
 
-  function idIsValid(id) {
-    return /^[a-z0-9\-_]+$/.test(id);
+  function isHotspotEnabled(sceneId, hotspotId){
+    const set = disabledByScene.get(sceneId);
+    if (!set) return true;
+    return !set.has(hotspotId);
   }
 
-  function validateItems(itemsDoc) {
-    assert(itemsDoc && itemsDoc.$schema === "items.schema.v1", "items.json: $schema inválido o ausente");
-    assert(Array.isArray(itemsDoc.items), "items.json: 'items' debe ser un array");
-
-    const seen = new Set();
-    return Promise.all(itemsDoc.items.map(async (it, idx) => {
-      assert(typeof it.id === "string" && idIsValid(it.id), `items.json: id inválido en índice ${idx}`);
-      assert(!seen.has(it.id), `items.json: id duplicado '${it.id}'`);
-      seen.add(it.id);
-      assert(typeof it.name === "string" && it.name.length > 0, `items.json: name inválido '${it.id}'`);
-      assert(typeof it.icon === "string" && it.icon.startsWith("images/items/"), `items.json: icon debe estar en 'images/items/' (id ${it.id})`);
-      assert(typeof it.description === "string", `items.json: description inválida (id ${it.id})`);
-      const img = await loadImageOrFail(it.icon, "icono de item", it.id);
-      itemsById.set(it.id, { ...it, _img: img });
-    }));
+  function disableHotspot(sceneId, hotspotId){
+    if (!disabledByScene.has(sceneId)) disabledByScene.set(sceneId, new Set());
+    disabledByScene.get(sceneId).add(hotspotId);
   }
 
-  function indexScenes(scDoc) {
-    const ids = new Set();
-    for (const sc of scDoc.scenes) {
-      assert(typeof sc.id === "string" && idIsValid(sc.id), "scenes.json: id de escena inválido");
-      assert(!ids.has(sc.id), `scenes.json: id de escena duplicado '${sc.id}'`);
-      ids.add(sc.id);
-      scenesById.set(sc.id, sc);
-    }
+  function enableHotspot(sceneId, hotspotId){
+    if (!disabledByScene.has(sceneId)) disabledByScene.set(sceneId, new Set());
+    disabledByScene.get(sceneId).delete(hotspotId);
   }
 
-  function validateShape(hs) {
-    assert(hs && typeof hs.id === "string" && idIsValid(hs.id), "Hotspot: id inválido");
-    assert(hs.shape && typeof hs.shape === "object", `Hotspot '${hs.id}': shape ausente`);
-    const sh = hs.shape;
-    assert(["rect", "circle", "polygon"].includes(sh.type), `Hotspot '${hs.id}': shape.type inválido`);
-    if (sh.type === "rect") {
-      for (const k of ["x","y","w","h"]) assert(Number.isFinite(sh[k]), `Hotspot '${hs.id}': rect.${k} inválido`);
-    } else if (sh.type === "circle") {
-      for (const k of ["x","y","r"]) assert(Number.isFinite(sh[k]), `Hotspot '${hs.id}': circle.${k} inválido`);
-    } else if (sh.type === "polygon") {
-      assert(Array.isArray(sh.points) && sh.points.length >= 3, `Hotspot '${hs.id}': polygon.points inválido`);
-      for (const p of sh.points) assert(Array.isArray(p) && p.length === 2 && p.every(Number.isFinite), `Hotspot '${hs.id}': polygon punto inválido`);
-    }
+  function getBackgroundImage(sceneId){
+    return bgImages.get(sceneId);
   }
 
-  function validateVerbs(hs) {
-    assert(Array.isArray(hs.verb), `Hotspot '${hs.id}': verb debe ser array`);
-    for (const v of hs.verb) assert(allowedVerbs.has(v), `Hotspot '${hs.id}': verbo no permitido '${v}'`);
+  function getItem(itemId){
+    if (!itemsCatalog) return null;
+    return itemsCatalog.items.find(i => i.id === itemId) || null;
   }
 
-  function validateConditions(conds) {
-    if (!conds) return;
-    assert(Array.isArray(conds), "conditions debe ser array");
-    for (const c of conds) {
-      const isFlag = typeof c.flag === "string" && ("equals" in c);
-      const isHasItem = typeof c.hasItem === "string";
-      assert(isFlag || isHasItem, "conditions: condición inválida (usa {flag, equals} o {hasItem})");
-    }
-  }
-
-  function validateAction(action, sceneId) {
-    assert(action && typeof action.type === "string" && allowedActionTypes.has(action.type),
-      `Acción inválida en escena '${sceneId}': type='${action?.type}'`);
-
-    if (action.type === "giveItem" || action.type === "removeItem") {
-      assert(typeof action.itemId === "string" && itemsById.has(action.itemId),
-        `Acción ${action.type}: itemId inexistente '${action.itemId}' en escena '${sceneId}'`);
-    }
-    if (action.type === "gotoScene") {
-      assert(typeof action.id === "string" && scenesById.has(action.id),
-        `Acción gotoScene: escena inexistente '${action.id}' referenciada desde '${sceneId}'`);
-    }
-    if (action.type === "disableHotspot" || action.type === "enableHotspot") {
-      assert(typeof action.id === "string", `Acción ${action.type}: requiere 'id' de hotspot`);
-      const sc = scenesById.get(sceneId);
-      const exists = sc.hotspots.some(h => h.id === action.id);
-      assert(exists, `Acción ${action.type}: hotspot inexistente '${action.id}' en escena '${sceneId}'`);
-    }
-    if (action.type === "if") {
-      assert(action.condition && typeof action.condition === "object", "Acción if: condición ausente");
-      const cond = action.condition;
-      const isHasItem = typeof cond.hasItem === "string";
-      const isFlag = typeof cond.flag === "string" && ("equals" in cond);
-      assert(isHasItem || isFlag, "Acción if: condición inválida (usa {hasItem} o {flag, equals})");
-      if (isHasItem) assert(itemsById.has(cond.hasItem), `Acción if: hasItem a item inexistente '${cond.hasItem}'`);
-      assert(Array.isArray(action.then), "Acción if: 'then' debe ser array");
-      assert(Array.isArray(action.else) || action.else === undefined, "Acción if: 'else' debe ser array o ausente");
-      for (const a of action.then) validateAction(a, sceneId);
-      if (Array.isArray(action.else)) for (const a of action.else) validateAction(a, sceneId);
-    }
-  }
-
-  function validateScene(sc) {
-    assert(sc.background && typeof sc.background === "string", `Escena '${sc.id}': background ausente`);
-    const expected = `images/backgrounds/${sc.id}.jpg`;
-    assert(sc.background === expected, `Escena '${sc.id}': background debe ser '${expected}'`);
-    assert(Array.isArray(sc.hotspots), `Escena '${sc.id}': hotspots debe ser array`);
-
-    const seenHs = new Set();
-    for (const hs of sc.hotspots) {
-      validateShape(hs);
-      validateVerbs(hs);
-      assert(!seenHs.has(hs.id), `Escena '${sc.id}': hotspot duplicado '${hs.id}'`);
-      seenHs.add(hs.id);
-      if (hs.conditions) validateConditions(hs.conditions);
-    }
-  }
-
-  function validateHandlers(sc) {
-    const fields = ["onLook", "onUse", "onPickup", "onUseFail"];
-    for (const hs of sc.hotspots) {
-      for (const f of fields) {
-        const arr = hs[f];
-        if (arr === undefined) continue;
-        assert(Array.isArray(arr), `Escena '${sc.id}', hotspot '${hs.id}': ${f} debe ser array`);
-        for (const a of arr) validateAction(a, sc.id);
+  // ---- Conditions
+  function evaluateConditions(conditions){
+    if (!conditions || !conditions.length) return true;
+    for (const c of conditions){
+      // { flag: "name", equals: true/false/number/string }
+      if (Object.prototype.hasOwnProperty.call(c, "flag")) {
+        const v = State.get().flags[c.flag];
+        if (c.equals !== undefined) {
+          if (v !== c.equals) return false;
+        } else if (!v) {
+          return false;
+        }
       }
-    }
-  }
-
-  function evaluateConditions(conditions) {
-    if (!conditions || conditions.length === 0) return true;
-    for (const c of conditions) {
-      if (typeof c.hasItem === "string") {
-        if (!State.hasItem(c.hasItem)) return false;
-      } else if (typeof c.flag === "string" && "equals" in c) {
-        const v = State.getFlag(c.flag);
-        if (v !== c.equals) return false;
-      } else {
-        return false;
+      // { hasItem: "itemId" }
+      if (Object.prototype.hasOwnProperty.call(c, "hasItem")) {
+        if (!State.get().inventory.includes(c.hasItem)) return false;
       }
     }
     return true;
   }
 
-  async function loadAll(itemsPath, scenesPath) {
-    itemsById.clear(); scenesById.clear(); backgrounds.clear(); initialScene = "";
+  // ---- Validation helpers
+  function assert(cond, msg){ if (!cond) throw new Error(msg); }
 
-    const [itemsRes, scenesRes] = await Promise.all([
-      fetch(itemsPath),
-      fetch(scenesPath)
-    ]);
-    if (!itemsRes.ok) throw new Error(`No se pudo cargar ${itemsPath}`);
-    if (!scenesRes.ok) throw new Error(`No se pudo cargar ${scenesPath}`);
-
-    const itemsDoc = await itemsRes.json();
-    await validateItems(itemsDoc);
-
-    const scDoc = await scenesRes.json();
-    assert(scDoc && scDoc.$schema === "scenes.schema.v1", "scenes.json: $schema inválido o ausente");
-    assert(typeof scDoc.initialScene === "string", "scenes.json: initialScene inválido");
-    assert(Array.isArray(scDoc.scenes), "scenes.json: 'scenes' debe ser array");
-
-    indexScenes(scDoc);
-    initialScene = scDoc.initialScene;
-    assert(scenesById.has(initialScene), `scenes.json: initialScene '${initialScene}' no existe en 'scenes'`);
-
-    for (const sc of scDoc.scenes) validateScene(sc);
-
-    await Promise.all(scDoc.scenes.map(async sc => {
-      const img = await loadImageOrFail(sc.background, "fondo de escena", sc.id);
-      backgrounds.set(sc.id, img);
-    }));
-
-    for (const sc of scDoc.scenes) validateHandlers(sc);
+  async function loadJSON(url){
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`No se pudo cargar ${url} (${res.status})`);
+    return res.json();
   }
 
-  const api = {
+  function validateItems(json){
+    assert(json && Array.isArray(json.items), "items.json inválido: falta array 'items'");
+    const ids = new Set();
+    for (const it of json.items){
+      assert(typeof it.id === "string" && it.id, "Item sin 'id'");
+      assert(!ids.has(it.id), `Item duplicado '${it.id}'`);
+      ids.add(it.id);
+      assert(typeof it.icon === "string" && it.icon.startsWith("images/items/"), `Icono inválido en '${it.id}'`);
+    }
+  }
+
+  function validateScenes(json){
+    assert(typeof json.initialScene === "string" && json.initialScene, "scenes.json inválido: falta 'initialScene'");
+    assert(Array.isArray(json.scenes), "scenes.json inválido: falta array 'scenes'");
+    const ids = new Set();
+    for (const sc of json.scenes){
+      assert(sc.id && typeof sc.id === "string", "Escena sin 'id'");
+      assert(!ids.has(sc.id), `Escena duplicada '${sc.id}'`);
+      ids.add(sc.id);
+      assert(typeof sc.background === "string" && sc.background.startsWith("images/backgrounds/"), `Background inválido en escena '${sc.id}'`);
+      assert(Array.isArray(sc.hotspots), `Escena '${sc.id}' sin 'hotspots' array`);
+      for (const hs of sc.hotspots){
+        assert(hs.id && typeof hs.id === "string", `Hotspot sin id en escena '${sc.id}'`);
+        assert(hs.shape && typeof hs.shape.type === "string", `Hotspot '${hs.id}' sin 'shape.type'`);
+        const t = hs.shape.type;
+        if (t === "rect") {
+          assert(["x","y","w","h"].every(k => typeof hs.shape[k] === "number"), `Rect mal definido en '${hs.id}'`);
+        } else if (t === "circle") {
+          assert(["x","y","r"].every(k => typeof hs.shape[k] === "number"), `Circle mal definido en '${hs.id}'`);
+        } else if (t === "polygon") {
+          assert(Array.isArray(hs.shape.points) && hs.shape.points.length >= 3, `Polygon mal definido en '${hs.id}'`);
+        } else {
+          throw new Error(`shape.type desconocido '${t}' en '${hs.id}'`);
+        }
+        // verbs
+        assert(Array.isArray(hs.verb), `Hotspot '${hs.id}' sin 'verb' array`);
+      }
+    }
+  }
+
+  async function preloadImage(path){
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`No se pudo cargar imagen: ${path}`));
+      img.src = path;
+    });
+  }
+
+  async function loadAll(itemsUrl, scenesUrl){
+    const [items, scn] = await Promise.all([loadJSON(itemsUrl), loadJSON(scenesUrl)]);
+    validateItems(items);
+    validateScenes(scn);
+    itemsCatalog = items;
+    scenes = scn.scenes;
+    initialScene = scn.initialScene;
+
+    // preload backgrounds
+    await Promise.all(scenes.map(sc =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => { bgImages.set(sc.id, img); resolve(true); };
+        img.onerror = () => reject(new Error(`Falta background '${sc.background}' para escena '${sc.id}'`));
+        img.src = sc.background;
+      })
+    ));
+
+    // init disabled sets
+    scenes.forEach(sc => disabledByScene.set(sc.id, new Set()));
+
+    console.log("%cCarga OK", "color: #1bdc7a", { items, scenesCount: scenes.length });
+    return true;
+  }
+
+  return {
     loadAll,
-    getItem: id => itemsById.get(id),
-    getScene: id => scenesById.get(id),
-    initialSceneId: () => initialScene,
-    getBackgroundImage: sceneId => backgrounds.get(sceneId),
+    initialSceneId,
     currentSceneId,
-    isHotspotEnabled: (sceneId, hsId) => State.isHotspotEnabled(sceneId, hsId),
+    getScene,
+    getBackgroundImage,
+    isHotspotEnabled,
+    disableHotspot,
+    enableHotspot,
+    getItem,
     evaluateConditions
   };
-
-  window.SceneManager = api;
 })();
