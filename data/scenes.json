@@ -4,11 +4,11 @@
   "scenes": [
     {
       "id": "dormitorio_juan",
-      "background": "images/backgrounds/dormitorio_juan.jpg",
+      "background": "images/backgrounds/dormitorio_juan.png",
       "hotspots": [
         {
           "id": "ropa_suelo",
-          "shape": { "type": "rect", "x": 500, "y": 600, "w": 220, "h": 80 },
+          "shape": { "type": "rect", "x": 1000, "y": 550, "w": 220, "h": 80 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:ropa_desc] Montones de ropa por el suelo. ::: Ropa tirada." }
@@ -19,7 +19,7 @@
         },
         {
           "id": "mesilla",
-          "shape": { "type": "rect", "x": 620, "y": 520, "w": 120, "h": 80 },
+          "shape": { "type": "rect", "x": 864, "y": 424, "w": 120, "h": 80 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:mesilla_desc] Mesilla con polvo y un vaso de agua a medias. ::: La mesilla." }
@@ -40,7 +40,7 @@
         },
         {
           "id": "poster_escher",
-          "shape": { "type": "rect", "x": 80, "y": 80, "w": 260, "h": 180 },
+          "shape": { "type": "rect", "x": 860, "y": 100, "w": 100, "h": 140 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:poster_escher] Un póster de Escher. Escaleras imposibles, como la vida de Juan. ::: Póster de Escher." }
@@ -51,7 +51,7 @@
         },
         {
           "id": "retrato_madre",
-          "shape": { "type": "rect", "x": 980, "y": 80, "w": 220, "h": 180 },
+          "shape": { "type": "rect", "x": 940, "y": 340, "w": 50, "h": 80 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:retrato_madre] Su madre, seria pero cálida. ::: El retrato." }
@@ -62,7 +62,7 @@
         },
         {
           "id": "poster_matematicos",
-          "shape": { "type": "rect", "x": 360, "y": 90, "w": 220, "h": 160 },
+          "shape": { "type": "rect", "x": 660, "y": 100, "w": 160, "h": 160 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:poster_mates] Póster con matemáticos ilustres garabateados con chistes internos. ::: Póster de matemáticos." }
@@ -73,7 +73,7 @@
         },
         {
           "id": "estanteria",
-          "shape": { "type": "rect", "x": 220, "y": 420, "w": 200, "h": 140 },
+          "shape": { "type": "rect", "x": 0, "y": 160, "w": 40, "h": 340 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:estanteria] Libros apilados de cualquier manera. Algunos de mates, otros novelas baratas. ::: Estantería caótica." }
@@ -84,7 +84,7 @@
         },
         {
           "id": "ventana_dormitorio",
-          "shape": { "type": "rect", "x": 860, "y": 120, "w": 100, "h": 120 },
+          "shape": { "type": "rect", "x": 1060, "y": 60, "w": 200, "h": 180 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:ventana_dorm] La ventana da a un patio silencioso. ::: La ventana." }
@@ -95,7 +95,7 @@
         },
         {
           "id": "alfombra",
-          "shape": { "type": "rect", "x": 460, "y": 520, "w": 120, "h": 60 },
+          "shape": { "type": "rect", "x": 260, "y": 580, "w": 420, "h": 60 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:alfombra] Alfombra vieja, áspera, pero cubre lo necesario. ::: La alfombra." }
@@ -106,7 +106,7 @@
         },
         {
           "id": "puerta_salon",
-          "shape": { "type": "rect", "x": 1040, "y": 260, "w": 180, "h": 240 },
+          "shape": { "type": "rect", "x": 1100, "y": 320, "w": 180, "h": 200 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_salon] La puerta al salón. ::: Al salón." }
@@ -115,7 +115,7 @@
         },
         {
           "id": "puerta_bano",
-          "shape": { "type": "rect", "x": 60, "y": 300, "w": 160, "h": 220 },
+          "shape": { "type": "rect", "x": 80, "y": 70, "w": 160, "h": 330 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_bano] La puerta del baño. ::: Al baño." }
@@ -124,7 +124,7 @@
         },
         {
           "id": "puerta_cocina",
-          "shape": { "type": "rect", "x": 560, "y": 60, "w": 160, "h": 160 },
+          "shape": { "type": "rect", "x": 0, "y": 540, "w": 160, "h": 160 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_cocina] Huele a café viejo. ::: A la cocina." }
@@ -280,11 +280,11 @@
     },
     {
       "id": "bano_juan",
-      "background": "images/backgrounds/bano_juan.jpg",
+      "background": "images/backgrounds/bano_juan.png",
       "hotspots": [
         {
           "id": "espejo",
-          "shape": { "type": "rect", "x": 520, "y": 120, "w": 240, "h": 160 },
+          "shape": { "type": "rect", "x": 220, "y": 140, "w": 120, "h": 160 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:espejo] Te ves con ojeras pero decidido. ::: El espejo." }
@@ -295,7 +295,7 @@
         },
         {
           "id": "toallas",
-          "shape": { "type": "rect", "x": 200, "y": 420, "w": 160, "h": 160 },
+          "shape": { "type": "rect", "x": 800, "y": 320, "w": 160, "h": 160 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:toallas] Toallas húmedas amontonadas. ::: Toallas." }
@@ -306,7 +306,7 @@
         },
         {
           "id": "ducha",
-          "shape": { "type": "rect", "x": 860, "y": 240, "w": 200, "h": 220 },
+          "shape": { "type": "rect", "x": 1080, "y": 100, "w": 180, "h": 420 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:ducha] La ducha gotea rítmicamente. ::: Ducha." }
@@ -317,7 +317,7 @@
         },
         {
           "id": "botiquin",
-          "shape": { "type": "rect", "x": 680, "y": 140, "w": 120, "h": 120 },
+          "shape": { "type": "rect", "x": 820, "y": 120, "w": 120, "h": 120 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:botiquin] Un botiquín medio vacío: tiritas y ibuprofeno. ::: Botiquín." }
@@ -328,7 +328,7 @@
         },
         {
           "id": "alfombrilla_bano",
-          "shape": { "type": "rect", "x": 540, "y": 520, "w": 200, "h": 80 },
+          "shape": { "type": "rect", "x": 1060, "y": 560, "w": 200, "h": 80 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:alfombrilla] Alfombrilla que no se seca desde 2008. ::: Alfombrilla." }
@@ -339,7 +339,7 @@
         },
         {
           "id": "puerta_salon",
-          "shape": { "type": "rect", "x": 40, "y": 260, "w": 160, "h": 240 },
+          "shape": { "type": "rect", "x": 0, "y": 100, "w": 160, "h": 540 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:volver_salon] Vuelves al salón. ::: Salón." }
@@ -350,11 +350,11 @@
     },
     {
       "id": "cocina_juan",
-      "background": "images/backgrounds/cocina_juan.jpg",
+      "background": "images/backgrounds/cocina_juan.png",
       "hotspots": [
         {
           "id": "platos_sucios",
-          "shape": { "type": "rect", "x": 880, "y": 520, "w": 180, "h": 120 },
+          "shape": { "type": "rect", "x": 1100, "y": 420, "w": 180, "h": 40 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:platos] Montaña de platos por fregar. ::: Platos sucios." }
@@ -365,7 +365,7 @@
         },
         {
           "id": "nota_academia",
-          "shape": { "type": "rect", "x": 260, "y": 240, "w": 160, "h": 80 },
+          "shape": { "type": "rect", "x": 580, "y": 180, "w": 60, "h": 60 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:nota_academia_desc] Post-it en la nevera: 'Pasar por la Academia'. ::: Nota de la academia." }
@@ -387,7 +387,7 @@
         },
         {
           "id": "nevera",
-          "shape": { "type": "rect", "x": 180, "y": 220, "w": 120, "h": 220 },
+          "shape": { "type": "rect", "x": 460, "y": 260, "w": 220, "h": 320 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:nevera] La nevera suena como un tractor, pero enfría. ::: Nevera." }
@@ -398,7 +398,7 @@
         },
         {
           "id": "cafe",
-          "shape": { "type": "rect", "x": 560, "y": 420, "w": 100, "h": 80 },
+          "shape": { "type": "rect", "x": 800, "y": 360, "w": 60, "h": 60 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:cafe] Cafetera pegajosa. Huele a lunes. ::: Cafetera." }
@@ -409,7 +409,7 @@
         },
         {
           "id": "microondas",
-          "shape": { "type": "rect", "x": 720, "y": 340, "w": 120, "h": 80 },
+          "shape": { "type": "rect", "x": 920, "y": 320, "w": 240, "h": 100 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:microondas] Un microondas con reloj adelantado cinco minutos. ::: Microondas." }
@@ -420,7 +420,7 @@
         },
         {
           "id": "ventana_cocina",
-          "shape": { "type": "rect", "x": 980, "y": 160, "w": 120, "h": 100 },
+          "shape": { "type": "rect", "x": 1020, "y": 20, "w": 220, "h": 280 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:ventana_cocina] Entra una luz que perdona. ::: Ventana." }
@@ -431,7 +431,7 @@
         },
         {
           "id": "puerta_salon",
-          "shape": { "type": "rect", "x": 40, "y": 260, "w": 160, "h": 220 },
+          "shape": { "type": "rect", "x": 40, "y": 60, "w": 260, "h": 520 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:volver_salon2] Al salón. ::: Salón." }
@@ -442,11 +442,11 @@
     },
     {
       "id": "portal",
-      "background": "images/backgrounds/portal.jpg",
+      "background": "images/backgrounds/portal.png",
       "hotspots": [
         {
           "id": "portera",
-          "shape": { "type": "rect", "x": 920, "y": 440, "w": 200, "h": 220 },
+          "shape": { "type": "rect", "x": 80, "y": 240, "w": 200, "h": 220 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -475,7 +475,7 @@
         },
         {
           "id": "vecinos_odon",
-          "shape": { "type": "rect", "x": 140, "y": 500, "w": 200, "h": 160 },
+          "shape": { "type": "rect", "x": 900, "y": 300, "w": 200, "h": 300 },
           "verb": ["look", "use"],
           "onUse": [
             { "type": "showText", "text": "[gl:odon] Odón y su mujer te saludan con prisa. ::: Saludo rápido." }
@@ -483,7 +483,7 @@
         },
         {
           "id": "vecinos_nieves_angel",
-          "shape": { "type": "rect", "x": 380, "y": 520, "w": 220, "h": 140 },
+          "shape": { "type": "rect", "x": 1110, "y": 310, "w": 120, "h": 140 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -500,7 +500,7 @@
         },
         {
           "id": "tablon_anuncios",
-          "shape": { "type": "rect", "x": 640, "y": 220, "w": 180, "h": 160 },
+          "shape": { "type": "rect", "x": 540, "y": 240, "w": 120, "h": 140 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:tablon] Tablón con papeletas de clases particulares, vecindad y un perro perdido. ::: Tablón de anuncios." }
@@ -511,7 +511,7 @@
         },
         {
           "id": "salir_calle",
-          "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
+          "shape": { "type": "rect", "x":0, "y": 360, "w": 70, "h": 340 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." }
@@ -537,7 +537,7 @@
         },
         {
           "id": "subir_casa",
-          "shape": { "type": "rect", "x": 40, "y": 300, "w": 140, "h": 200 },
+          "shape": { "type": "rect", "x": 700, "y": 220, "w": 160, "h": 300 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:volver_casa] Subes al piso. ::: Casa." }
@@ -548,11 +548,11 @@
     },
     {
       "id": "calle",
-      "background": "images/backgrounds/calle.jpg",
+      "background": "images/backgrounds/calle.png",
       "hotspots": [
         {
           "id": "ir_bar",
-          "shape": { "type": "rect", "x": 220, "y": 420, "w": 240, "h": 200 },
+          "shape": { "type": "rect", "x": 80, "y": 280, "w": 200, "h": 240 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'. ::: Al bar." }
@@ -561,7 +561,7 @@
         },
         {
           "id": "ir_academia",
-          "shape": { "type": "rect", "x": 820, "y": 420, "w": 240, "h": 200 },
+          "shape": { "type": "rect", "x":880, "y": 280, "w": 280, "h": 240 },
           "verb": ["look", "use"],
           "conditions": [ { "hasItem": "nota_academia" } ],
           "onLook": [
@@ -574,7 +574,7 @@
         },
         {
           "id": "volver_portal",
-          "shape": { "type": "rect", "x": 40, "y": 360, "w": 160, "h": 240 },
+          "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." }
@@ -585,11 +585,11 @@
     },
     {
       "id": "bar_dostercios",
-      "background": "images/backgrounds/bar_dostercios.jpg",
+      "background": "images/backgrounds/bar_dostercios.png",
       "hotspots": [
         {
           "id": "dudu",
-          "shape": { "type": "rect", "x": 260, "y": 420, "w": 180, "h": 200 },
+          "shape": { "type": "rect", "x": 500, "y": 280, "w": 140, "h": 140 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -641,7 +641,7 @@
         },
         {
           "id": "moro",
-          "shape": { "type": "rect", "x": 540, "y": 420, "w": 180, "h": 200 },
+          "shape": { "type": "rect", "x": 720, "y": 260, "w": 120, "h": 160 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -693,7 +693,7 @@
         },
         {
           "id": "gollina",
-          "shape": { "type": "rect", "x": 820, "y": 420, "w": 180, "h": 200 },
+          "shape": { "type": "rect", "x": 900, "y": 280, "w": 120, "h": 140 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -745,7 +745,7 @@
         },
         {
           "id": "tele_deportes",
-          "shape": { "type": "rect", "x": 100, "y": 140, "w": 200, "h": 120 },
+          "shape": { "type": "rect", "x": 1000, "y": 40, "w": 200, "h": 120 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:tele_bar] Un partido sin sonido. Todo el bar sabe cómo va sin mirar. ::: Tele encendida." }
@@ -756,7 +756,7 @@
         },
         {
           "id": "maquina_traga",
-          "shape": { "type": "rect", "x": 1080, "y": 460, "w": 160, "h": 200 },
+          "shape": { "type": "rect", "x": 0, "y": 260, "w": 140, "h": 200 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:tragaperras] Lucecitas hipnóticas. Mejor ni acercarse. ::: Máquina." }
@@ -767,7 +767,7 @@
         },
         {
           "id": "salir_calle",
-          "shape": { "type": "rect", "x": 1120, "y": 360, "w": 140, "h": 240 },
+          "shape": { "type": "rect", "x": 1080, "y": 200, "w": 140, "h": 340 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:bar_salir] Sales a la calle. ::: Calle." }
@@ -795,11 +795,11 @@
     },
     {
       "id": "academia",
-      "background": "images/backgrounds/academia.jpg",
+      "background": "images/backgrounds/academia.png",
       "hotspots": [
         {
           "id": "tablones",
-          "shape": { "type": "rect", "x": 220, "y": 200, "w": 220, "h": 160 },
+          "shape": { "type": "rect", "x": 420, "y": 160, "w": 180, "h": 120 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:tablones] Anuncios de clases, exámenes y horarios de verano. ::: Tablones." }
@@ -810,7 +810,7 @@
         },
         {
           "id": "folletos",
-          "shape": { "type": "rect", "x": 420, "y": 420, "w": 160, "h": 100 },
+          "shape": { "type": "rect", "x": 700, "y": 160, "w": 180, "h": 140 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:folletos] Folletos de cursos intensivos y descuentos. ::: Folletos." }
@@ -821,7 +821,7 @@
         },
         {
           "id": "jefe_academia",
-          "shape": { "type": "rect", "x": 760, "y": 400, "w": 240, "h": 220 },
+          "shape": { "type": "rect", "x": 560, "y": 300, "w": 180, "h": 80 },
           "verb": ["look", "use"],
           "onUse": [
             {
@@ -849,7 +849,7 @@
         },
         {
           "id": "salir_calle",
-          "shape": { "type": "rect", "x": 40, "y": 360, "w": 160, "h": 240 },
+          "shape": { "type": "rect", "x": 60, "y": 160, "w": 220, "h": 340 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." }
