@@ -46,7 +46,7 @@ Capítulo 1
 
 4) farmacia_barrio: Si hay mareo, se pueden comprar las vitaminas, en caso contrario no se puede. 
 
-5) academia_milagrosa: Tenemos que ir a la academia a que nos den los horarios de las clases. Si vuelves a ir a la academia llegando tarde (sin superar un puzzle en casa de Juan) : bronca. En caso contrario, no hay bronca y te da el horario de las clases. 
+5) academia_milagrosa: Tenemos que ir a la academia a que nos den los horarios de las clases. Si vuelves a ir a la academia llegando tarde (sin superar un puzzle en casa de Juan) : bronca, por lo que tendrás que rogar por favor que no te echen de la academia y que no se volverá a repetir. En caso contrario, no hay bronca y te da el horario de las clases. En la academia podrás ver a un alunno que te dirá que los baños tienen manchas de humedad (es una pista que nos servirá de puente para proximis capítulos)
 
 6) piso_odon / reunion_vecinos: Típicos diálogos de reunión de vecinos. Odón saca su tetera. Orgulloso de que la ha hecho él mismo. Avanza la reunión. Sirve el té. Remedios muere 
 
