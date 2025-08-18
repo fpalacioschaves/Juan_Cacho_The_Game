@@ -4,7 +4,7 @@
   "scenes": [
     {
       "id": "dormitorio_juan",
-      "background": "images/backgrounds/dormitorio_juan.png",
+      "background": "images/backgrounds/dormitorio_juan.jpg",
       "hotspots": [
         {
           "id": "ropa_suelo",
@@ -40,7 +40,7 @@
         },
         {
           "id": "despertador",
-          "shape": { "type": "rect", "x": 980, "y": 420, "w": 60, "h": 40 },
+          "shape": { "type": "rect", "x": 860, "y": 380, "w": 60, "h": 40 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:despertador_desc] Un despertador barato. Sin pilas no suena. ::: Despertador." }
@@ -179,6 +179,31 @@
             },
             { "type": "gotoScene", "id": "cocina_juan" }
           ]
+        },
+        {
+          "id": "salir_piso",
+          "shape": { "type": "rect", "x": 0, "y": 520, "w": 140, "h": 160 },
+          "verb": ["look", "use"],
+          "conditions": [ { "hasItem": "llaves_casa" } ],
+          "onLook": [
+            { "type": "showText", "text": "[gl:puerta_salida] La puerta de salida. ::: Salida." }
+          ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_portal_nota] Con la nota en la mano, la portera baja el ceño medio milímetro. ::: Portal en tregua." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_portal] Ecos, tacones y la portera en modo radar. ::: El portal." }
+              ]
+            },
+            { "type": "gotoScene", "id": "portal" }
+          ],
+          "onUseFail": [
+            { "type": "showText", "text": "[gl:sin_llaves] No puedes salir sin las llaves. ::: Falta la llave." }
+          ]
         }
       ]
     },
@@ -303,7 +328,12 @@
                 { "type": "showText", "text": "[gl:desc_dormitorio] El dormitorio huele a café viejo y decisiones pospuestas. ::: Tu cuarto, otra vez." }
               ]
             },
-            { "type": "gotoScene", "id": "dormitorio_juan" }
+            {
+              "type": "if",
+              "condition": { "flag": "cap0_fin_shown", "equals": true },
+              "then": [ { "type": "gotoScene", "id": "dormitorio_juan_c1" } ],
+              "else": [ { "type": "gotoScene", "id": "dormitorio_juan" } ]
+            }
           ]
         },
         {
@@ -650,7 +680,9 @@
                   "then": [],
                   "else": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
-                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
+                    { "type": "setFlag", "name": "capitulo", "value": 1 },
+                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
                   ]
                 }
               ]
@@ -966,7 +998,9 @@
                   "then": [],
                   "else": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
-                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
+                    { "type": "setFlag", "name": "capitulo", "value": 1 },
+                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
                   ]
                 }
               ]
@@ -1058,12 +1092,47 @@
                   "then": [],
                   "else": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
-                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true }
+                    { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
+                    { "type": "setFlag", "name": "capitulo", "value": 1 },
+                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
                   ]
                 }
               ]
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "dormitorio_juan_c1",
+      "background": "images/backgrounds/dormitorio_juan_c1.jpg",
+      "hotspots": [
+        {
+          "id": "puerta_salon",
+          "shape": { "type": "rect", "x": 1100, "y": 320, "w": 180, "h": 200 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:c1_salon_look] El salón te espera con la poca dignidad de los lunes. ::: Al salón." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+        },
+        {
+          "id": "puerta_bano",
+          "shape": { "type": "rect", "x": 80, "y": 70, "w": 160, "h": 330 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:c1_bano_look] El espejo sigue sin filtros. ::: Baño." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+        },
+        {
+          "id": "puerta_cocina",
+          "shape": { "type": "rect", "x": 0, "y": 540, "w": 160, "h": 160 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:c1_cocina_look] Huele a café que pide auxilio. ::: Cocina." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
         }
       ]
     }
