@@ -39,6 +39,28 @@
           ]
         },
         {
+          "id": "despertador",
+          "shape": { "type": "rect", "x": 980, "y": 420, "w": 60, "h": 40 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:despertador_desc] Un despertador barato. Sin pilas no suena. ::: Despertador." }
+          ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "pilas_aa" },
+              "then": [
+                { "type": "removeItem", "itemId": "pilas_aa" },
+                { "type": "setFlag", "name": "reloj_con_pilas", "value": true },
+                { "type": "showText", "text": "[gl:despertador_ok] Colocas las pilas. Emite un pitido breve. ::: Reloj listo." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:despertador_sin_pilas] Sin pilas no hará su trabajo y llegarás tarde. ::: Le faltan pilas." }
+              ]
+            }
+          ]
+        },
+        {
           "id": "poster_escher",
           "shape": { "type": "rect", "x": 860, "y": 100, "w": 100, "h": 140 },
           "verb": ["look", "use"],
@@ -762,7 +784,18 @@
             { "type": "showText", "text": "[gl:tragaperras] Lucecitas hipnóticas. Mejor ni acercarse. ::: Máquina." }
           ],
           "onUse": [
-            { "type": "showText", "text": "[gl:use_traga] La casa siempre gana. Tú, casi nunca. ::: Mejor no." }
+            {
+              "type": "if",
+              "condition": { "hasItem": "pilas_aa" },
+              "then": [
+                { "type": "showText", "text": "[gl:ya_tienes_pilas] Ya le sacaste las pilas a esta máquina. ::: Ya tienes pilas." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:sacas_pilas] Fuerzas la tapa y encuentras un par de pilas AA medio nuevas. ::: Pilas conseguidas." },
+                { "type": "giveItem", "itemId": "pilas_aa" },
+                { "type": "disableHotspot", "id": "maquina_traga" }
+              ]
+            }
           ]
         },
         {
