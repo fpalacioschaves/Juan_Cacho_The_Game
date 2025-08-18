@@ -133,7 +133,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_salon] La puerta al salón. ::: Al salón." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_salon_nota] La nota de la comunidad arde en el bolsillo más que el teletexto. ::: Llevas la nota." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_salon] El salón te mira con su sofá-trampa y el puzzle juzgador. ::: El salón te atrapa." }
+              ]
+            },
+            { "type": "gotoScene", "id": "salon_juan" }
+          ]
         },
         {
           "id": "puerta_bano",
@@ -142,7 +154,10 @@
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_bano] La puerta del baño. ::: Al baño." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+          "onUse": [
+            { "type": "showText", "text": "[gl:desc_bano] Azulejos sinceros y espejo cruel: medidor oficial de ojeras. ::: El baño de siempre." },
+            { "type": "gotoScene", "id": "bano_juan" }
+          ]
         },
         {
           "id": "puerta_cocina",
@@ -151,7 +166,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_cocina] Huele a café viejo. ::: A la cocina." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_academia" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_cocina_nota] El post-it de la academia te mira desde la nevera como un jefe pequeñito. ::: Cocina con aviso." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_cocina] Olor a café pasado y ciencia de supervivencia. ::: La cocina te perdona." }
+              ]
+            },
+            { "type": "gotoScene", "id": "cocina_juan" }
+          ]
         }
       ]
     },
@@ -265,7 +292,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:a_dormitorio] De vuelta al dormitorio. ::: Dormitorio." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "dormitorio_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "llaves_casa" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_dormitorio_llaves] Las llaves tintinean desde el bolsillo: hoy sí sales. ::: Llevas las llaves." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_dormitorio] El dormitorio huele a café viejo y decisiones pospuestas. ::: Tu cuarto, otra vez." }
+              ]
+            },
+            { "type": "gotoScene", "id": "dormitorio_juan" }
+          ]
         },
         {
           "id": "puerta_bano",
@@ -274,7 +313,10 @@
           "onLook": [
             { "type": "showText", "text": "[gl:a_bano] Al baño. ::: Baño." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+          "onUse": [
+            { "type": "showText", "text": "[gl:desc_bano] Azulejos sinceros y espejo cruel: medidor oficial de ojeras. ::: El baño de siempre." },
+            { "type": "gotoScene", "id": "bano_juan" }
+          ]
         },
         {
           "id": "puerta_cocina",
@@ -283,7 +325,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:a_cocina] A la cocina. ::: Cocina." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_academia" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_cocina_nota] El post-it de la academia te mira desde la nevera como un jefe pequeñito. ::: Cocina con aviso." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_cocina] Olor a café pasado y ciencia de supervivencia. ::: La cocina te perdona." }
+              ]
+            },
+            { "type": "gotoScene", "id": "cocina_juan" }
+          ]
         },
         {
           "id": "salir_piso",
@@ -293,7 +347,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_salida] La puerta de salida. ::: Salida." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "portal" } ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_portal_nota] Con la nota en la mano, la portera baja el ceño medio milímetro. ::: Portal en tregua." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_portal] Ecos, tacones y la portera en modo radar. ::: El portal." }
+              ]
+            },
+            { "type": "gotoScene", "id": "portal" }
+          ],
           "onUseFail": [
             { "type": "showText", "text": "[gl:sin_llaves] No puedes salir sin las llaves. ::: Falta la llave." }
           ]
@@ -366,7 +432,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:volver_salon] Vuelves al salón. ::: Salón." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_salon_nota] La nota de la comunidad arde en el bolsillo más que el teletexto. ::: Llevas la nota." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_salon] El salón te mira con su sofá-trampa y el puzzle juzgador. ::: El salón te atrapa." }
+              ]
+            },
+            { "type": "gotoScene", "id": "salon_juan" }
+          ]
         }
       ]
     },
@@ -458,7 +536,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:volver_salon2] Al salón. ::: Salón." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_salon_nota] La nota de la comunidad arde en el bolsillo más que el teletexto. ::: Llevas la nota." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_salon] El salón te mira con su sofá-trampa y el puzzle juzgador. ::: El salón te atrapa." }
+              ]
+            },
+            { "type": "gotoScene", "id": "salon_juan" }
+          ]
         }
       ]
     },
@@ -533,12 +623,22 @@
         },
         {
           "id": "salir_calle",
-          "shape": { "type": "rect", "x":0, "y": 360, "w": 70, "h": 340 },
+          "shape": { "type": "rect", "x": 0, "y": 360, "w": 70, "h": 340 },
           "verb": ["look", "use"],
           "onLook": [
             { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." }
           ],
           "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_academia" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_calle_nota] Con la nota de la academia, la cuesta parece menos cuesta. ::: Calle con destino." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_calle] La calle empuja hacia el bar como si supiera tu nombre. ::: La calle." }
+              ]
+            },
             { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
@@ -564,7 +664,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:volver_casa] Subes al piso. ::: Casa." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_salon_nota] La nota de la comunidad arde en el bolsillo más que el teletexto. ::: Llevas la nota." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_salon] El salón te mira con su sofá-trampa y el puzzle juzgador. ::: El salón te atrapa." }
+              ]
+            },
+            { "type": "gotoScene", "id": "salon_juan" }
+          ]
         }
       ]
     },
@@ -579,17 +691,32 @@
           "onLook": [
             { "type": "showText", "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'. ::: Al bar." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "bar_dostercios" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "pilas_aa" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_bar_pilas] Con dos AA en el bolsillo, la tragaperras te debe una. ::: Bar con deudas saldadas." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_bar] Fritanga, bromas y promesas a temperatura ambiente. ::: El Dos Tercios." }
+              ]
+            },
+            { "type": "gotoScene", "id": "bar_dostercios" }
+          ]
         },
         {
           "id": "ir_academia",
-          "shape": { "type": "rect", "x":880, "y": 280, "w": 280, "h": 240 },
+          "shape": { "type": "rect", "x": 880, "y": 280, "w": 280, "h": 240 },
           "verb": ["look", "use"],
           "conditions": [ { "hasItem": "nota_academia" } ],
           "onLook": [
             { "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa. ::: Academia." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "academia" } ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:desc_academia] Fluorescentes, olor a tóner y esperanzas en verano. ::: La Milagrosa." },
+            { "type": "gotoScene", "id": "academia" }
+          ],
           "onUseFail": [
             { "type": "showText", "text": "[gl:academia_bloqueada] Recuerdas que debías pasar por la Academia... ¿Dónde estaba la nota? ::: Te falta la nota." }
           ]
@@ -601,7 +728,19 @@
           "onLook": [
             { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." }
           ],
-          "onUse": [ { "type": "gotoScene", "id": "portal" } ]
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_comunidad" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_portal_nota] Con la nota en la mano, la portera baja el ceño medio milímetro. ::: Portal en tregua." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_portal] Ecos, tacones y la portera en modo radar. ::: El portal." }
+              ]
+            },
+            { "type": "gotoScene", "id": "portal" }
+          ]
         }
       ]
     },
@@ -806,6 +945,16 @@
             { "type": "showText", "text": "[gl:bar_salir] Sales a la calle. ::: Calle." }
           ],
           "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_academia" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_calle_nota] Con la nota de la academia, la cuesta parece menos cuesta. ::: Calle con destino." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_calle] La calle empuja hacia el bar como si supiera tu nombre. ::: La calle." }
+              ]
+            },
             { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
@@ -888,6 +1037,16 @@
             { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." }
           ],
           "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "nota_academia" },
+              "then": [
+                { "type": "showText", "text": "[gl:desc_calle_nota] Con la nota de la academia, la cuesta parece menos cuesta. ::: Calle con destino." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:desc_calle] La calle empuja hacia el bar como si supiera tu nombre. ::: La calle." }
+              ]
+            },
             { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
