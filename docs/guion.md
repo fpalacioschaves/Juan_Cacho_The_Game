@@ -35,3 +35,21 @@ En la casa hay más hotspots descriptivos: libros de matemáticas, posters de ma
 b) En el portal podemos hablar con los vecinos (Odón y su mujer, Nieves y su hermano adolescente Ángel) y con la portera. Esta nos va a pedir que le paguemos pronto el alquiler de la casa. Sólo nos dará información sobre la reunión de la comunidad si antes encontramos la nota de la reunión. 
 c) En la calle podemos elegir ir al bar Dos Tercios del Quinto o a la Academia. Diálogos con el Dudu, el Moro y el Gollina.
 d) A la academia sólo podremos entrar si encontramos la nota antes en casa. Dentro de la academia podemos hablar con el jefe que nos podrá proponer un trabajo de dar clases durante el verano
+
+Capítulo 1
+
+1) Salón de Juan: Se prepara para salir a la calle.
+
+2) Portal: Que se note que a Juan le gusta Nieves, que se la vuelve a cruzar en el portal y flirtea un poco con ella. Ese será el motivo por el que Juan decide apuntarse al gimnasio. Sin conversación con Nieves, no hay acceso al gimnasio. portera: solo conversación y pullas. si ha pasado lo del mareo, que le diga que tiene mala cara subir_piso_odon → ir al piso de odón sólo es posible si ya ha comprado las vitaminas y si en la academia le han dado los horarios. 
+
+2) gimnasio_barrio: Si el monitor no te lo ha sugerido, no puedes usar la cinta. Te sugiere ejercicio, como correr en la cinta, que es lo que te provoca el mareo.  Si no hay mareos, no puedes comprar las vitaminas en la farmacia
+
+
+3) farmacia_barrio: Si hay mareo, se pueden comprar las vitaminas, en caso contrario no se puede. 
+
+4) academia_milagrosa: Tenemos que ir a la academia a que nos den los horarios de las clases. Si vuelves a ir a la academia llegando tarde (sin superar un puzzle en casa de Juan) : bronca. En caso contrario, no hay bronca y te da el horario de las clases.
+
+
+6) piso_odon / reunion_vecinos: Típicos diálogos de reunión de vecinos. Odón saca su tetera. Orgulloso de que la ha hecho él mismo. Avanza la reunión. Sirve el té. Remedios muere
+
+Fin del capítulo
