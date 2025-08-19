@@ -974,18 +974,67 @@
       ]
     },
     {
-      "id": "gimnasio_barrio",
-      "background": "images/backgrounds/gimnasio_barrio.png",
-      "hotspots": [
+  "id": "gimnasio_barrio",
+  "background": "images/backgrounds/gimnasio_barrio.png",
+  "hotspots": [
+    {
+      "id": "monitor",
+      "shape": { "type": "rect", "x": 440, "y": 360, "w": 160, "h": 180 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:monitor_desc] Monitor del barrio con ganas de que sufras un poquito. ::: El monitor." }
+      ],
+      "onUse": [
         {
-          "id": "salir_calle_gimnasio",
-          "shape": { "type": "rect", "x": 0, "y": 260, "w": 180, "h": 300 },
-          "verb": ["look", "use"],
-          "onLook": [ { "type": "showText", "text": "[gl:salir_gimnasio] Sales del gimnasio. ::: Calle del gimnasio." } ],
-          "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
+          "type": "if",
+          "condition": { "flag": "monitor_sugiere_cinta", "equals": true },
+          "then": [
+            { "type": "showText", "text": "[gl:monitor_repite] Ya te ha sugerido correr en la cinta. 'Cuando quieras, máquina'. ::: Ya te lo dijo." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:monitor_sugiere] 'Empieza suave: cinco minutos en la cinta y te vas a notar nuevo.' ::: Te sugiere la cinta." },
+            { "type": "setFlag", "name": "monitor_sugiere_cinta", "value": true }
+          ]
         }
       ]
     },
+    {
+      "id": "cinta_correr",
+      "shape": { "type": "rect", "x": 930, "y": 360, "w": 260, "h": 180 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:cinta_desc] Cinta de correr con LEDs que prometen mucho. ::: La cinta." }
+      ],
+      "conditions": [ { "flag": "monitor_sugiere_cinta", "equals": true } ],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "flag": "mareo", "equals": true },
+          "then": [
+            { "type": "showText", "text": "[gl:cinta_otra_vez] Con una vez mareado vale por hoy. Mejor no tentar. ::: Ya tuviste bastante." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:cinta_mareo] Empiezas suave. Subes ritmo. Mundo tambalea. Uf. ::: Te mareas." },
+            { "type": "setFlag", "name": "mareo", "value": true }
+          ]
+        }
+      ],
+      "onUseFail": [
+        { "type": "showText", "text": "[gl:cinta_bloqueada] El monitor te para con la mirada: 'Primero, habla conmigo'. ::: Bloqueada hasta que te lo sugiera." }
+      ]
+    },
+    {
+      "id": "salir_calle",
+      "shape": { "type": "rect", "x": 40, "y": 280, "w": 160, "h": 320 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:salida_gym] Puerta de cristal hacia la calle del gym. ::: Salida." }
+      ],
+      "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
+    }
+  ]
+}
+,
     {
       "id": "farmacia_barrio",
       "background": "images/backgrounds/farmacia_barrio.png",
