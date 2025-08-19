@@ -1036,17 +1036,67 @@
 }
 ,
     {
-      "id": "farmacia_barrio",
-      "background": "images/backgrounds/farmacia_barrio.png",
-      "hotspots": [
+  "id": "farmacia_barrio",
+  "background": "images/backgrounds/farmacia_barrio.png",
+  "hotspots": [
+    {
+      "id": "mostrador_farmacia",
+      "shape": { "type": "rect", "x": 320, "y": 360, "w": 220, "h": 160 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:farmaceutica_desc] Farmacéutica con sonrisa de manual y radar de mareos. ::: Mostrador." }
+      ],
+      "onUse": [
         {
-          "id": "salir_calle_gimnasio",
-          "shape": { "type": "rect", "x": 1080, "y": 260, "w": 180, "h": 300 },
-          "verb": ["look", "use"],
-          "onLook": [ { "type": "showText", "text": "[gl:salir_farmacia] Sales de la farmacia. ::: Calle del gimnasio." } ],
-          "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
+          "type": "if",
+          "condition": { "flag": "mareo", "equals": true },
+          "then": [
+            { "type": "showText", "text": "[gl:farmaceutica_consejo] 'Vitaminas y agua. Y baja el ritmo, campeón.' ::: Te aconseja." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:farmaceutica_neutra] '¿Necesitas algo?' Te mira de arriba abajo. ::: Charla breve." }
+          ]
         }
       ]
+    },
+    {
+      "id": "estanteria_vitaminas",
+      "shape": { "type": "rect", "x": 940, "y": 360, "w": 240, "h": 200 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:vitaminas_desc] Góndola de vitaminas que prometen lunes menos lunes. ::: Vitaminas." }
+      ],
+      "conditions": [ { "flag": "mareo", "equals": true } ],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "hasItem": "vitaminas_b12" },
+          "then": [
+            { "type": "showText", "text": "[gl:vitaminas_ya] Ya llevas vitaminas. No hace falta duplicar. ::: Ya compradas." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:vitaminas_ok] Pagas y guardas las vitaminas. Te sientes un poco placebo-mejor. ::: Compradas." },
+            { "type": "giveItem", "itemId": "vitaminas_b12" },
+            { "type": "disableHotspot", "id": "estanteria_vitaminas" }
+          ]
+        }
+      ],
+      "onUseFail": [
+        { "type": "showText", "text": "[gl:sin_mareo_no_vitaminas] Sin mareo, la farmacéutica te dice que con fruta vas bien. ::: No te las vende." }
+      ]
+    },
+    {
+      "id": "salir_calle",
+      "shape": { "type": "rect", "x": 60, "y": 300, "w": 160, "h": 300 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:salida_farmacia] Puerta a la calle del gym. ::: Salida." }
+      ],
+      "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
     }
+  ]
+}
+
+
   ]
 }
