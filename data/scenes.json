@@ -151,44 +151,7 @@
           "onLook": [
             { "type": "showText", "text": "[gl:puerta_cocina] Huele a café viejo. ::: A la cocina." }
           ],
-          "onUse": [
-            {
-              "type": "if",
-              "condition": { "hasItem": "nota_academia" },
-              "then": [
-                { "type": "showText", "text": "[gl:desc_cocina_nota] El post-it de la academia te mira desde la nevera como un jefe pequeñito. ::: Cocina con aviso." }
-              ],
-              "else": [
-                { "type": "showText", "text": "[gl:desc_cocina] Olor a café pasado y ciencia de supervivencia. ::: La cocina te perdona." }
-              ]
-            },
-            { "type": "gotoScene", "id": "cocina_juan" }
-          ]
-        },
-        {
-          "id": "salir_piso",
-          "shape": { "type": "rect", "x": 0, "y": 520, "w": 140, "h": 160 },
-          "verb": ["look", "use"],
-          "conditions": [ { "hasItem": "llaves_casa" } ],
-          "onLook": [
-            { "type": "showText", "text": "[gl:puerta_salida] La puerta de salida. ::: Salida." }
-          ],
-          "onUse": [
-            {
-              "type": "if",
-              "condition": { "hasItem": "nota_comunidad" },
-              "then": [
-                { "type": "showText", "text": "[gl:desc_portal_nota] Con la nota en la mano, la portera baja el ceño medio milímetro. ::: Portal en tregua." }
-              ],
-              "else": [
-                { "type": "showText", "text": "[gl:desc_portal] Ecos, tacones y la portera en modo radar. ::: El portal." }
-              ]
-            },
-            { "type": "gotoScene", "id": "portal" }
-          ],
-          "onUseFail": [
-            { "type": "showText", "text": "[gl:sin_llaves] No puedes salir sin las llaves. ::: Falta la llave." }
-          ]
+          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
         }
       ]
     },
@@ -576,20 +539,23 @@
             { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." }
           ],
           "onUse": [
-            { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
-              "condition": { "flag": "acepta_trabajo", "equals": true },
+              "condition": { "flag": "cap0_fin_shown", "equals": true },
               "then": [
+                { "type": "gotoScene", "id": "calle_c1" }
+              ],
+              "else": [
                 {
                   "type": "if",
-                  "condition": { "flag": "cap0_fin_shown", "equals": true },
-                  "then": [],
-                  "else": [
+                  "condition": { "flag": "acepta_trabajo", "equals": true },
+                  "then": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
                     { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
-                    { "type": "setFlag", "name": "capitulo", "value": 1 },
-                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
+                    { "type": "gotoScene", "id": "calle_c1" }
+                  ],
+                  "else": [
+                    { "type": "gotoScene", "id": "calle" }
                   ]
                 }
               ]
@@ -608,42 +574,31 @@
       ]
     },
     {
-      "id": "calle",
-      "background": "images/backgrounds/calle.png",
-      "hotspots": [
-        {
-          "id": "ir_bar",
-          "shape": { "type": "rect", "x": 80, "y": 280, "w": 200, "h": 240 },
-          "verb": ["look", "use"],
-          "onLook": [
-            { "type": "showText", "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'. ::: Al bar." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "bar_dostercios" } ]
-        },
-        {
-          "id": "ir_academia",
-          "shape": { "type": "rect", "x": 880, "y": 280, "w": 280, "h": 240 },
-          "verb": ["look", "use"],
-          "conditions": [ { "hasItem": "nota_academia" } ],
-          "onLook": [
-            { "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa. ::: Academia." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "academia" } ],
-          "onUseFail": [
-            { "type": "showText", "text": "[gl:academia_bloqueada] Recuerdas que debías pasar por la Academia... ¿Dónde estaba la nota? ::: Te falta la nota." }
-          ]
-        },
-        {
-          "id": "volver_portal",
-          "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
-          "verb": ["look", "use"],
-          "onLook": [
-            { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "portal" } ]
-        }
+  "id": "calle",
+  "background": "images/backgrounds/calle.png",
+  "hotspots": [
+    {
+      "id": "ir_academia",
+      "shape": { "type": "rect", "x": 880, "y": 280, "w": 280, "h": 240 },
+      "verb": ["look", "use"],
+      "conditions": [ { "hasItem": "nota_academia" } ],
+      "onLook": [
+        { "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa. ::: Academia." }
+      ],
+      "onUse": [ { "type": "gotoScene", "id": "academia" } ],
+      "onUseFail": [
+        { "type": "showText", "text": "[gl:academia_bloqueada] Recuerdas que debías pasar por la Academia... ¿Dónde estaba la nota? ::: Te falta la nota." }
       ]
     },
+    {
+      "id": "volver_portal",
+      "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
+      "verb": ["look", "use"],
+      "onLook": [ { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." } ],
+      "onUse": [ { "type": "gotoScene", "id": "portal" } ]
+    }
+  ]
+},
     {
       "id": "bar_dostercios",
       "background": "images/backgrounds/bar_dostercios.png",
@@ -845,20 +800,23 @@
             { "type": "showText", "text": "[gl:bar_salir] Sales a la calle. ::: Calle." }
           ],
           "onUse": [
-            { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
-              "condition": { "flag": "acepta_trabajo", "equals": true },
+              "condition": { "flag": "cap0_fin_shown", "equals": true },
               "then": [
+                { "type": "gotoScene", "id": "calle_c1" }
+              ],
+              "else": [
                 {
                   "type": "if",
-                  "condition": { "flag": "cap0_fin_shown", "equals": true },
-                  "then": [],
-                  "else": [
+                  "condition": { "flag": "acepta_trabajo", "equals": true },
+                  "then": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
                     { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
-                    { "type": "setFlag", "name": "capitulo", "value": 1 },
-                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
+                    { "type": "gotoScene", "id": "calle_c1" }
+                  ],
+                  "else": [
+                    { "type": "gotoScene", "id": "calle" }
                   ]
                 }
               ]
@@ -929,20 +887,23 @@
             { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." }
           ],
           "onUse": [
-            { "type": "gotoScene", "id": "calle" },
             {
               "type": "if",
-              "condition": { "flag": "acepta_trabajo", "equals": true },
+              "condition": { "flag": "cap0_fin_shown", "equals": true },
               "then": [
+                { "type": "gotoScene", "id": "calle_c1" }
+              ],
+              "else": [
                 {
                   "type": "if",
-                  "condition": { "flag": "cap0_fin_shown", "equals": true },
-                  "then": [],
-                  "else": [
+                  "condition": { "flag": "acepta_trabajo", "equals": true },
+                  "then": [
                     { "type": "showText", "text": "[gl:cap0_fin] Con trabajo apalabrado, la ciudad suena distinto. Fin del capítulo 0. ::: Cap. 0 completado." },
                     { "type": "setFlag", "name": "cap0_fin_shown", "value": true },
-                    { "type": "setFlag", "name": "capitulo", "value": 1 },
-                    { "type": "gotoScene", "id": "dormitorio_juan_c1" }
+                    { "type": "gotoScene", "id": "calle_c1" }
+                  ],
+                  "else": [
+                    { "type": "gotoScene", "id": "calle" }
                   ]
                 }
               ]
@@ -952,39 +913,337 @@
       ]
     },
 
-
     {
-      "id": "calle_c1",
-      "background": "images/backgrounds/calle_c1.png",
+  "id": "calle_c1",
+  "background": "images/backgrounds/calle_c1.png",
+  "hotspots": [
+    {
+      "id": "ir_academia",
+      "shape": { "type": "rect", "x": 880, "y": 60, "w": 280, "h": 200 },
+      "verb": ["look", "use"],
+      "conditions": [ { "hasItem": "nota_academia" } ],
+      "onLook": [ { "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa. ::: Academia." } ],
+      "onUse": [ { "type": "gotoScene", "id": "academia_milagrosa" } ],
+      "onUseFail": [ { "type": "showText", "text": "[gl:academia_bloqueada] Recuerdas que debías pasar por la Academia... ¿Dónde estaba la nota? ::: Te falta la nota." } ]
+    },
+    {
+      "id": "ir_calle_gimnasio",
+      "shape": { "type": "rect", "x": 1120, "y": 280, "w": 160, "h": 260 },
+      "verb": ["look", "use"],
+      "onLook": [ { "type": "showText", "text": "[gl:cartel_gimnasio] Flecha hacia el polideportivo y la farmacia. ::: Hacia el gimnasio." } ],
+      "conditions": [ { "flag": "hablo_con_nieves", "equals": true } ],
+      "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ],
+      "onUseFail": [
+        { "type": "showText", "text": "[gl:gym_bloqueado] Te gustaría, pero aún no tienes esa motivación… quizá deberías hablar con Nieves. ::: Bloqueado." }
+      ]
+    },
+    {
+      "id": "volver_portal",
+      "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
+      "verb": ["look", "use"],
+      "onLook": [ { "type": "showText", "text": "[gl:volver_portal] De vuelta al portal. ::: Portal." } ],
+      "onUse": [ { "type": "gotoScene", "id": "portal_c1" } ]
+    }
+  ]
+},
+    {
+      "id": "calle_gimnasio",
+      "background": "images/backgrounds/calle_gimnasio.png",
       "hotspots": [
         {
-          "id": "puerta_salon",
-          "shape": { "type": "rect", "x": 1100, "y": 320, "w": 180, "h": 200 },
+          "id": "ir_gimnasio",
+          "shape": { "type": "rect", "x": 900, "y": 220, "w": 260, "h": 240 },
           "verb": ["look", "use"],
-          "onLook": [
-            { "type": "showText", "text": "[gl:c1_salon_look] El salón te espera con la poca dignidad de los lunes. ::: Al salón." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
+          "onLook": [ { "type": "showText", "text": "[gl:gimnasio_cartel] Gimnasio de barrio. Prometen sudor y gloria. ::: Al gimnasio." } ],
+          "onUse": [ { "type": "gotoScene", "id": "gimnasio_barrio" } ]
         },
         {
-          "id": "puerta_bano",
-          "shape": { "type": "rect", "x": 80, "y": 70, "w": 160, "h": 330 },
+          "id": "ir_farmacia",
+          "shape": { "type": "rect", "x": 100, "y": 220, "w": 260, "h": 240 },
           "verb": ["look", "use"],
-          "onLook": [
-            { "type": "showText", "text": "[gl:c1_bano_look] El espejo sigue sin filtros. ::: Baño." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "bano_juan" } ]
+          "onLook": [ { "type": "showText", "text": "[gl:farmacia_cartel] Farmacia. Cruces verdes y consejos no pedidos. ::: A la farmacia." } ],
+          "onUse": [ { "type": "gotoScene", "id": "farmacia_barrio" } ]
         },
         {
-          "id": "puerta_cocina",
-          "shape": { "type": "rect", "x": 0, "y": 540, "w": 160, "h": 160 },
+          "id": "volver_calle_c1",
+          "shape": { "type": "rect", "x": 0, "y": 360, "w": 80, "h": 300 },
           "verb": ["look", "use"],
-          "onLook": [
-            { "type": "showText", "text": "[gl:c1_cocina_look] Huele a café que pide auxilio. ::: Cocina." }
-          ],
-          "onUse": [ { "type": "gotoScene", "id": "cocina_juan" } ]
+          "onLook": [ { "type": "showText", "text": "[gl:volver_calle] Volver hacia la calle principal. ::: Atrás." } ],
+          "onUse": [ { "type": "gotoScene", "id": "calle_c1" } ]
         }
       ]
+    },
+    {
+      "id": "gimnasio_barrio",
+      "background": "images/backgrounds/gimnasio_barrio.png",
+      "hotspots": [
+        {
+          "id": "monitor",
+          "shape": { "type": "rect", "x": 440, "y": 360, "w": 160, "h": 180 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:monitor_desc] Monitor del barrio con ganas de que sufras un poquito. ::: El monitor." }
+          ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "flag": "monitor_sugiere_cinta", "equals": true },
+              "then": [
+                { "type": "showText", "text": "[gl:monitor_repite] Ya te ha sugerido correr en la cinta. 'Cuando quieras, máquina'. ::: Ya te lo dijo." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:monitor_sugiere] 'Empieza suave: cinco minutos en la cinta y te vas a notar nuevo.' ::: Te sugiere la cinta." },
+                { "type": "setFlag", "name": "monitor_sugiere_cinta", "value": true }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cinta_correr",
+          "shape": { "type": "rect", "x": 930, "y": 360, "w": 260, "h": 180 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:cinta_desc] Cinta de correr con LEDs que prometen mucho. ::: La cinta." }
+          ],
+          "conditions": [ { "flag": "monitor_sugiere_cinta", "equals": true } ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "flag": "mareo", "equals": true },
+              "then": [
+                { "type": "showText", "text": "[gl:cinta_otra_vez] Con una vez mareado vale por hoy. Mejor no tentar. ::: Ya tuviste bastante." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:cinta_mareo] Empiezas suave. Subes ritmo. Mundo tambalea. Uf. ::: Te mareas." },
+                { "type": "setFlag", "name": "mareo", "value": true }
+              ]
+            }
+          ],
+          "onUseFail": [
+            { "type": "showText", "text": "[gl:cinta_bloqueada] El monitor te para con la mirada: 'Primero, habla conmigo'. ::: Bloqueada hasta que te lo sugiera." }
+          ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 40, "y": 280, "w": 160, "h": 320 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:salida_gym] Puerta de cristal hacia la calle del gym. ::: Salida." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
+        }
+      ]
+    },
+    {
+      "id": "farmacia_barrio",
+      "background": "images/backgrounds/farmacia_barrio.png",
+      "hotspots": [
+        {
+          "id": "mostrador_farmacia",
+          "shape": { "type": "rect", "x": 320, "y": 360, "w": 220, "h": 160 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:farmaceutica_desc] Farmacéutica con sonrisa de manual y radar de mareos. ::: Mostrador." }
+          ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "flag": "mareo", "equals": true },
+              "then": [
+                { "type": "showText", "text": "[gl:farmaceutica_consejo] 'Vitaminas y agua. Y baja el ritmo, campeón.' ::: Te aconseja." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:farmaceutica_neutra] '¿Necesitas algo?' Te mira de arriba abajo. ::: Charla breve." }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "estanteria_vitaminas",
+          "shape": { "type": "rect", "x": 940, "y": 360, "w": 240, "h": 200 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:vitaminas_desc] Góndola de vitaminas que prometen lunes menos lunes. ::: Vitaminas." }
+          ],
+          "conditions": [ { "flag": "mareo", "equals": true } ],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "vitaminas_b12" },
+              "then": [
+                { "type": "showText", "text": "[gl:vitaminas_ya] Ya llevas vitaminas. No hace falta duplicar. ::: Ya compradas." }
+              ],
+              "else": [
+                { "type": "showText", "text": "[gl:vitaminas_ok] Pagas y guardas las vitaminas. Te sientes un poco placebo-mejor. ::: Compradas." },
+                { "type": "giveItem", "itemId": "vitaminas_b12" },
+                { "type": "disableHotspot", "id": "estanteria_vitaminas" }
+              ]
+            }
+          ],
+          "onUseFail": [
+            { "type": "showText", "text": "[gl:sin_mareo_no_vitaminas] Sin mareo, la farmacéutica te dice que con fruta vas bien. ::: No te las vende." }
+          ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 60, "y": 300, "w": 160, "h": 300 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:salida_farmacia] Puerta a la calle del gym. ::: Salida." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "calle_gimnasio" } ]
+        }
+      ]
+    },
+    {
+      "id": "academia_milagrosa",
+      "background": "images/backgrounds/academia_c1.png",
+      "hotspots": [
+        {
+          "id": "jefe_academia",
+          "shape": { "type": "rect", "x": 560, "y": 300, "w": 180, "h": 80 },
+          "verb": ["look", "use"],
+          "onUse": [
+            {
+              "type": "if",
+              "condition": { "hasItem": "horario_clases" },
+              "then": [
+                { "type": "showText", "text": "[gl:jefe_ya_en_plantilla] 'Perfecto, Juan. Ya tienes los horarios.' ::: Ya te los dio." }
+              ],
+              "else": [
+                {
+                  "type": "if",
+                  "condition": { "flag": "puzzle_c1_resuelto", "equals": true },
+                  "then": [
+                    { "type": "showText", "text": "[gl:jefe_ok] Llegas a tiempo. El jefe asiente y te entrega el horario. ::: Todo en orden." },
+                    { "type": "giveItem", "itemId": "horario_clases" },
+                    { "type": "setFlag", "name": "horarios_dados", "value": true }
+                  ],
+                  "else": [
+                    {
+                      "type": "if",
+                      "condition": { "flag": "bronca_dada", "equals": true },
+                      "then": [
+                        {
+                          "type": "if",
+                          "condition": { "flag": "rogo_perdon", "equals": true },
+                          "then": [
+                            { "type": "showText", "text": "[gl:jefe_perdonado] 'Vale, que no se repita.' Te entrega el horario. ::: Lo salvas por los pelos." },
+                            { "type": "giveItem", "itemId": "horario_clases" },
+                            { "type": "setFlag", "name": "horarios_dados", "value": true }
+                          ],
+                          "else": [
+                            { "type": "showText", "text": "[gl:jefe_espera_excusa] 'Llegas tarde y sin avisar. Algo que decir?' ::: Necesitas rogar." }
+                          ]
+                        }
+                      ],
+                      "else": [
+                        { "type": "showText", "text": "[gl:jefe_bronca] 'Así no, Juan. Punctualidad o puerta.' ::: Te cae bronca." },
+                        { "type": "setFlag", "name": "bronca_dada", "value": true }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rogar_perdon",
+          "shape": { "type": "rect", "x": 360, "y": 520, "w": 220, "h": 80 },
+          "verb": ["look", "use"],
+          "conditions": [
+            { "flag": "bronca_dada", "equals": true },
+            { "flag": "rogo_perdon", "equals": false }
+          ],
+          "onLook": [
+            { "type": "showText", "text": "[gl:rogar_hint] Un paso atrás, respiras y te preparas para pedir perdón. ::: Toca rogar." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:rogar] Pides disculpas, prometes puntualidad y pones cara de calendario. ::: 'No volverá a pasar'." },
+            { "type": "setFlag", "name": "rogo_perdon", "value": true }
+          ]
+        },
+        {
+          "id": "alumno",
+          "shape": { "type": "rect", "x": 420, "y": 180, "w": 180, "h": 120 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:alumno_desc] Un alumno esperando clase, auriculares torcidos. ::: Alumno." }
+          ],
+          "onUse": [
+            { "type": "showText", "text": "[gl:alumno_pista] Te susurra: 'Los baños tienen manchas raras de humedad otra vez...' ::: Pista para más adelante." },
+            { "type": "setFlag", "name": "pista_humedad", "value": true }
+          ]
+        },
+        {
+          "id": "salir_calle",
+          "shape": { "type": "rect", "x": 60, "y": 160, "w": 220, "h": 340 },
+          "verb": ["look", "use"],
+          "onLook": [
+            { "type": "showText", "text": "[gl:academia_salir] Vuelves a la calle. ::: Calle." }
+          ],
+          "onUse": [ { "type": "gotoScene", "id": "calle_c1" } ]
+        }
+      ]
+    },
+    {
+  "id": "portal_c1",
+  "background": "images/backgrounds/portal_c1.png",
+  "hotspots": [
+    {
+      "id": "portera",
+      "shape": { "type": "rect", "x": 80, "y": 240, "w": 200, "h": 220 },
+      "verb": ["look", "use"],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "flag": "mareo", "equals": true },
+          "then": [
+            { "type": "showText", "text": "[gl:portera_mareo] La portera te mira: 'Tienes mala cara, muchacho. Menos juergas y más fruta.' ::: Pullita de la portera." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:portera_pullas] 'El alquiler no se paga solo, Juan.' ::: Pullas de confianza." }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nieves",
+      "shape": { "type": "rect", "x": 1110, "y": 310, "w": 120, "h": 140 },
+      "verb": ["look", "use"],
+      "onLook": [
+        { "type": "showText", "text": "[gl:nieves_desc] Nieves cruza el portal. Te sonríe sin querer. ::: Nieves." }
+      ],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "flag": "hablo_con_nieves", "equals": true },
+          "then": [
+            { "type": "showText", "text": "[gl:nieves_repite] Charlais otro minuto. 'Nos vemos, valiente.' ::: Ya habéis flirteado." }
+          ],
+          "else": [
+            { "type": "showText", "text": "[gl:nieves_flirteo] Bromas tontas, miradas largas. Te suelta: 'Podrías venirte al gym del barrio…' ::: Flirteo desbloquea gimnasio." },
+            { "type": "setFlag", "name": "hablo_con_nieves", "value": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salir_calle",
+      "shape": { "type": "rect", "x": 0, "y": 360, "w": 70, "h": 340 },
+      "verb": ["look", "use"],
+      "onLook": [ { "type": "showText", "text": "[gl:a_calle] Sales a la calle. ::: Calle." } ],
+      "onUse": [ { "type": "gotoScene", "id": "calle_c1" } ]
+    },
+    {
+      "id": "subir_casa",
+      "shape": { "type": "rect", "x": 700, "y": 220, "w": 160, "h": 300 },
+      "verb": ["look", "use"],
+      "onLook": [ { "type": "showText", "text": "[gl:volver_casa] Subes al piso. ::: Casa." } ],
+      "onUse": [ { "type": "gotoScene", "id": "salon_juan" } ]
     }
+  ]
+}
   ]
 }
