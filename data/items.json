@@ -1,12 +1,35 @@
 {
   "$schema": "items.schema.v1",
   "items": [
-    { "id": "nota_4132",      "name": "Nota arrugada",         "icon": "images/items/nota_4132.png",      "description": "Apunta: 4132" },
-    { "id": "llave_taquilla", "name": "Llave de taquilla",     "icon": "images/items/llave_taquilla.png", "description": "Abre una taquilla." },
-    { "id": "llaves_casa",    "name": "Llaves de casa",        "icon": "images/items/llaves_casa.png",    "description": "Sin esto no sales." },
-    { "id": "nota_academia",  "name": "Nota de la academia",   "icon": "images/items/nota_academia.png",  "description": "Recuerda pasar por la Academia." },
-    { "id": "nota_comunidad", "name": "Nota de la comunidad",  "icon": "images/items/nota_comunidad.png", "description": "Convocatoria de reunión de vecinos." },
-
-    { "id": "pilas_aa",       "name": "Pilas AA",              "icon": "images/items/pilas_aa.png",       "description": "Par de pilas recién sacadas de una máquina." }
+    {
+      "id": "llaves_casa",
+      "name": "Llaves de casa",
+      "icon": "images/items/llaves_casa.png",
+      "description": "Las llaves del piso."
+    },
+    {
+      "id": "nota_comunidad",
+      "name": "Nota de la comunidad",
+      "icon": "images/items/nota_comunidad.png",
+      "description": "Aviso de la reunión de vecinos."
+    },
+    {
+      "id": "nota_academia",
+      "name": "Nota de la academia",
+      "icon": "images/items/nota_academia.png",
+      "description": "Recordatorio de pasar por la Academia."
+    },
+    {
+      "id": "pilas_aa",
+      "name": "Pilas AA",
+      "icon": "images/items/pilas_aa.png",
+      "description": "Par de pilas para el despertador."
+    },
+    {
+      "id": "vitaminas_b12",
+      "name": "Vitaminas B12",
+      "icon": "images/items/vitaminas_b12.png",
+      "description": "Complejo de vitamina B12 para espantar mareos."
+    }
   ]
 }
