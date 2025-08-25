@@ -50,4 +50,18 @@ Capítulo 1
 
 6) piso_odon / reunion_vecinos: Típicos diálogos de reunión de vecinos. Odón saca su tetera. Orgulloso de que la ha hecho él mismo. Avanza la reunión. Sirve el té. Remedios muere 
 
+Debe saltar de nuevo al portal para comenzar el capítulo 2
+Fin del capítulo
+
+Capítulo 2: 
+
+Nos centramos ahora en los días posteriores a la muerte de Remedios. 
+En días posteriores, Nieves, una de sus vecinas, empieza a sospechar que algo pasa, porque no entiende el comportamiendo del viudo al oir risas en su casa. Convence a Cacho para que se adentre en la casa de Odón Camuñas y haga un registro. Hay que incluir una escena en casa de Nieves desde la que escucharemos las risas en casa de Odón, pero sólo si usamos algo en la pared (un vaso para poder oirlo, o un fonendoscopio que podremos encontrar en la farmacia)
+
+Después de eso, tenemos que intentar entrar en casa de Odón Camuñas. Para eso tenemos que sacarlo de su casa. Pensar cómo sacarlo de casa para poder entrar en ella
+
+La llave de la casa de Odón Camuñas puede tener una copia la portera, a la que habrá que distraer de alguna manera para poder acceder a las llaves. Antes, habría que haber visto las llaves al mirar a la portera.
+
+Una vez con las llaves y habiendo sacado a Odón de su casa, tenemos que entrar en su casa, registrarla toda (hay que crear distintas habitaciones), y podremos encontrar revistas porno y algunos cds con grabaciones de escenas de chicas en baños públicos, que a Juan le suenan pero no sabe de qué.
+
 Fin del capítulo

@@ -30,6 +30,36 @@
       "name": "Vitaminas B12",
       "icon": "images/items/vitaminas_b12.png",
       "description": "Complejo de vitamina B12 para espantar mareos."
+    },
+    {
+      "id": "vaso_cristal",
+      "name": "Vaso de cristal",
+      "icon": "images/items/vaso_cristal.png",
+      "desc": "Vaso fino para oír paredes (o beber agua)."
+    },
+    {
+      "id": "fonendoscopio",
+      "name": "Fonendoscopio",
+      "icon": "images/items/fonendoscopio.png",
+      "desc": "De farmacia. Para escuchar a través de paredes."
+    },
+    {
+      "id": "llave_odon",
+      "name": "Llave del piso de Odón",
+      "icon": "images/items/llaves_odon.png",
+      "desc": "Copia sustraída del llavero de la portera."
+    },
+    {
+      "id": "revistas_porno",
+      "name": "Revistas",
+      "icon": "images/items/revistas_porno.png",
+      "desc": "Revistas para adultos halladas en el salón de Odón."
+    },
+    {
+      "id": "cds_grabaciones",
+      "name": "CDs con grabaciones",
+      "icon": "images/items/cds_grabaciones.png",
+      "desc": "Discos con etiquetas sospechosas sobre baños."
     }
   ]
 }
