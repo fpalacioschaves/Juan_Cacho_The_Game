@@ -2796,7 +2796,7 @@
     },
     {
       "id": "dormitorio_odon_c2",
-      "background": "images/backgrounds/dormitorio_odon_c2.png",
+      "background": "images/backgrounds/odon_dormitorio_c2.png",
       "hotspots": [
         {
           "id": "armario",
