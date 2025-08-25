@@ -2578,274 +2578,184 @@
         }
       ]
     },
+   {
+  "id": "piso_odon_c2",
+  "background": "images/backgrounds/piso_odon_c2.png",
+  "hotspots": [
     {
-      "id": "piso_odon_c2",
-      "background": "images/backgrounds/piso_odon_c2.png",
-      "hotspots": [
+      "id": "timbre_odon",
+      "shape": { "type": "rect", "x": 620, "y": 300, "w": 140, "h": 140 },
+      "verb": ["use", "look"],
+      "onLook": [{ "type": "showText", "text": "[gl:timbre_odon_c2] Timbre con 'Camuñas'. Se oyen pasos a veces." }],
+      "onUse": [{ "type": "showText", "text": "[gl:no_tocar_timbre] Mejor no llamar si planeas registrar." }]
+    },
+    {
+      "id": "cerradura_odon",
+      "shape": { "type": "rect", "x": 700, "y": 300, "w": 80, "h": 120 },
+      "verb": ["use", "look"],
+      "onLook": [{ "type": "showText", "text": "[gl:cerradura_odon] Cerradura vieja, fácil de arañar." }],
+      "onUse": [
         {
-          "id": "timbre_odon",
-          "shape": { "type": "rect", "x": 620, "y": 300, "w": 140, "h": 140 },
-          "verb": ["use", "look"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:timbre_odon_c2] Timbre con 'Camuñas'. Se oyen pasos a veces. ::: Timbre."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "showText",
-              "text": "[gl:no_tocar_timbre] Mejor no llamar si planeas registrar. ::: Mejor no."
-            }
-          ]
-        },
-        {
-          "id": "cerradura_odon",
-          "shape": { "type": "rect", "x": 700, "y": 300, "w": 80, "h": 120 },
-          "verb": ["use", "look"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:cerradura_odon] Cerradura vieja, fácil de arañar. ::: Cerradura."
-            }
-          ],
-          "onUse": [
+          "type": "if",
+          "condition": { "hasItem": "llave_odon" },
+          "then": [
             {
               "type": "if",
-              "condition": { "hasItem": "llave_odon" },
+              "condition": { "flag": "odon_fuera", "equals": true },
               "then": [
-                {
-                  "type": "if",
-                  "condition": { "flag": "odon_fuera", "equals": true },
-                  "then": [
-                    {
-                      "type": "showText",
-                      "text": "[gl:abre_odon_c2] Giras la llave con cuidado. Puerta abierta. ::: Dentro."
-                    },
-                    { "type": "gotoScene", "id": "salon_odon_c2" }
-                  ],
-                  "else": [
-                    {
-                      "type": "showText",
-                      "text": "[gl:odon_dentro] Se oye la tele dentro. Abrir ahora es jugarse el cuello. ::: Aún está en casa."
-                    }
-                  ]
-                }
+                { "type": "showText", "text": "[gl:abre_odon_c2] Giras la llave con cuidado. Puerta abierta." },
+                { "type": "gotoScene", "id": "recibidor_odon_c2" }
               ],
-              "else": [
-                {
-                  "type": "showText",
-                  "text": "[gl:sin_llave_odon] Necesitarías una copia de la portera… ::: Falta la llave."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "bajar_portal",
-          "shape": { "type": "rect", "x": 40, "y": 360, "w": 180, "h": 240 },
-          "verb": ["use", "look"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:bajar_portal] Puedes volver al portal. ::: Atrás."
+              "else": [{ "type": "showText", "text": "[gl:odon_dentro] Se oye la tele dentro. Abrir ahora es jugarse el cuello." }]
             }
           ],
-          "onUse": [{ "type": "gotoScene", "id": "portal_c2" }]
+          "else": [{ "type": "showText", "text": "[gl:sin_llave_odon] Necesitarías una copia de la portera…" }]
         }
       ]
     },
     {
-      "id": "salon_odon_c2",
-      "background": "images/backgrounds/salon_odon_c2.png",
-      "hotspots": [
+      "id": "bajar_portal",
+      "shape": { "type": "rect", "x": 40, "y": 360, "w": 180, "h": 240 },
+      "verb": ["use", "look"],
+      "onLook": [{ "type": "showText", "text": "[gl:bajar_portal] Puedes volver al portal." }],
+      "onUse": [{ "type": "gotoScene", "id": "portal_c2" }]
+    }
+  ]
+    },
+    {
+  "id": "salon_odon_c2",
+  "background": "images/backgrounds/salon_odon_c2.png",
+  "hotspots": [
+    {
+      "id": "mesita_revistas",
+      "shape": { "type": "rect", "x": 520, "y": 520, "w": 200, "h": 120 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:revistas_look] Montón de revistas discretas sobre la mesa." }],
+      "onUse": [{ "type": "showText", "text": "[gl:revistas_salon_nada] Solo prensa vieja. Lo bueno no está aquí." }]
+    },
+    {
+      "id": "estanteria_cds",
+      "shape": { "type": "rect", "x": 960, "y": 360, "w": 180, "h": 200 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:cds_look] Carátulas musicales. Nada grabado a mano." }],
+      "onUse": [{ "type": "showText", "text": "[gl:cds_salon_nada] Nada sospechoso en esta balda." }]
+    },
+    {
+      "id": "puerta_dormitorio",
+      "shape": { "type": "rect", "x": 320, "y": 200, "w": 180, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_dorm_odon] Hacia el dormitorio." }],
+      "onUse": [{ "type": "gotoScene", "id": "dormitorio_odon_c2" }]
+    },
+    {
+      "id": "puerta_cocina",
+      "shape": { "type": "rect", "x": 720, "y": 180, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_cocina_odon] Hacia la cocina." }],
+      "onUse": [{ "type": "gotoScene", "id": "cocina_odon_c2" }]
+    },
+    {
+      "id": "puerta_bano",
+      "shape": { "type": "rect", "x": 1040, "y": 220, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_bano_odon] Hacia el baño." }],
+      "onUse": [{ "type": "gotoScene", "id": "bano_odon_c2" }]
+    },
+    {
+      "id": "puerta_recibidor",
+      "shape": { "type": "rect", "x": 80, "y": 220, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_recibidor_odon] Hacia el pasillo/recibidor." }],
+      "onUse": [{ "type": "gotoScene", "id": "recibidor_odon_c2" }]
+    },
+    {
+      "id": "salir_piso_odon",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 180, "h": 140 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:salir_piso_odon] Volver al rellano." }],
+      "onUse": [
         {
-          "id": "mesita_revistas",
-          "shape": { "type": "rect", "x": 520, "y": 520, "w": 200, "h": 120 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:revistas_look] Montón de revistas discretas, mal escondidas. ::: Revistas."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "if",
-              "condition": { "hasItem": "revistas_porno" },
-              "then": [
-                {
-                  "type": "showText",
-                  "text": "[gl:revistas_ya] Ya registraste ese montón. ::: Nada nuevo."
-                }
-              ],
-              "else": [
-                {
-                  "type": "showText",
-                  "text": "[gl:revistas_coge] Te guardas un par para pruebas. ::: Revistas incautadas."
-                },
-                { "type": "giveItem", "itemId": "revistas_porno" }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "estanteria_cds",
-          "shape": { "type": "rect", "x": 960, "y": 360, "w": 180, "h": 200 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:cds_look] Cajas de CD rotuladas a mano. ::: Estantería."
-            }
-          ],
-          "onUse": [
+          "type": "if",
+          "condition": { "hasItem": "revistas_porno" },
+          "then": [
             {
               "type": "if",
               "condition": { "hasItem": "cds_grabaciones" },
               "then": [
-                {
-                  "type": "showText",
-                  "text": "[gl:cds_ya] Ya cogiste los discos sospechosos. ::: Nada nuevo."
-                }
-              ],
-              "else": [
-                {
-                  "type": "showText",
-                  "text": "[gl:cds_coge] Títulos raros: 'Baños 03-05'. Te los guardas. ::: CDs incautados."
-                },
-                { "type": "giveItem", "itemId": "cds_grabaciones" }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "puerta_dormitorio",
-          "shape": { "type": "rect", "x": 320, "y": 200, "w": 180, "h": 220 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:a_dorm_odon] Hacia el dormitorio. ::: Dormitorio."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "dormitorio_odon_c2" }]
-        },
-        {
-          "id": "puerta_cocina",
-          "shape": { "type": "rect", "x": 720, "y": 180, "w": 160, "h": 220 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:a_cocina_odon] Hacia la cocina. ::: Cocina."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "cocina_odon_c2" }]
-        },
-        {
-          "id": "puerta_bano",
-          "shape": { "type": "rect", "x": 1040, "y": 220, "w": 160, "h": 220 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:a_bano_odon] Hacia el baño. ::: Baño."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "bano_odon_c2" }]
-        },
-        {
-          "id": "salir_piso_odon",
-          "shape": { "type": "rect", "x": 40, "y": 520, "w": 180, "h": 140 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:salir_piso_odon] Volver al rellano. ::: Salir."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "if",
-              "condition": { "hasItem": "revistas_porno" },
-              "then": [
-                {
-                  "type": "if",
-                  "condition": { "hasItem": "cds_grabaciones" },
-                  "then": [
-                    {
-                      "type": "showText",
-                      "text": "[gl:cap2_fin] Has reunido material suficiente. Sirenas lejanísimas, otra vez. Fin del Capítulo 2. ::: Cap. 2 completado."
-                    },
-                    {
-                      "type": "setFlag",
-                      "name": "cap2_fin_shown",
-                      "value": true
-                    },
-                    { "type": "gotoScene", "id": "portal_c2" }
-                  ],
-                  "else": [{ "type": "gotoScene", "id": "piso_odon_c2" }]
-                }
+                { "type": "showText", "text": "[gl:cap2_fin] Has reunido material suficiente… Fin del Capítulo 2." },
+                { "type": "setFlag", "name": "cap2_fin_shown", "value": true },
+                { "type": "gotoScene", "id": "portal_c2" }
               ],
               "else": [{ "type": "gotoScene", "id": "piso_odon_c2" }]
             }
+          ],
+          "else": [{ "type": "gotoScene", "id": "piso_odon_c2" }]
+        }
+      ]
+    }
+  ]
+    },
+    {
+  "id": "dormitorio_odon_c2",
+  "background": "images/backgrounds/odon_dormitorio_c2.png",
+  "hotspots": [
+    {
+      "id": "comoda_cajon",
+      "shape": { "type": "rect", "x": 360, "y": 360, "w": 200, "h": 160 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:comoda_odon] Cómoda con un cajón entreabierto." }],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "hasItem": "revistas_porno" },
+          "then": [{ "type": "showText", "text": "[gl:revistas_ya] Ya cogiste las revistas comprometedoras." }],
+          "else": [
+            { "type": "showText", "text": "[gl:revistas_coge] Revistas para adultos, tapas medio ocultas. Te guardas algunas." },
+            { "type": "giveItem", "itemId": "revistas_porno" }
           ]
         }
       ]
     },
     {
-      "id": "dormitorio_odon_c2",
-      "background": "images/backgrounds/odon_dormitorio_c2.png",
-      "hotspots": [
+      "id": "bajo_cama",
+      "shape": { "type": "rect", "x": 680, "y": 520, "w": 360, "h": 120 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:bajo_cama] Alfombra algo levantada. Se ve una caja." }],
+      "onUse": [
         {
-          "id": "armario",
-          "shape": { "type": "rect", "x": 960, "y": 240, "w": 220, "h": 260 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:armario_odon] Ropa perfectamente doblada. ::: Armario."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "showText",
-              "text": "[gl:armario_nada] Miras bolsillos, nada relevante. ::: Nada útil."
-            }
+          "type": "if",
+          "condition": { "hasItem": "cds_grabaciones" },
+          "then": [{ "type": "showText", "text": "[gl:cds_ya] Ya recogiste los CD-R rotulados." }],
+          "else": [
+            { "type": "showText", "text": "[gl:cds_coge] Caja de zapatos con CD-R: 'Baños 03–05', 'jul-xx'… Te los guardas." },
+            { "type": "giveItem", "itemId": "cds_grabaciones" }
           ]
-        },
-        {
-          "id": "mesilla",
-          "shape": { "type": "rect", "x": 520, "y": 420, "w": 160, "h": 120 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:mesilla_odon] Mesilla con polvo y orgullo. ::: Mesilla."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "showText",
-              "text": "[gl:mesilla_nada] Sin doble fondo. ::: Nada aquí."
-            }
-          ]
-        },
-        {
-          "id": "volver_salon",
-          "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
-          "verb": ["use", "look"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:volver_salon] Al salón. ::: Volver."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "salon_odon_c2" }]
         }
       ]
     },
+    {
+      "id": "armario",
+      "shape": { "type": "rect", "x": 960, "y": 240, "w": 220, "h": 260 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:armario_odon] Ropa perfectamente doblada." }],
+      "onUse": [{ "type": "showText", "text": "[gl:armario_nada] Miras bolsillos, nada relevante." }]
+    },
+    {
+      "id": "mesilla",
+      "shape": { "type": "rect", "x": 520, "y": 420, "w": 160, "h": 120 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:mesilla_odon] Mesilla con polvo y orgullo." }],
+      "onUse": [{ "type": "showText", "text": "[gl:mesilla_nada] Sin doble fondo." }]
+    },
+    {
+      "id": "volver_salon",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
+      "verb": ["use", "look"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_salon] Al salón." }],
+      "onUse": [{ "type": "gotoScene", "id": "salon_odon_c2" }]
+    }
+  ]
+  },
     {
       "id": "cocina_odon_c2",
       "background": "images/backgrounds/cocina_odon_c2.png",
@@ -2882,39 +2792,41 @@
       ]
     },
     {
-      "id": "bano_odon_c2",
-      "background": "images/backgrounds/bano_odon_c2.png",
-      "hotspots": [
+  "id": "bano_odon_c2",
+  "background": "images/backgrounds/bano_odon_c2.png",
+  "hotspots": [
+    {
+      "id": "armario_espejo",
+      "shape": { "type": "rect", "x": 760, "y": 180, "w": 160, "h": 160 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:arm_espejo] Armario de espejo con olor a colonia barata." }],
+      "onUse": [{ "type": "showText", "text": "[gl:arm_espejo_nada] Medicinas caducadas. Nada relevante." }]
+    },
+    {
+      "id": "estante_alto",
+      "shape": { "type": "rect", "x": 1040, "y": 120, "w": 160, "h": 100 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:estante_alto] Un estante alto con cachivaches." }],
+      "onUse": [
         {
-          "id": "armario_espejo",
-          "shape": { "type": "rect", "x": 760, "y": 180, "w": 160, "h": 160 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:arm_espejo] Armario de espejo con olor a colonia barata. ::: Armario-espejo."
-            }
-          ],
-          "onUse": [
-            {
-              "type": "showText",
-              "text": "[gl:arm_espejo_nada] Medicinas caducadas. Nada relevante. ::: Nada."
-            }
+          "type": "if",
+          "condition": { "hasItem": "mini_tripode" },
+          "then": [{ "type": "showText", "text": "[gl:tripode_ya] Ya cogiste el mini-trípode plegable." }],
+          "else": [
+            { "type": "showText", "text": "[gl:tripode_coge] Encuentras un mini-trípode plegable y te lo guardas." },
+            { "type": "giveItem", "itemId": "mini_tripode" }
           ]
-        },
-        {
-          "id": "volver_salon",
-          "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
-          "verb": ["use", "look"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:volver_salon] Al salón. ::: Volver."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "salon_odon_c2" }]
         }
       ]
+    },
+    {
+      "id": "volver_salon",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
+      "verb": ["use", "look"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_salon] Al salón." }],
+      "onUse": [{ "type": "gotoScene", "id": "salon_odon_c2" }]
+    }
+  ]
     },
     {
       "id": "salon_juan_c2",
@@ -3201,46 +3113,38 @@
       ]
     },
     {
-      "id": "calle_c2",
-      "background": "images/backgrounds/calle_c1.png",
-      "hotspots": [
-        {
-          "id": "ir_bar",
-          "shape": { "type": "rect", "x": 80, "y": 280, "w": 200, "h": 240 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "bar_dostercios_c2" }]
-        },
-        {
-          "id": "ir_academia",
-          "shape": { "type": "rect", "x": 880, "y": 60, "w": 280, "h": 200 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:academia_cartel] Academia La Milagrosa."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "academia_milagrosa_c2" }]
-        },
-        {
-          "id": "volver_portal",
-          "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
-          "verb": ["look", "use"],
-          "onLook": [
-            {
-              "type": "showText",
-              "text": "[gl:volver_portal] De vuelta al portal."
-            }
-          ],
-          "onUse": [{ "type": "gotoScene", "id": "portal_c2" }]
-        }
-      ]
+  "id": "calle_c2",
+  "background": "images/backgrounds/calle_c1.png",
+  "hotspots": [
+    {
+      "id": "ir_bar",
+      "shape": { "type": "rect", "x": 80, "y": 280, "w": 200, "h": 240 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:bar_cartel] Cartel: 'Bar Dos Tercios del Quinto'." }],
+      "onUse": [{ "type": "gotoScene", "id": "bar_dostercios_c2" }]
+    },
+    {
+      "id": "ir_academia",
+      "shape": { "type": "rect", "x": 880, "y": 60, "w": 280, "h": 200 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:academia_cartel] Academia La Milagrosa." }],
+      "onUse": [{ "type": "gotoScene", "id": "academia_milagrosa_c2" }]
+    },
+    {
+      "id": "ir_calle_gimnasio_c2",
+      "shape": { "type": "rect", "x": 1180, "y": 80, "w": 100, "h": 460 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:cartel_gimnasio] Flecha hacia polideportivo y farmacia." }],
+      "onUse": [{ "type": "gotoScene", "id": "calle_gimnasio_c2" }]
+    },
+    {
+      "id": "volver_portal",
+      "shape": { "type": "rect", "x": 440, "y": 260, "w": 160, "h": 240 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_portal] De vuelta al portal." }],
+      "onUse": [{ "type": "gotoScene", "id": "portal_c2" }]
+    }
+  ]
     },
     {
       "id": "bar_dostercios_c2",
@@ -3412,6 +3316,177 @@
           "onUse": [{ "type": "gotoScene", "id": "calle_c2" }]
         }
       ]
+    },
+    {
+  "id": "calle_gimnasio_c2",
+  "background": "images/backgrounds/calle_gimnasio.png",
+  "hotspots": [
+    {
+      "id": "ir_farmacia",
+      "shape": { "type": "rect", "x": 80, "y": 220, "w": 260, "h": 240 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:farmacia_cartel] Farmacia. Cruces verdes y consejos no pedidos." }],
+      "onUse": [{ "type": "gotoScene", "id": "farmacia_barrio_c2" }]
+    },
+    {
+      "id": "volver_calle_c2",
+      "shape": { "type": "rect", "x": 0, "y": 360, "w": 60, "h": 300 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_calle] Volver hacia la calle principal." }],
+      "onUse": [{ "type": "gotoScene", "id": "calle_c2" }]
+    }
+  ]
+    },
+    {
+  "id": "farmacia_barrio_c2",
+  "background": "images/backgrounds/farmacia_barrio.png",
+  "hotspots": [
+    {
+      "id": "mostrador_farmacia",
+      "shape": { "type": "rect", "x": 360, "y": 360, "w": 500, "h": 160 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:farmaceutica_desc] Farmacéutica con sonrisa de manual." }],
+      "onUse": [{ "type": "showText", "text": "[gl:farmaceutica_neutra] '¿Necesitas algo?'" }]
+    },
+    {
+      "id": "estanteria_medica",
+      "shape": { "type": "rect", "x": 900, "y": 200, "w": 280, "h": 400 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:est_medica] Tensiómetros, fonendos y mil cacharros." }],
+      "onUse": [
+        {
+          "type": "if",
+          "condition": { "hasItem": "fonendoscopio" },
+          "then": [{ "type": "showText", "text": "[gl:fonendo_ya] Ya llevas un fonendoscopio." }],
+          "else": [
+            { "type": "showText", "text": "[gl:fonendo_coge] Compras un fonendoscopio sencillo. Perfecto para escuchar paredes." },
+            { "type": "giveItem", "itemId": "fonendoscopio" },
+            { "type": "disableHotspot", "id": "estanteria_medica" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salir_calle",
+      "shape": { "type": "rect", "x": 60, "y": 160, "w": 200, "h": 400 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:salida_farmacia] Puerta a la calle del gym." }],
+      "onUse": [{ "type": "gotoScene", "id": "calle_gimnasio_c2" }]
+    }
+  ]
+    },
+    {
+  "id": "recibidor_odon_c2",
+  "background": "images/backgrounds/odon_recibidor_c2.png",
+  "hotspots": [
+    {
+      "id": "a_salon",
+      "shape": { "type": "rect", "x": 300, "y": 220, "w": 180, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_salon] Puerta al salón." }],
+      "onUse": [{ "type": "gotoScene", "id": "salon_odon_c2" }]
+    },
+    {
+      "id": "a_despacho",
+      "shape": { "type": "rect", "x": 520, "y": 200, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_despacho] Puerta a un cuarto con escritorio." }],
+      "onUse": [{ "type": "gotoScene", "id": "despacho_odon_c2" }]
+    },
+    {
+      "id": "a_trastero",
+      "shape": { "type": "rect", "x": 760, "y": 220, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_trastero] Puerta estrecha con cajas detrás." }],
+      "onUse": [{ "type": "gotoScene", "id": "trastero_odon_c2" }]
+    },
+    {
+      "id": "a_cocina",
+      "shape": { "type": "rect", "x": 980, "y": 220, "w": 160, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_cocina_odon] Puerta a la cocina." }],
+      "onUse": [{ "type": "gotoScene", "id": "cocina_odon_c2" }]
+    },
+    {
+      "id": "a_bano",
+      "shape": { "type": "rect", "x": 1140, "y": 220, "w": 140, "h": 220 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:a_bano_odon] Puerta al baño." }],
+      "onUse": [{ "type": "gotoScene", "id": "bano_odon_c2" }]
+    },
+    {
+      "id": "salir_al_rellano",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 180, "h": 140 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:salir_rellano] Volver al rellano." }],
+      "onUse": [{ "type": "gotoScene", "id": "piso_odon_c2" }]
+    }
+  ]
+    },
+    {
+  "id": "despacho_odon_c2",
+  "background": "images/backgrounds/odon_despacho_c2.png",
+  "hotspots": [
+    {
+      "id": "escritorio",
+      "shape": { "type": "rect", "x": 520, "y": 420, "w": 240, "h": 160 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:escritorio_desp] Escritorio con lámpara de banquero." }],
+      "onUse": [{ "type": "showText", "text": "[gl:escritorio_nada] Cajones con papeles anodinos." }]
+    },
+    {
+      "id": "estanteria_binders",
+      "shape": { "type": "rect", "x": 960, "y": 240, "w": 200, "h": 260 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:binders] Carpetas por años. Nada salta a la vista." }],
+      "onUse": [{ "type": "showText", "text": "[gl:binders_nada] Sin etiquetas raras." }]
+    },
+    {
+      "id": "armario_metalico",
+      "shape": { "type": "rect", "x": 240, "y": 260, "w": 180, "h": 260 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:arm_met] Armario metálico abollado." }],
+      "onUse": [{ "type": "showText", "text": "[gl:arm_met_cerrado] Cerrado con llave. Nada que hacer ahora." }]
+    },
+    {
+      "id": "volver_recibidor",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_recibidor] Volver al recibidor." }],
+      "onUse": [{ "type": "gotoScene", "id": "recibidor_odon_c2" }]
+    }
+  ]
+    },
+    {
+  "id": "trastero_odon_c2",
+  "background": "images/backgrounds/odon_trastero_c2.png",
+  "hotspots": [
+    {
+      "id": "cajas_trastero",
+      "shape": { "type": "rect", "x": 520, "y": 420, "w": 300, "h": 180 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:cajas_trastero] Cajas y bolsas apelmazadas." }],
+      "onUse": [{ "type": "showText", "text": "[gl:cajas_nada] Ropa vieja, cables… Nada útil por ahora." }]
+    },
+    {
+      "id": "maleta",
+      "shape": { "type": "rect", "x": 320, "y": 500, "w": 160, "h": 120 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:maleta] Maleta dura con polvo." }],
+      "onUse": [{ "type": "showText", "text": "[gl:maleta_blind] Cerradura rota que no abre sin herramientas." }]
+    },
+    {
+      "id": "volver_recibidor",
+      "shape": { "type": "rect", "x": 40, "y": 520, "w": 200, "h": 140 },
+      "verb": ["look", "use"],
+      "onLook": [{ "type": "showText", "text": "[gl:volver_recibidor] Volver al recibidor." }],
+      "onUse": [{ "type": "gotoScene", "id": "recibidor_odon_c2" }]
+    }
+  ]
     }
   ]
 }
+
+
+
+
